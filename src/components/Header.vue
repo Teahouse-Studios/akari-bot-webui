@@ -132,22 +132,22 @@ body.dark-mode .el-button:hover {
 }
 
 .github-button {
-  background-color: #333333;
+  background-color: #333;
   color: white;
 }
 
 .github-button:hover {
-  background-color: #666666;
+  background-color: #666;
   color: white;
 }
 
 body.dark-mode .github-button {
-  background-color: #333333;
-  color: white;
+  background-color: #eeeeee;
+  color: #333;
 }
 
 body.dark-mode .github-button:hover {
-  background-color: #666666;
-  color: white;
+  background-color: #b0b0b0;
+  color: #333;
 }
 </style>
