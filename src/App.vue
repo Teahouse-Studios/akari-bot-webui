@@ -1,11 +1,15 @@
 <template>
-  <div id="app">
+  <div id="app" :class="{'dark-mode': isDarkMode}">
     <Header @refresh="refresh" @modifyPassword="modifyPassword" />
-    <el-container style="margin-top: 60px; height: calc(100vh - 60px);">
-      <Sidebar @menuSelected="changeContent" />
-      <el-main class="content">
-        <component :is="currentView"></component>
-      </el-main>
+    <PasswordModal 
+      v-if="showPasswordModal" 
+      :correctPassword="correctPassword" 
+      @success="showPasswordModal = false" />
+    <el-container 
+      style="margin-top: 60px; display: flex;" 
+      :class="{'blurred': showPasswordModal}">
+      <Sidebar @menuSelect="handleMenuSelect" :disabled="showPasswordModal" />
+      <Content :currentView="currentView" />
     </el-container>
   </div>
 </template>
@@ -13,62 +17,77 @@
 <script>
 import Sidebar from './components/Sidebar.vue';
 import Header from './components/Header.vue';
-
-const Dashboard = {
-  template: '<div><h1>面板内容</h1></div>'
-};
-const Settings = {
-  template: '<div><h1>配置页面</h1></div>'
-};
-const Plugins = {
-  template: '<div><h1>插件页面</h1></div>'
-};
-const Console = {
-  template: '<div><h1>控制台页面</h1></div>'
-};
+import PasswordModal from './components/PasswordModal.vue';
+import Content from './components/Content.vue';
 
 export default {
   components: {
     Sidebar,
-    Header
+    Header,
+    PasswordModal,
+    Content
   },
   data() {
     return {
-      currentView: Dashboard
+      currentView: null,
+      showPasswordModal: false,
+      correctPassword: null,
     };
   },
-  methods: {
-    refresh() {
-      alert('更新按钮点击');
-    },
-    modifyPassword() {
-      alert('修改密码按钮点击');
-    },
-    changeContent(index) {
-      switch (index) {
-        case '1':
-          this.currentView = Dashboard;
-          break;
-        case '2':
-          this.currentView = Settings;
-          break;
-        case '3':
-          this.currentView = Plugins;
-          break;
-        case '4':
-          this.currentView = Console;
-          break;
+  mounted() {
+    if (window.location.hostname === 'localhost') {
+      this.showPasswordModal = false;
+    } else {
+      if (this.correctPassword) {
+        this.showPasswordModal = true;
       }
+    }
+  },
+  watch: {
+    '$route.name': function(newName) {
+      switch (newName) {
+        case 'dashboard':
+          import('./views/DashboardView.vue').then((module) => {
+            this.currentView = module.default;
+          });
+          break;
+        case 'config':
+          import('./views/ConfigView.vue').then((module) => {
+            this.currentView = module.default;
+          });
+          break;
+        case 'modules':
+          import('./views/ModulesView.vue').then((module) => {
+            this.currentView = module.default;
+          });
+          break;
+        case 'logger':
+          import('./views/LoggerView.vue').then((module) => {
+            this.currentView = module.default;
+          });
+          break;
+        case 'setting':
+          import('./views/SettingView.vue').then((module) => {
+            this.currentView = module.default;
+          });
+          break;
+        case 'about':
+          import('./views/AboutView.vue').then((module) => {
+            this.currentView = module.default;
+          });
+          break;
+        default:
+          this.currentView = { template: '<div></div>' };
+      }
+    }
+  },
+  methods: {
+    handleMenuSelect(view) {
+      this.currentView = this.$options.components[`${view.charAt(0).toUpperCase() + view.slice(1)}View`];
+    },
+    toggleDarkMode(isDark) {
+      this.isDarkMode = isDark;
     }
   }
 };
 </script>
-
-<style scoped>
-#app {
-  height: 100vh;
-}
-.content {
-  padding: 20px;
-}
-</style>

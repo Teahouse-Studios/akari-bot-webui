@@ -1,19 +1,47 @@
 <template>
-  <el-header class="header">
+  <el-header class="header" :class="{ 'dark-mode': isDarkMode }">
     <div class="header-left">
-      <div class="logo">AstrBot</div>
+      <div class="logo">
+        <img src="@/assets/logo.png" alt="Logo" class="logo-image" />
+        <div class="logo-text">
+          <span class="akari-bot-text">AkariBot</span>
+          <span class="web-ui-text">WebUI</span>
+        </div>
+      </div>
     </div>
     <div class="header-right">
-      <el-button @click="$emit('refresh')">刷新</el-button>
-      <el-button @click="$emit('modifyPassword')">密码修改</el-button>
-      <el-button>GitHub</el-button>
+      <el-button class="help-button" @click="goToHelp">帮助文档</el-button>
+      <el-button class="theme-toggle" @click="toggleDarkMode">
+        <i :class="isDarkMode ? 'mdi mdi-weather-sunny' : 'mdi mdi-weather-night'"></i>
+      </el-button>
+      <el-button class="github-button" @click="goToGitHub">
+        <i class="fab fa-github"></i>
+      </el-button>
     </div>
   </el-header>
 </template>
 
 <script>
 export default {
-  name: 'AppHeader'
+  name: 'AppHeader',
+  data() {
+    return {
+      isDarkMode: false
+    };
+  },
+  methods: {
+    goToHelp() {
+      window.open('https://bot.teahouse.team', '_blank');
+    },
+    goToGitHub() {
+      window.open('https://github.com/Teahouse-Studios/akari-bot', '_blank');
+    },
+    toggleDarkMode() {
+      this.isDarkMode = !this.isDarkMode;
+      document.body.classList.toggle('dark-mode', this.isDarkMode);
+      this.$emit('toggle-dark-mode', this.isDarkMode);
+    }
+  }
 };
 </script>
 
@@ -23,19 +51,103 @@ export default {
   justify-content: space-between;
   align-items: center;
   padding: 0 20px;
-  background-color: #ffffff;
+  background-color: #f4f4f4;
   height: 60px;
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   z-index: 1000;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.header.dark-mode {
+  background-color: #333;
+  color: white;
+  border-bottom: 1px solid #1f1f1f;
+}
+
+.theme-toggle {
+  background: #333;
+  color: white;
+}
+
+body.dark-mode .theme-toggle {
+  background: white;
+  color: #333;
 }
 
 .logo {
   font-size: 22px;
   font-weight: bold;
-  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   padding: 20px 0;
+}
+
+.logo-image {
+  height: 40px;
+  width: auto;
+  margin-right: 8px;
+}
+
+.logo-text {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
+.akari-bot-text {
+  font-size: 18px;
+}
+
+.web-ui-text {
+  font-size: 12px;
+  color: #888;
+}
+
+.el-button {
+  background-color: white;
+  color: #333;
+  border-color: #e0e0e0;
+}
+
+.el-button:hover {
+  background-color: #eee;
+  color: #333;
+  border-color: #e0e0e0;
+}
+
+body.dark-mode .el-button {
+  background-color: #333;
+  color: white;
+  border-color: #4d4d4d;
+}
+
+body.dark-mode .el-button:hover {
+  background-color: #666;
+  color: white;
+  border-color: #4d4d4d;
+}
+
+.github-button {
+  background-color: #333333;
+  color: white;
+}
+
+.github-button:hover {
+  background-color: #666666;
+  color: white;
+}
+
+body.dark-mode .github-button {
+  background-color: #333333;
+  color: white;
+}
+
+body.dark-mode .github-button:hover {
+  background-color: #666666;
+  color: white;
 }
 </style>

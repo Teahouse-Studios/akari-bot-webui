@@ -1,21 +1,29 @@
 <template>
-  <el-aside width="200px" class="sidebar">
-    <el-menu :default-active="activeMenu" class="el-menu-vertical" @select="selectMenu">
-      <el-menu-item index="1">
-        <i class="el-icon-s-grid"></i>
+  <el-aside width="200px" class="sidebar" :class="{ 'dark-mode': isDarkMode }">
+    <el-menu :default-active="activeMenu" class="el-menu-vertical" @select="handleSelect">
+      <el-menu-item index="dashboard">
+        <i class="mdi mdi-view-dashboard"></i>
         <span>面板</span>
       </el-menu-item>
-      <el-menu-item index="2">
-        <i class="el-icon-setting"></i>
+      <el-menu-item index="config">
+        <i class="mdi mdi-cog"></i>
         <span>配置</span>
       </el-menu-item>
-      <el-menu-item index="3">
-        <i class="el-icon-s-tools"></i>
-        <span>插件</span>
+      <el-menu-item index="modules">
+        <i class="mdi mdi-puzzle"></i>
+        <span>模块</span>
       </el-menu-item>
-      <el-menu-item index="4">
-        <i class="el-icon-monitor"></i>
-        <span>控制台</span>
+      <el-menu-item index="logger">
+        <i class="mdi mdi-console"></i>
+        <span>日志</span>
+      </el-menu-item>
+      <el-menu-item index="setting">
+        <i class="mdi mdi-tune"></i>
+        <span>更多设置</span>
+      </el-menu-item>
+      <el-menu-item index="about">
+        <i class="mdi mdi-information-outline"></i>
+        <span>关于</span>
       </el-menu-item>
     </el-menu>
   </el-aside>
@@ -23,15 +31,32 @@
 
 <script>
 export default {
-  name: 'AppSideBar',
+  name: 'AppSidebar',
+  props: {
+    isDarkMode: Boolean, // 接收父组件的isDarkMode状态
+  },
   data() {
     return {
-      activeMenu: '1',
+      activeMenu: this.getActiveMenuFromRoute(),
     };
   },
   methods: {
-    selectMenu(index) {
-      this.$emit('menuSelected', index);
+    getActiveMenuFromRoute() {
+      const validPaths = ['dashboard', 'config', 'modules', 'logger', 'setting', 'about'];
+      const path = this.$route.name;
+      if (validPaths.includes(path)) {
+        return path;
+      }
+      return ''; // 如果路径无效，则没有任何菜单项选中
+    },
+    handleSelect(index) {
+      this.activeMenu = index;
+      this.$router.push({ name: index });
+    }
+  },
+  watch: {
+    '$route.name': function() {
+      this.activeMenu = this.getActiveMenuFromRoute();
     }
   }
 };
@@ -39,13 +64,60 @@ export default {
 
 <style scoped>
 .sidebar {
-  background-color: #f4f4f5;
-  height: 100%;
+  background-color: #f4f4f4;
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  top: 60px;
+  overflow-y: auto;
+  z-index: 999;
+  border-right: 1px solid #e0e0e0;
 }
-.logo {
-  font-size: 22px;
-  font-weight: bold;
-  text-align: center;
-  padding: 20px 0;
+
+body.dark-mode .sidebar {
+  background-color: #333;
+  border-right: 1px solid #1f1f1f;
 }
+
+.el-menu-vertical {
+  border-right: none !important;
+  background-color: #f4f4f4;
+}
+
+body.dark-mode .el-menu-vertical {
+  background-color: #333;
+}
+
+.el-menu-item {
+  display: flex;
+  align-items: center;
+  color: #333;
+  padding: 12px 20px;
+}
+
+.el-menu-item i {
+  margin-right: 20px;
+  font-size: 2ch;
+}
+
+.el-menu-item:hover {
+  background-color: #bbb;
+}
+
+body.dark-mode .el-menu-item:hover {
+  background-color: #444;
+}
+
+.el-menu-item.is-active {
+  color: #0091ff;
+}
+
+body.dark-mode .el-menu-item {
+  color: #ccc;
+}
+
+body.dark-mode .el-menu-item.is-active {
+  color: #0091ff;
+}
+
 </style>
