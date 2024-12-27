@@ -1,40 +1,8 @@
 <template>
-  <el-row :gutter="20" class="dashboard">
-    <!-- Time and Python Version -->
-    <el-col :span="8">
-      <el-card :body-style="{ padding: '20px' }">
-        <h3>Server Uptime: {{ serverInfo.timeDiff }}</h3>
-        <p>Python Version: {{ serverInfo.pythonVersion }}</p>
-      </el-card>
-    </el-col>
-
-    <!-- CPU Usage -->
-    <el-col :span="8">
-      <el-card :body-style="{ padding: '20px' }">
-        <h3>CPU Usage</h3>
-        <el-progress :percentage="serverInfo.cpuUsage" status="active"></el-progress>
-        <p>{{ serverInfo.cpuBrand }}</p>
-      </el-card>
-    </el-col>
-
-    <!-- Memory & Swap -->
-    <el-col :span="8">
-      <el-card :body-style="{ padding: '20px' }">
-        <h3>Memory</h3>
-        <p>RAM: {{ serverInfo.ram }} MB</p>
-        <p>Swap: {{ serverInfo.swap }} MB</p>
-      </el-card>
-    </el-col>
-
-    <!-- Disk Usage -->
-    <el-col :span="8">
-      <el-card :body-style="{ padding: '20px' }">
-        <h3>Disk Usage</h3>
-        <p>Used: {{ serverInfo.disk }} GB / {{ serverInfo.diskTotal }} GB</p>
-        <el-progress :percentage="(serverInfo.disk / serverInfo.diskTotal) * 100" status="active"></el-progress>
-      </el-card>
-    </el-col>
-  </el-row>
+  <div>
+    <h1>配置</h1>
+    <p>这是配置页面。</p>
+  </div>
 </template>
 
 <script>
@@ -66,10 +34,10 @@ export default {
         if (response.data.message === 'Success') {
           this.serverInfo = response.data;
         } else {
-          console.error('Failed to fetch server info');
+          this.$message.error('无法获取信息');
         }
       } catch (error) {
-        console.error('Error fetching server info:', error);
+        console.error('无法获取信息', error);
       }
     }
   }

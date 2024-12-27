@@ -36,12 +36,16 @@ export default {
     };
   },
   mounted() {
-    // 页面加载时检查本地存储中是否已记住设备
-    const isDeviceRemembered = localStorage.getItem('rememberDevice');
-    if (isDeviceRemembered === 'true') {
-      this.showPasswordModal = false; // 如果记住设备，跳过密码弹窗
+    // 如果是localhost，跳过密码弹窗
+    if (window.location.hostname === 'localhost') {
+      this.showPasswordModal = false;
     } else {
-      this.checkPassword();  // 如果未记住设备，检查密码
+      const isDeviceRemembered = localStorage.getItem('rememberDevice');
+      if (isDeviceRemembered === 'true') {
+        this.showPasswordModal = false; // 如果记住设备，跳过密码弹窗
+      } else {
+        this.checkPassword();  // 如果未记住设备，检查密码
+      }
     }
   },
   watch: {
@@ -110,7 +114,7 @@ export default {
           this.$message.error('请求失败，请稍后再试');
         }
       }
-    },
+    }
   }
 };
 </script>

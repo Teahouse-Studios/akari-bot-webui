@@ -11,11 +11,8 @@
     </div>
     <div class="header-right">
       <el-button class="help-button" @click="goToHelp">帮助文档</el-button>
-      <el-button class="theme-toggle" @click="toggleDarkMode">
+      <el-button class="theme-toggle-button" @click="toggleDarkMode">
         <i :class="isDarkMode ? 'mdi mdi-weather-sunny' : 'mdi mdi-weather-night'"></i>
-      </el-button>
-      <el-button class="github-button" @click="goToGitHub">
-        <i class="fab fa-github"></i>
       </el-button>
     </div>
   </el-header>
@@ -129,6 +126,7 @@ body.dark-mode .theme-toggle {
   background-color: white;
   color: #333;
   border-color: #e0e0e0;
+  font-size: 14px;
 }
 
 .el-button:hover {
@@ -149,22 +147,22 @@ body.dark-mode .el-button:hover {
   border-color: #4d4d4d;
 }
 
-.github-button {
+.theme-toggle-button {
   background-color: #333;
   color: white;
 }
 
-.github-button:hover {
+.theme-toggle-button:hover {
   background-color: #666;
   color: white;
 }
 
-body.dark-mode .github-button {
+body.dark-mode .theme-toggle-button {
   background-color: #eeeeee;
   color: #333;
 }
 
-body.dark-mode .github-button:hover {
+body.dark-mode .theme-toggle-button:hover {
   background-color: #b0b0b0;
   color: #333;
 }
