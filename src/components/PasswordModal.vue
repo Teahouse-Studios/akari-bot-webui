@@ -21,9 +21,7 @@
 import axios from 'axios';
 
 export default {
-  props: {
-    isDarkMode: Boolean
-  },
+  emits: ['success'],  // 显式声明事件
   data() {
     return {
       password: '',

@@ -21,6 +21,7 @@
 <script>
 export default {
   name: 'AppHeader',
+  emits: ['toggle-dark-mode'],  // 显式声明事件
   data() {
     return {
       isDarkMode: false

@@ -1,14 +1,14 @@
 <template>
-  <div id="app" :class="{'dark-mode': isDarkMode}">
-    <Header @refresh="refresh" @modifyPassword="modifyPassword" />
+  <div id="app">
+    <AppHeader @refresh="refresh" @modifyPassword="modifyPassword" />
     <PasswordModal 
       v-if="showPasswordModal"
       @success="showPasswordModal = false" />
     <el-container 
       style="margin-top: 60px; display: flex;" 
       :class="{'blurred': showPasswordModal}">
-      <Sidebar @menuSelect="handleMenuSelect" :disabled="showPasswordModal" />
-      <Content v-if="!showPasswordModal" :currentView="currentView" />
+      <AppSidebar @menuSelect="handleMenuSelect" :disabled="showPasswordModal" />
+      <AppContent v-if="!showPasswordModal" :currentView="currentView" />
       <div class="content-footer"></div>
     </el-container>
   </div>
@@ -16,22 +16,22 @@
 
 <script>
 import axios from 'axios';
-import Sidebar from './components/Sidebar.vue';
-import Header from './components/Header.vue';
+import AppSidebar from './components/Sidebar.vue';
+import AppHeader from './components/Header.vue';
 import PasswordModal from './components/PasswordModal.vue';
-import Content from './components/Content.vue';
+import AppContent from './components/Content.vue';
 
 export default {
   components: {
-    Sidebar,
-    Header,
+    AppSidebar,
+    AppHeader,
     PasswordModal,
-    Content
+    AppContent
   },
   data() {
     return {
       currentView: null,
-      showPasswordModal: true,
+      showPasswordModal: false,
       isDarkMode: false,  // 如果没有设置过暗黑模式，添加默认值
     };
   },

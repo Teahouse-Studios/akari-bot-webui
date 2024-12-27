@@ -27,9 +27,8 @@ export default {
     }
   },
   methods: {
-    fetchData(view) {
+    fetchData() {
       // 这里是获取视图数据的逻辑，可以根据具体视图发起不同的 API 请求
-      console.log('Fetching data for:', view);
     }
   }
 };

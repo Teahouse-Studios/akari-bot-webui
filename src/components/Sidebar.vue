@@ -1,5 +1,5 @@
 <template>
-  <el-aside width="200px" class="sidebar" :class="{ 'dark-mode': isDarkMode }">
+  <el-aside width="200px" class="sidebar">
     <el-menu :default-active="activeMenu" class="el-menu-vertical" @select="handleSelect">
       <el-menu-item index="dashboard">
         <i class="mdi mdi-view-dashboard"></i>
@@ -32,9 +32,6 @@
 <script>
 export default {
   name: 'AppSidebar',
-  props: {
-    isDarkMode: Boolean, // 接收父组件的isDarkMode状态
-  },
   data() {
     return {
       activeMenu: this.getActiveMenuFromRoute(),

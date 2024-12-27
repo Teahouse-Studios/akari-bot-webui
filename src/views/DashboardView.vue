@@ -1,7 +1,7 @@
 <template>
   <div>
-    <h1>配置</h1>
-    <p>这是配置页面。</p>
+    <h1>面板</h1>
+    <p>这是面板页面。</p>
   </div>
 </template>
 
