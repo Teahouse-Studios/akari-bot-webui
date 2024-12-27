@@ -19,6 +19,7 @@
 
 <script>
 import axios from 'axios';
+import Cookies from 'js-cookie'; // 引入 js-cookie
 
 export default {
   emits: ['success'],  // 显式声明事件
@@ -30,10 +31,10 @@ export default {
     };
   },
   created() {
-    // 在页面加载时检查本地存储中是否有登录状态
-    const isDeviceRemembered = localStorage.getItem('rememberDevice');
-    if (isDeviceRemembered === 'true') {
-      this.$emit('success'); // 如果记住设备为 true，则直接触发登录成功
+    // 检查 cookies 中是否存在有效的登录状态
+    const deviceToken = Cookies.get('deviceToken');
+    if (deviceToken) {
+      this.$emit('success'); // 如果 cookies 中有有效的 token，直接触发登录成功
     }
   },
   methods: {
@@ -42,19 +43,16 @@ export default {
       this.loading = true;  // 开始加载
       try {
         // 发送 POST 请求验证密码
-        const response = await axios.post('http://127.0.0.1:5000/auth', { password: this.password });
+        const response = await axios.post('http://127.0.0.1:5000/auth', { password: this.password, remember: this.rememberDevice });
 
         // 如果返回状态是 200，认为密码正确
         if (response.status === 200) {
           this.$message.success('登录成功');
           this.$emit('success');  // 密码正确，触发 success 事件，关闭密码框
           
-          // 如果勾选了“记住设备”，则将该状态存入 localStorage
-          if (this.rememberDevice) {
-            localStorage.setItem('rememberDevice', 'true');
-          } else {
-            localStorage.removeItem('rememberDevice');  // 如果没有勾选，清除本地存储中的记住设备状态
-          }
+          // 根据勾选“记住设备”的状态设置 cookies 过期时间
+          const expiresIn = this.rememberDevice ? 365 : 1; // 记住设备为 true 则有效期 1 年，否则为 1 天
+          Cookies.set('deviceToken', response.data.deviceToken, { expires: expiresIn });
         } else {
           this.$message.error('请求失败，请稍后再试');  // 设置错误信息
         }

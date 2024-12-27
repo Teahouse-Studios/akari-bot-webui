@@ -20,6 +20,7 @@ import AppSidebar from './components/Sidebar.vue';
 import AppHeader from './components/Header.vue';
 import PasswordModal from './components/PasswordModal.vue';
 import AppContent from './components/Content.vue';
+import Cookies from 'js-cookie'; // 引入 js-cookie
 
 export default {
   components: {
@@ -36,16 +37,12 @@ export default {
     };
   },
   mounted() {
-    // 如果是localhost，跳过密码弹窗
-    if (window.location.hostname === 'localhost') {
-      this.showPasswordModal = false;
+    // 检查 cookies 中是否存在有效的 deviceToken
+    const deviceToken = Cookies.get('deviceToken');
+    if (deviceToken) {
+      this.showPasswordModal = false; // 如果有有效的 token，则跳过密码弹窗
     } else {
-      const isDeviceRemembered = localStorage.getItem('rememberDevice');
-      if (isDeviceRemembered === 'true') {
-        this.showPasswordModal = false; // 如果记住设备，跳过密码弹窗
-      } else {
-        this.checkPassword();  // 如果未记住设备，检查密码
-      }
+      this.checkPassword();  // 否则弹出密码窗口
     }
   },
   watch: {
@@ -95,10 +92,10 @@ export default {
     },
     async checkPassword() {
       try {
-        // 发送请求前检查设备是否已记住
-        const isDeviceRemembered = localStorage.getItem('rememberDevice');
-        if (isDeviceRemembered === 'true') {
-          this.showPasswordModal = false;  // 如果设备已记住，直接跳过密码弹窗
+        // 发送请求前检查 cookies 中是否有有效的 token
+        const deviceToken = Cookies.get('deviceToken');
+        if (deviceToken) {
+          this.showPasswordModal = false;  // 如果 cookies 中有有效的 token，跳过密码弹窗
           return;
         }
 
