@@ -29,6 +29,18 @@ export default {
       isDarkMode: false
     };
   },
+  mounted() {
+    // 页面加载时从 localStorage 获取主题设置
+    const savedTheme = localStorage.getItem('isDarkMode');
+    if (savedTheme !== null) {
+      this.isDarkMode = JSON.parse(savedTheme);
+    }
+
+    // 根据当前主题设置更新 body 的 class
+    if (this.isDarkMode) {
+      document.body.classList.add('dark-mode');
+    }
+  },
   methods: {
     goToHelp() {
       window.open('https://bot.teahouse.team', '_blank');
@@ -38,7 +50,13 @@ export default {
     },
     toggleDarkMode() {
       this.isDarkMode = !this.isDarkMode;
+      // 切换 dark-mode 类
       document.body.classList.toggle('dark-mode', this.isDarkMode);
+
+      // 保存主题设置到 localStorage
+      localStorage.setItem('isDarkMode', JSON.stringify(this.isDarkMode));
+
+      // 通知父组件或其他需要的地方
       this.$emit('toggle-dark-mode', this.isDarkMode);
     }
   }
@@ -57,7 +75,7 @@ export default {
   top: 0;
   left: 0;
   right: 0;
-  z-index: 1000;
+  z-index: 100;
   border-bottom: 1px solid #e0e0e0;
 }
 

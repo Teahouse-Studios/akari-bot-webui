@@ -70,7 +70,7 @@ export default {
   bottom: 0;
   top: 60px;
   overflow-y: auto;
-  z-index: 999;
+  z-index: 99;
   border-right: 1px solid #e0e0e0;
 }
 

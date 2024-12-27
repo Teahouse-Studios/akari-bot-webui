@@ -2,19 +2,20 @@
   <div id="app" :class="{'dark-mode': isDarkMode}">
     <Header @refresh="refresh" @modifyPassword="modifyPassword" />
     <PasswordModal 
-      v-if="showPasswordModal" 
-      :correctPassword="correctPassword" 
+      v-if="showPasswordModal"
       @success="showPasswordModal = false" />
     <el-container 
       style="margin-top: 60px; display: flex;" 
       :class="{'blurred': showPasswordModal}">
       <Sidebar @menuSelect="handleMenuSelect" :disabled="showPasswordModal" />
-      <Content :currentView="currentView" />
+      <Content v-if="!showPasswordModal" :currentView="currentView" />
+      <div class="content-footer"></div>
     </el-container>
   </div>
 </template>
 
 <script>
+import axios from 'axios';
 import Sidebar from './components/Sidebar.vue';
 import Header from './components/Header.vue';
 import PasswordModal from './components/PasswordModal.vue';
@@ -30,17 +31,17 @@ export default {
   data() {
     return {
       currentView: null,
-      showPasswordModal: false,
-      correctPassword: null,
+      showPasswordModal: true,
+      isDarkMode: false,  // 如果没有设置过暗黑模式，添加默认值
     };
   },
   mounted() {
-    if (window.location.hostname === 'localhost') {
-      this.showPasswordModal = false;
+    // 页面加载时检查本地存储中是否已记住设备
+    const isDeviceRemembered = localStorage.getItem('rememberDevice');
+    if (isDeviceRemembered === 'true') {
+      this.showPasswordModal = false; // 如果记住设备，跳过密码弹窗
     } else {
-      if (this.correctPassword) {
-        this.showPasswordModal = true;
-      }
+      this.checkPassword();  // 如果未记住设备，检查密码
     }
   },
   watch: {
@@ -87,7 +88,46 @@ export default {
     },
     toggleDarkMode(isDark) {
       this.isDarkMode = isDark;
-    }
+    },
+    async checkPassword() {
+      try {
+        // 发送请求前检查设备是否已记住
+        const isDeviceRemembered = localStorage.getItem('rememberDevice');
+        if (isDeviceRemembered === 'true') {
+          this.showPasswordModal = false;  // 如果设备已记住，直接跳过密码弹窗
+          return;
+        }
+
+        // 发送空密码请求
+        const response = await axios.post('http://127.0.0.1:5000/auth', { password: '' });
+        if (response.status === 200) {
+          this.showPasswordModal = false;  // 如果返回200，认为是空密码，直接进入
+        }
+      } catch (error) {
+        if (error.response && error.response.status === 401) {
+          this.showPasswordModal = true;  // 如果返回 401，弹出密码窗口
+        } else {
+          this.$message.error('请求失败，请稍后再试');
+        }
+      }
+    },
   }
 };
 </script>
+
+<style>
+.content-footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: white;
+    z-index: -1;
+  }
+  
+.dark-mode .content-footer {
+    background-color: #181818;
+  }
+  
+</style>
