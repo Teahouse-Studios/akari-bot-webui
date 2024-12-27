@@ -1,10 +1,10 @@
-import { createRouter, createWebHistory } from 'vue-router';
-import DashboardView from './views/DashboardView.vue';
-import ConfigView from './views/ConfigView.vue';
-import ModulesView from './views/ModulesView.vue';
-import LoggerView from './views/LoggerView.vue';
-import SettingView from './views/SettingView.vue';
-import AboutView from './views/AboutView.vue';
+import { createRouter, createWebHistory } from 'vue-router'
+import DashboardView from './views/DashboardView.vue'
+import ConfigView from './views/ConfigView.vue'
+import ModulesView from './views/ModulesView.vue'
+import LoggerView from './views/LoggerView.vue'
+import SettingView from './views/SettingView.vue'
+import AboutView from './views/AboutView.vue'
 
 const routes = [
   {
@@ -43,21 +43,21 @@ const routes = [
     name: 'notFound',
     component: { template: '<div></div>' }
   }
-];
+]
 
 const router = createRouter({
   history: createWebHistory(),
   routes
-});
+})
 
 // 在路由守卫中处理无效的路径
 router.beforeEach((to, from, next) => {
-  const validPaths = ['dashboard', 'config', 'modules', 'logger', 'setting', 'about'];
+  const validPaths = ['dashboard', 'config', 'modules', 'logger', 'setting', 'about']
   if (validPaths.includes(to.name)) {
-    next();
+    next()
   } else {
-    next({ name: 'notFound' }); // 导航到空白视图
+    next({ name: 'notFound' }) // 导航到空白视图
   }
-});
+})
 
-export default router;
+export default router
