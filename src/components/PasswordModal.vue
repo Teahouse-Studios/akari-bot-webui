@@ -18,7 +18,7 @@
 </template>
 
 <script>
-import axios from 'axios';
+import axios from '@/axios';
 import Cookies from 'js-cookie'; // 引入 js-cookie
 
 export default {
@@ -43,12 +43,11 @@ export default {
       this.loading = true;  // 开始加载
       try {
         // 发送 POST 请求验证密码
-        const response = await axios.post('http://127.0.0.1:5000/auth', { password: this.password, remember: this.rememberDevice });
+        const response = await axios.post('/auth', { password: this.password, remember: this.rememberDevice });
 
         // 如果返回状态是 200，认为密码正确
         if (response.status === 200) {
-          this.$message.success('登录成功');
-          this.$emit('success');  // 密码正确，触发 success 事件，关闭密码框
+          location.reload();  // 密码正确，刷新页面
           
           // 根据勾选“记住设备”的状态设置 cookies 过期时间
           const expiresIn = this.rememberDevice ? 365 : 1; // 记住设备为 true 则有效期 1 年，否则为 1 天

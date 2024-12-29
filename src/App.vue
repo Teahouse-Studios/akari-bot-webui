@@ -15,7 +15,7 @@
 </template>
 
 <script>
-import axios from 'axios';
+import axios from '@/axios';
 import AppSidebar from './components/Sidebar.vue';
 import AppHeader from './components/Header.vue';
 import PasswordModal from './components/PasswordModal.vue';
@@ -32,7 +32,7 @@ export default {
   data() {
     return {
       currentView: null,
-      showPasswordModal: false,
+      showPasswordModal: null,
       isDarkMode: false,  // 如果没有设置过暗黑模式，添加默认值
     };
   },
@@ -100,7 +100,7 @@ export default {
         }
 
         // 发送空密码请求
-        const response = await axios.post('http://127.0.0.1:5000/auth', { password: '' });
+        const response = await axios.post('/auth', { password: '' });
         if (response.status === 200) {
           this.showPasswordModal = false;  // 如果返回200，认为是空密码，直接进入
         }
