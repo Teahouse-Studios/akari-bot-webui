@@ -130,5 +130,4 @@ export default {
 .dark-mode .content-footer {
     background-color: #181818;
   }
-  
 </style>

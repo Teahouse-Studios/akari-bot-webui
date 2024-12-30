@@ -149,7 +149,7 @@ body.dark-mode .el-button:hover {
 }
 
 .theme-toggle-button {
-  background-color: #333;
+  background-color: #2e2e2e;
   color: white;
 }
 
@@ -159,7 +159,7 @@ body.dark-mode .el-button:hover {
 }
 
 body.dark-mode .theme-toggle-button {
-  background-color: #eeeeee;
+  background-color: #eee;
   color: #333;
 }
 
