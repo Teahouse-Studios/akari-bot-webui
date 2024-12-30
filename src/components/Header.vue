@@ -123,31 +123,6 @@ body.dark-mode .theme-toggle {
   color: #888;
 }
 
-.el-button {
-  background-color: white;
-  color: #333;
-  border-color: #e0e0e0;
-  font-size: 14px;
-}
-
-.el-button:hover {
-  background-color: #eee;
-  color: #333;
-  border-color: #e0e0e0;
-}
-
-body.dark-mode .el-button {
-  background-color: #333;
-  color: white;
-  border-color: #4d4d4d;
-}
-
-body.dark-mode .el-button:hover {
-  background-color: #666;
-  color: white;
-  border-color: #4d4d4d;
-}
-
 .theme-toggle-button {
   background-color: #2e2e2e;
   color: white;

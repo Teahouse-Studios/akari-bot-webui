@@ -1,6 +1,9 @@
 <template>
   <el-aside width="200px" class="sidebar">
-    <el-menu :default-active="activeMenu" class="el-menu-vertical" @select="handleSelect">
+    <el-menu 
+    :default-active="activeMenu"
+    class="sidebar-menu"
+    @select="handleSelect">
       <el-menu-item index="dashboard">
         <i class="mdi mdi-view-dashboard"></i>
         <span>面板</span>
@@ -76,12 +79,12 @@ body.dark-mode .sidebar {
   border-right: 1px solid #1f1f1f;
 }
 
-.el-menu-vertical {
+.sidebar-menu {
   border-right: none !important;
   background-color: #f4f4f4;
 }
 
-body.dark-mode .el-menu-vertical {
+body.dark-mode .sidebar-menu {
   background-color: #333;
 }
 

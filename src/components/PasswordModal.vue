@@ -98,26 +98,4 @@ body.dark-mode .password-modal {
   background: #333;
   color: white;
 }
-
-.el-input {
-  width: 100%; /* 让输入框宽度填满容器 */
-}
-
-.el-button {
-  align-self: center; /* 按钮居中 */
-  background-color: #0091ff;
-  border: none;
-}
-
-.el-checkbox {
-  color: #333;
-}
-
-body.dark-mode .el-checkbox {
-  color: white;
-}
-
-.el-checkbox.is-checked {
-  color: #0091ff;
-}
 </style>
