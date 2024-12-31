@@ -4,8 +4,8 @@
     <PasswordModal v-if="showPasswordModal" @success="showPasswordModal = false" />
     <el-container :style="{ marginTop: '60px' }">
       <div v-if="isSidebarVisible && windowWidth <= 1024" class="sidebar-overlay" @click="closeSidebar"></div>
-      <AppSidebar v-if="isSidebarVisible" @menuSelect="handleMenuSelect" class="sidebar" />
-      <el-main :class="['content', { 'content-with-sidebar': isSidebarVisible }]" :style="{ marginLeft: sidebarMarginLeft }">
+      <AppSidebar :class="['sidebar', { show: isSidebarVisible }]" @menuSelect="handleMenuSelect" />
+      <el-main :class="['content', { 'content-with-sidebar': isSidebarVisible, 'show-sidebar': isSidebarVisible && windowWidth <= 1024 }]" :style="{ marginLeft: sidebarMarginLeft }">
         <component :is="currentView" v-if="!showPasswordModal" :showPasswordModal="showPasswordModal"></component>
         <div class="content-footer"></div>
       </el-main>
@@ -209,26 +209,23 @@ body.dark-mode .content-footer {
   .sidebar {
     position: fixed; /* Sidebar 固定在屏幕左侧 */
     top: 60px;
-    left: -200px; /* 初始状态，Sidebar 在屏幕外 */
+    left: 0; /* 初始状态，Sidebar 在屏幕外 */
     bottom: 0;
     width: 200px;
     background-color: #f4f4f4;
     z-index: 1000;
     box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
+    transform: translateX(-200px); /* 初始状态，Sidebar 在屏幕外 */
     transition: transform 0.3s ease-in-out;
   }
 
   /* 当 Sidebar 被展示时，向右平移 200px */
   .sidebar.show {
-    transform: translateX(200px);
+    transform: translateX(0px);
   }
 
   .content {
     transition: transform 0.3s ease-in-out;
-  }
-
-  .content.show-sidebar {
-    transform: translateX(200px); /* 当 Sidebar 展开时，Content 向右偏移 */
   }
 
   .content-with-sidebar {
