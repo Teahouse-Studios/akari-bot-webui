@@ -3,15 +3,15 @@
     <el-col :span="10" :xs="24">
       <el-card :body-style="{ height: '180px' }">
         <h3><i class="mdi mdi-robot-outline"></i> 机器人</h3>
-        <p><strong class="data-title">Python 版本</strong> <span class="data-text">{{ bot.python_version || '-' }}</span></p>
-        <p><strong class="data-title">机器人版本</strong> <span class="data-text">{{ bot.version ? bot.version.slice(0, 6) : '-' }}</span></p>
+        <p><strong class="data-title">Python 版本</strong><span class="data-text">{{ bot.python_version || '-' }}</span></p>
+        <p><strong class="data-title">机器人版本</strong><span class="data-text">{{ bot.version ? bot.version.slice(0, 6) : '-' }}</span></p>
         <p><strong class="data-title">运行时间</strong></p> 
         <p><span class="data-text">{{ formatRunningTime(bot.running_time || 0) }}</span></p>
       </el-card>
       <el-card :body-style="{ height: '180px' }">
         <h3><i class="mdi mdi-laptop"></i> 系统</h3>
-        <p><strong class="data-title">架构</strong> <span class="data-text">{{ os.system || '-' }} {{ os.machine || '' }}</span></p>
-        <p><strong class="data-title">版本</strong> <span class="data-text">{{ os.version || '-' }}</span></p>
+        <p><strong class="data-title">架构</strong><span class="data-text">{{ os.system || '-' }} {{ os.machine || '' }}</span></p>
+        <p><strong class="data-title">版本</strong><span class="data-text">{{ os.version || '-' }}</span></p>
         <p><strong class="data-title">启动时间</strong></p>
         <p> <span class="data-text">{{ formatTime(os.boot_time || 0) }}</span></p>
       </el-card>
@@ -170,6 +170,10 @@ export default {
   margin-bottom: 20px;
   line-height: 1;
   white-space: nowrap;
+}
+
+.data-title {
+  margin-right: 3ex;
 }
 
 .data-text {
