@@ -230,6 +230,6 @@ body.dark-mode .memory-dashboards ::v-deep(.el-progress__text) {
 
 .el-progress--dashboard
 {
-  margin: 10px;
+  margin: 5px;
 }
 </style>
