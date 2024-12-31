@@ -1,7 +1,7 @@
 <template>
   <div class="overlay">
     <div class="password-modal">
-      <span>请输入独立密码</span>
+      <span>登录以继续</span>
       <el-input v-model="password" placeholder="输入密码" show-password @keyup.enter="checkPassword"></el-input>
       <!-- 记住设备的复选框 -->
       <el-checkbox v-model="rememberDevice">记住登录状态</el-checkbox>

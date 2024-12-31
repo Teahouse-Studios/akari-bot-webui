@@ -7,8 +7,8 @@
       <AppSidebar :class="['sidebar', { show: isSidebarVisible }]" @menuSelect="handleMenuSelect" />
       <el-main :class="['content', { 'content-with-sidebar': isSidebarVisible, 'show-sidebar': isSidebarVisible && windowWidth <= 1024 }]" :style="{ marginLeft: sidebarMarginLeft }">
         <component :is="currentView" v-if="!showPasswordModal" :showPasswordModal="showPasswordModal"></component>
-        <div class="content-footer"></div>
       </el-main>
+      <div class="content-footer"></div>
     </el-container>
   </div>
 </template>
@@ -186,7 +186,7 @@ body.dark-mode .content-footer {
   bottom: 0;
   width: 200px;
   background-color: #f4f4f4;
-  z-index: 1000;
+  z-index: 100;
   transition: transform 0.3s ease-in-out;
 }
 
@@ -213,7 +213,7 @@ body.dark-mode .content-footer {
     bottom: 0;
     width: 200px;
     background-color: #f4f4f4;
-    z-index: 1000;
+    z-index: 100;
     box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
     transform: translateX(-200px); /* 初始状态，Sidebar 在屏幕外 */
     transition: transform 0.3s ease-in-out;
