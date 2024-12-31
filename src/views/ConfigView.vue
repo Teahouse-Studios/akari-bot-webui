@@ -1,6 +1,5 @@
 <template>
   <div class="editor-container">
-    <h1>配置</h1>
     <el-tabs v-model="activeTab" @tab-click="handleTabClick">
       <el-tab-pane v-for="file in configFiles" :key="file" :label="file" :name="file"></el-tab-pane>
     </el-tabs>

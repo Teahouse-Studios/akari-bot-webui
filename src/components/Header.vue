@@ -2,7 +2,11 @@
   <el-header class="header" :class="{ 'dark-mode': isDarkMode }">
     <div class="header-left">
       <div class="logo">
-        <el-button class="menu-button" @click="switchSidebar">
+        <el-button 
+          class="menu-button" 
+          @click="switchSidebar"
+          v-if="screenWidth < 1024"
+        >
           <i class="mdi mdi-menu"></i>
         </el-button>
         <img src="@/assets/logo.png" alt="Logo" class="logo-image" />
@@ -24,10 +28,11 @@
 <script>
 export default {
   name: 'AppHeader',
-  emits: ['toggle-dark-mode', 'toggle-sidebar'],  // 添加 toggle-sidebar 事件
+  emits: ['toggle-dark-mode', 'toggle-sidebar'],
   data() {
     return {
-      isDarkMode: false
+      isDarkMode: false,
+      screenWidth: window.innerWidth  // 初始屏幕宽度
     };
   },
   mounted() {
@@ -38,8 +43,19 @@ export default {
     if (this.isDarkMode) {
       document.body.classList.add('dark-mode');
     }
+
+    // 监听窗口大小变化
+    window.addEventListener('resize', this.updateScreenWidth);
+  },
+  beforeUnmount() {
+    // 组件销毁时移除事件监听
+    window.removeEventListener('resize', this.updateScreenWidth);
   },
   methods: {
+    // 更新屏幕宽度的方法
+    updateScreenWidth() {
+      this.screenWidth = window.innerWidth;
+    },
     goToHelp() {
       window.open('https://bot.teahouse.team', '_blank');
     },
@@ -49,9 +65,8 @@ export default {
       localStorage.setItem('isDarkMode', JSON.stringify(this.isDarkMode));
       this.$emit('toggle-dark-mode', this.isDarkMode);
     },
-    // 切换 Sidebar 可见性的方法
     switchSidebar() {
-      this.$emit('toggle-sidebar');  // 通知父组件 Sidebar 状态变化
+      this.$emit('toggle-sidebar');
     }
   }
 };
@@ -80,31 +95,29 @@ export default {
 }
 
 .menu-button {
-  background: transparent; /* 设置背景为透明 */
-  border: none; /* 移除按钮的边框 */
-  padding: 0; /* 去掉内边距，按钮会更紧凑 */
-  font-size: 24px; /* 设置图标的大小 */
-  color: inherit; /* 继承父元素的颜色（例如文字颜色） */
-  cursor: pointer; /* 设置鼠标悬停时的指针效果 */
-  transition: color 0.3s ease; /* 添加平滑过渡效果 */
+  background: transparent;
+  border: none;
+  padding: 0;
+  font-size: 24px;
+  color: inherit;
+  cursor: pointer;
+  transition: color 0.3s ease;
 }
 
 .menu-button i {
-  font-size: 28px; /* 图标的大小调整 */
+  font-size: 28px;
 }
 
 .menu-button:hover {
   background-color: #bbb;
-  color: #555; /* 鼠标悬停时改变颜色 */
+  color: #555;
 }
 
 body.dark-mode .menu-button:hover {
   background-color: #444;
-  color: #aaa; /* 鼠标悬停时改变颜色 */
+  color: #aaa;
 }
 
-
-/* 主题切换按钮的样式 */
 .theme-toggle-button {
   background-color: #2e2e2e;
   color: white;
@@ -165,4 +178,3 @@ body.dark-mode .theme-toggle-button:hover {
   color: #333;
 }
 </style>
-

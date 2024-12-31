@@ -3,9 +3,9 @@
     <AppHeader @refresh="refresh" @modifyPassword="modifyPassword" @toggle-sidebar="toggleSidebar" />
     <PasswordModal v-if="showPasswordModal" @success="showPasswordModal = false" />
     <el-container :style="{ marginTop: '60px' }">
+      <div v-if="isSidebarVisible && windowWidth <= 1024" class="sidebar-overlay" @click="closeSidebar"></div>
       <AppSidebar v-if="isSidebarVisible" @menuSelect="handleMenuSelect" class="sidebar" />
       <el-main :class="['content', { 'content-with-sidebar': isSidebarVisible }]" :style="{ marginLeft: sidebarMarginLeft }">
-        <!-- Only load the component if showPasswordModal is false -->
         <component :is="currentView" v-if="!showPasswordModal" :showPasswordModal="showPasswordModal"></component>
         <div class="content-footer"></div>
       </el-main>
@@ -32,15 +32,22 @@ export default {
       showPasswordModal: true,
       isDarkMode: false,
       isSidebarVisible: true,  // 控制 Sidebar 是否显示
+      windowWidth: window.innerWidth  // 存储当前屏幕宽度
     };
   },
   computed: {
     // 动态计算 content 的 margin-left
     sidebarMarginLeft() {
       return this.isSidebarVisible ? '200px' : '0';
-    }
+    },
   },
   mounted() {
+    // 在 mounted 时，初始化 Sidebar 的状态
+    this.updateSidebarVisibility();
+    
+    // 监听窗口大小变化，更新状态
+    window.addEventListener('resize', this.updateSidebarVisibility);
+
     const deviceToken = Cookies.get('deviceToken');
     if (deviceToken) {
       this.showPasswordModal = false;
@@ -87,9 +94,25 @@ export default {
       }
     }
   },
+  beforeUnmount() {
+    // 销毁时移除事件监听
+    window.removeEventListener('resize', this.updateSidebarVisibility);
+  },
   methods: {
     toggleSidebar() {
-      this.isSidebarVisible = !this.isSidebarVisible;  // 切换 Sidebar 显示状态
+      // 如果是大屏幕，强制显示 Sidebar
+      if (this.windowWidth <= 1024) {
+        this.isSidebarVisible = !this.isSidebarVisible;
+      }
+    },
+    updateSidebarVisibility() {
+      this.windowWidth = window.innerWidth;
+      // 在大屏幕下强制显示 Sidebar
+      if (this.windowWidth > 1024) {
+        this.isSidebarVisible = true;
+      } else {
+        this.isSidebarVisible = false;
+      }
     },
     handleMenuSelect(view) {
       this.currentView = this.$options.components[`${view.charAt(0).toUpperCase() + view.slice(1)}View`];
@@ -115,6 +138,10 @@ export default {
           this.$message.error('请求失败，请稍后再试');
         }
       }
+    },
+    // 关闭 Sidebar
+    closeSidebar() {
+      this.isSidebarVisible = false;
     }
   }
 };
@@ -151,36 +178,82 @@ body.dark-mode .content-footer {
   background-color: #181818;
 }
 
-/* 媒体查询：小屏幕下隐藏 Sidebar 并覆盖 Content */
+/* 默认状态下，Sidebar 应该在大屏幕时显示 */
+.sidebar {
+  position: fixed; /* Sidebar 固定在屏幕左侧 */
+  top: 60px;
+  left: 0; /* 强制显示 Sidebar */
+  bottom: 0;
+  width: 200px;
+  background-color: #f4f4f4;
+  z-index: 1000;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
+  transition: transform 0.3s ease-in-out;
+}
+
+.content-with-sidebar {
+  margin-left: 200px; /* 强制显示 Sidebar 时，内容左移 */
+}
+
+.sidebar-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5); /* 半透明黑色背景 */
+  z-index: 99; /* 位于 Sidebar 上面，保证遮罩层优先展示 */
+}
+
+/* 小屏幕下，Sidebar 默认隐藏 */
 @media (max-width: 1024px) {
-  /* 默认状态下，Sidebar 隐藏 */
   .sidebar {
     position: fixed; /* Sidebar 固定在屏幕左侧 */
     top: 60px;
-    left: -200px; /* 初始状态 Sidebar 在屏幕外 */
+    left: -200px; /* 初始状态，Sidebar 在屏幕外 */
     bottom: 0;
     width: 200px;
-    background-color: #f4f4f4;  /* 保持与大屏幕相同的背景 */
+    background-color: #f4f4f4;
     z-index: 1000;
-    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);  /* 添加阴影效果 */
-    transition: transform 0.3s ease-in-out;  /* Sidebar 展开/收缩的动画 */
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
+    transition: transform 0.3s ease-in-out;
   }
 
+  /* 当 Sidebar 被展示时，向右平移 200px */
   .sidebar.show {
-    transform: translateX(200px);  /* Sidebar 展开时 */
+    transform: translateX(200px);
   }
 
-  /* 控制 Content 视图 */
   .content {
     transition: transform 0.3s ease-in-out;
   }
 
   .content.show-sidebar {
-    transform: translateX(200px); /* Content 在 Sidebar 展开时向右偏移 */
+    transform: translateX(200px); /* 当 Sidebar 展开时，Content 向右偏移 */
   }
 
   .content-with-sidebar {
-    margin-left: 0 !important; /* 小屏幕下 Content 左边距设置为 0 */
+    margin-left: 0 !important; /* 小屏幕下 Content 左边距为 0 */
+  }
+
+  .sidebar-overlay {
+    display: block;
   }
 }
+
+/* 大屏幕时，强制显示 Sidebar */
+@media (min-width: 1025px) {
+  .sidebar {
+    left: 0; /* 始终显示在屏幕左侧 */
+  }
+
+  .content-with-sidebar {
+    margin-left: 200px; /* Content 左边距为 200px */
+  }
+
+  .sidebar-overlay {
+    display: none;
+  }
+}
+
 </style>
