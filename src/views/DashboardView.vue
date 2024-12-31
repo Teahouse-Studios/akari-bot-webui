@@ -135,17 +135,13 @@ export default {
         const response = await axios.get('/server-info');
         const data = response.data;
 
-        if (data.message === 'success') {
-          this.os = { ...this.os, ...data.os };
-          this.bot = { ...this.bot, ...data.bot };
-          this.cpu = { ...this.cpu, ...data.cpu };
-          this.memory = { ...this.memory, ...data.memory };
-          this.disk = { ...this.disk, ...data.disk };
-        } else {
-          console.error('API 请求失败');
-        }
+        this.os = { ...this.os, ...data.os };
+        this.bot = { ...this.bot, ...data.bot };
+        this.cpu = { ...this.cpu, ...data.cpu };
+        this.memory = { ...this.memory, ...data.memory };
+        this.disk = { ...this.disk, ...data.disk };
       } catch (error) {
-        console.error('请求失败:', error);
+        this.$message.error('请求失败，请稍后再试');
       }
     },
     // 根据百分比值返回合适的颜色

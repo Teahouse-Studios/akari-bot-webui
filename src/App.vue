@@ -225,7 +225,7 @@ body.dark-mode .content-footer {
   }
 
   .content {
-    transition: transform 0.3s ease-in-out;
+    transform: translateX(0px);
   }
 
   .content-with-sidebar {
