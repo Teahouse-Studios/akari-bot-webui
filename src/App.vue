@@ -1,15 +1,14 @@
 <template>
   <div id="app">
-    <AppHeader @refresh="refresh" @modifyPassword="modifyPassword" />
-    <PasswordModal 
-      v-if="showPasswordModal"
-      @success="showPasswordModal = false" />
-    <el-container 
-      style="margin-top: 60px; display: flex;" 
-      :class="{'blurred': showPasswordModal}">
-      <AppSidebar @menuSelect="handleMenuSelect" :disabled="showPasswordModal" />
-      <AppContent v-if="!showPasswordModal" :currentView="currentView" />
-      <div class="content-footer"></div>
+    <AppHeader @refresh="refresh" @modifyPassword="modifyPassword" @toggle-sidebar="toggleSidebar" />
+    <PasswordModal v-if="showPasswordModal" @success="showPasswordModal = false" />
+    <el-container :style="{ marginTop: '60px' }">
+      <!-- 控制 Sidebar 是否显示 -->
+      <AppSidebar v-if="isSidebarVisible" @menuSelect="handleMenuSelect" class="sidebar" />
+      <el-main :class="['content', { 'content-with-sidebar': isSidebarVisible }]" :style="{ marginLeft: sidebarMarginLeft }">
+        <component :is="currentView"></component>
+        <div class="content-footer"></div>
+      </el-main>
     </el-container>
   </div>
 </template>
@@ -19,30 +18,34 @@ import axios from '@/axios';
 import AppSidebar from './components/Sidebar.vue';
 import AppHeader from './components/Header.vue';
 import PasswordModal from './components/PasswordModal.vue';
-import AppContent from './components/Content.vue';
-import Cookies from 'js-cookie'; // 引入 js-cookie
+import Cookies from 'js-cookie';
 
 export default {
   components: {
-    AppSidebar,
     AppHeader,
+    AppSidebar,
     PasswordModal,
-    AppContent
   },
   data() {
     return {
       currentView: null,
       showPasswordModal: null,
-      isDarkMode: false,  // 如果没有设置过暗黑模式，添加默认值
+      isDarkMode: false,
+      isSidebarVisible: true,  // 控制 Sidebar 是否显示
     };
   },
+  computed: {
+    // 动态计算 content 的 margin-left
+    sidebarMarginLeft() {
+      return this.isSidebarVisible ? '200px' : '0';
+    }
+  },
   mounted() {
-    // 检查 cookies 中是否存在有效的 deviceToken
     const deviceToken = Cookies.get('deviceToken');
     if (deviceToken) {
-      this.showPasswordModal = false; // 如果有有效的 token，则跳过密码弹窗
+      this.showPasswordModal = false;
     } else {
-      this.checkPassword();  // 否则弹出密码窗口
+      this.checkPassword();
     }
   },
   watch: {
@@ -84,6 +87,9 @@ export default {
     }
   },
   methods: {
+    toggleSidebar() {
+      this.isSidebarVisible = !this.isSidebarVisible;  // 切换 Sidebar 显示状态
+    },
     handleMenuSelect(view) {
       this.currentView = this.$options.components[`${view.charAt(0).toUpperCase() + view.slice(1)}View`];
     },
@@ -92,21 +98,18 @@ export default {
     },
     async checkPassword() {
       try {
-        // 发送请求前检查 cookies 中是否有有效的 token
         const deviceToken = Cookies.get('deviceToken');
         if (deviceToken) {
-          this.showPasswordModal = false;  // 如果 cookies 中有有效的 token，跳过密码弹窗
+          this.showPasswordModal = false;
           return;
         }
-
-        // 发送空密码请求
         const response = await axios.post('/auth', { password: '' });
         if (response.status === 200) {
-          this.showPasswordModal = false;  // 如果返回200，认为是空密码，直接进入
+          this.showPasswordModal = false;
         }
       } catch (error) {
         if (error.response && error.response.status === 401) {
-          this.showPasswordModal = true;  // 如果返回 401，弹出密码窗口
+          this.showPasswordModal = true;
         } else {
           this.$message.error('请求失败，请稍后再试');
         }
@@ -117,17 +120,66 @@ export default {
 </script>
 
 <style>
+.content {
+  top: 60px;
+  overflow-y: auto;
+  background-color: transparent;
+  z-index: 0;
+  transition: margin-left 0.3s, transform 0.3s; /* 添加 transform 动画 */
+}
+
+.content-with-sidebar {
+  margin-left: 200px;  /* 有 Sidebar 时，Content 左边距为 200px */
+}
+
 .content-footer {
-    position: fixed;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: white;
+  z-index: -1;
+}
+
+.dark-mode .content {
+  color: white;
+}
+
+body.dark-mode .content-footer {
+  background-color: #181818;
+}
+
+/* 媒体查询：小屏幕下隐藏 Sidebar 并覆盖 Content */
+@media (max-width: 768px) {
+  /* 默认状态下，Sidebar 隐藏 */
+  .sidebar {
+    position: fixed; /* Sidebar 固定在屏幕左侧 */
+    top: 60px;
+    left: -200px; /* 初始状态 Sidebar 在屏幕外 */
     bottom: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: white;
-    z-index: -1;
+    width: 200px;
+    background-color: #f4f4f4;  /* 保持与大屏幕相同的背景 */
+    z-index: 1000;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);  /* 添加阴影效果 */
+    transition: transform 0.3s ease-in-out;  /* Sidebar 展开/收缩的动画 */
   }
-  
-.dark-mode .content-footer {
-    background-color: #181818;
+
+  .sidebar.show {
+    transform: translateX(200px);  /* Sidebar 展开时 */
   }
+
+  /* 控制 Content 视图 */
+  .content {
+    transition: transform 0.3s ease-in-out;
+  }
+
+  .content.show-sidebar {
+    transform: translateX(200px); /* Content 在 Sidebar 展开时向右偏移 */
+  }
+
+  .content-with-sidebar {
+    margin-left: 0 !important; /* 小屏幕下 Content 左边距设置为 0 */
+  }
+}
 </style>

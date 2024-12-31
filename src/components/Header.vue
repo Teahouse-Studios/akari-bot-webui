@@ -2,6 +2,9 @@
   <el-header class="header" :class="{ 'dark-mode': isDarkMode }">
     <div class="header-left">
       <div class="logo">
+        <el-button class="menu-button" @click="switchSidebar">
+          <i class="mdi mdi-menu"></i>
+        </el-button>
         <img src="@/assets/logo.png" alt="Logo" class="logo-image" />
         <div class="logo-text">
           <span class="akari-bot-text">AkariBot</span>
@@ -21,20 +24,17 @@
 <script>
 export default {
   name: 'AppHeader',
-  emits: ['toggle-dark-mode'],  // 显式声明事件
+  emits: ['toggle-dark-mode', 'toggle-sidebar'],  // 添加 toggle-sidebar 事件
   data() {
     return {
       isDarkMode: false
     };
   },
   mounted() {
-    // 页面加载时从 localStorage 获取主题设置
     const savedTheme = localStorage.getItem('isDarkMode');
     if (savedTheme !== null) {
       this.isDarkMode = JSON.parse(savedTheme);
     }
-
-    // 根据当前主题设置更新 body 的 class
     if (this.isDarkMode) {
       document.body.classList.add('dark-mode');
     }
@@ -43,19 +43,15 @@ export default {
     goToHelp() {
       window.open('https://bot.teahouse.team', '_blank');
     },
-    goToGitHub() {
-      window.open('https://github.com/Teahouse-Studios/akari-bot', '_blank');
-    },
     toggleDarkMode() {
       this.isDarkMode = !this.isDarkMode;
-      // 切换 dark-mode 类
       document.body.classList.toggle('dark-mode', this.isDarkMode);
-
-      // 保存主题设置到 localStorage
       localStorage.setItem('isDarkMode', JSON.stringify(this.isDarkMode));
-
-      // 通知父组件或其他需要的地方
       this.$emit('toggle-dark-mode', this.isDarkMode);
+    },
+    // 切换 Sidebar 可见性的方法
+    switchSidebar() {
+      this.$emit('toggle-sidebar');  // 通知父组件 Sidebar 状态变化
     }
   }
 };
@@ -143,3 +139,4 @@ body.dark-mode .theme-toggle-button:hover {
   color: #333;
 }
 </style>
+
