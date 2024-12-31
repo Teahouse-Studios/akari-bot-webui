@@ -100,12 +100,7 @@ export default {
   padding: 0;
   font-size: 24px;
   color: inherit;
-  cursor: pointer;
   transition: color 0.3s ease;
-}
-
-.menu-button i {
-  font-size: 28px;
 }
 
 .menu-button:hover {
@@ -159,8 +154,11 @@ body.dark-mode .theme-toggle {
 }
 
 .theme-toggle-button {
+  font-size: 22px;
+  padding: 6px;
   background-color: #2e2e2e;
   color: white;
+  border: none;
 }
 
 .theme-toggle-button:hover {
@@ -174,7 +172,7 @@ body.dark-mode .theme-toggle-button {
 }
 
 body.dark-mode .theme-toggle-button:hover {
-  background-color: #b0b0b0;
+  background-color: #c0c0c0;
   color: #333;
 }
 </style>

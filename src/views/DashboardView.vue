@@ -1,15 +1,16 @@
 <template>
   <el-row :gutter="20">
     <el-col :span="10" :xs="24">
-      <el-card :body-style="{ height: '180px' }">
+      <el-card :body-style="{ height: '200px' }">
         <h3><i class="mdi mdi-robot-outline"></i> 机器人</h3>
         <p><strong class="data-title">Python 版本</strong><span class="data-text">{{ bot.python_version || '-' }}</span></p>
         <p><strong class="data-title">机器人版本</strong><span class="data-text">{{ bot.version ? bot.version.slice(0, 6) : '-' }}</span></p>
+        <p><strong class="data-title">WebRender 已就绪</strong><span class="data-text">{{ bot.web_render_status ? '是' : '否' }}</span></p>
         <p><strong class="data-title">运行时间</strong><span class="data-text">{{ formatRunningTime(bot.running_time || 0) }}</span></p>
       </el-card>
-      <el-card :body-style="{ height: '180px' }">
+      <el-card :body-style="{ height: '160px' }">
         <h3><i class="mdi mdi-laptop"></i> 系统</h3>
-        <p><strong class="data-title">架构</strong><span class="data-text">{{ os.system || '-' }} {{ os.machine || '' }}</span></p>
+        <p><strong class="data-title">架构</strong><span class="data-text">{{ os.system || '-' }} {{ os.machine ? '-' : '' }} {{ os.machine || '' }}</span></p>
         <p><strong class="data-title">版本</strong><span class="data-text">{{ os.version || '-' }}</span></p>
         <p><strong class="data-title">启动时间</strong><span class="data-text">{{ formatTime(os.boot_time || 0) }}</span></p>
       </el-card>
@@ -82,7 +83,8 @@ export default {
       bot: {
         running_time: 0,
         python_version: '',
-        version: '',
+        version: '', 
+        web_render_status: false,
       },
       cpu: {
         cpu_brand: '',
@@ -161,18 +163,52 @@ export default {
 </script>
 <style scoped>
 .el-card {
+  background-color: #eee;
+  border: 1px solid #e0e0e0;
+  box-shadow: none;
   margin-bottom: 20px;
   line-height: 1;
   white-space: nowrap;
 }
 
-.data-title {
-  margin-right: 3ex;
+body.dark-mode .el-card {
+  background-color: #333;
+  color: white;
+  border: 1px solid #1f1f1f;
 }
 
 .data-text {
   color: #666;
   text-overflow: ellipsis;
+}
+
+body.dark-mode .data-text {
+  color: #ccc;
+}
+
+.data-title {
+  margin-right: 3ex;
+  color: #333;
+}
+
+body.dark-mode .data-title {
+  color: white;
+}
+
+.memory-dashboards .el-progress--dashboard {
+  background-color: #eee;
+}
+
+body.dark-mode .memory-dashboards .el-progress--dashboard {
+  background-color: #333;
+}
+
+.memory-dashboards ::v-deep(.el-progress__text) {
+  color: #555;
+}
+
+body.dark-mode .memory-dashboards ::v-deep(.el-progress__text) {
+  color: #aaa;
 }
 
 .percentage-value {

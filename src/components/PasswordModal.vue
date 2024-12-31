@@ -98,4 +98,12 @@ body.dark-mode .password-modal {
   background: #333;
   color: white;
 }
+
+.el-checkbox {
+  color: #333
+}
+
+body.dark-mode .el-checkbox {
+  color: white
+}
 </style>
