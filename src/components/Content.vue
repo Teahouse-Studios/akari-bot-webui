@@ -18,18 +18,6 @@ export default {
       type: Boolean,
       required: true
     }
-  },
-  watch: {
-    currentView(newView) {
-      if (!this.showPasswordModal) {
-        this.fetchData(newView);  // 仅在没有密码弹窗时发起 API 请求
-      }
-    }
-  },
-  methods: {
-    fetchData() {
-      // 这里是获取视图数据的逻辑，可以根据具体视图发起不同的 API 请求
-    }
   }
 };
 </script>

@@ -4,26 +4,6 @@
     <el-tabs v-model="activeTab" @tab-click="handleTabClick">
       <el-tab-pane v-for="file in configFiles" :key="file" :label="file" :name="file"></el-tab-pane>
     </el-tabs>
-      <!--
-    <div class="editor-header">
-
-      <el-button-group>
-        <el-button
-          :type="editorMode === 'tab' ? 'primary' : 'default'"
-          @click="switchEditorMode('tab')"
-        >
-          <i class="mdi mdi-view-dashboard-edit-outline"></i>
-        </el-button>
-        <el-button
-          :type="editorMode === 'source' ? 'primary' : 'default'"
-          @click="switchEditorMode('source')"
-        >
-          <i class="mdi mdi-code-block-brackets"></i>
-        </el-button>
-      </el-button-group>
-
-    </div>
-      -->
     <div class="editor-body">
       <codemirror
         ref="editor"
@@ -37,7 +17,7 @@
           <i class="mdi mdi-restart"></i> 重置
         </el-button>
         <el-button type="success"
-          @click="confirmApplyConfig">
+          @click="applyConfig">
           <i class="mdi mdi-content-save-outline"></i> 应用
         </el-button>
       </div>
@@ -51,7 +31,6 @@ import { EditorView } from '@codemirror/view';
 import { basicSetup } from 'codemirror';
 import { EditorState } from '@codemirror/state';
 import { oneDark } from '@codemirror/theme-one-dark';
-import { ElMessageBox } from 'element-plus'; // 引入 MessageBox
 
 export default {
   name: 'ConfigView',
@@ -101,20 +80,6 @@ export default {
     },
     resetConfig() {
       this.fetchConfig(this.activeTab, true);
-    },
-    confirmApplyConfig() {
-      ElMessageBox.confirm(
-        '是否更新配置？错误的配置可能会导致机器人无法正常工作。',
-        '确认',
-        {
-          confirmButtonText: '应用',
-          cancelButtonText: '取消',
-          type: 'warning'
-        }
-      ).then(() => {
-        this.applyConfig();
-      }).catch(() => {
-      });
     },
     applyConfig() {
       axios.post(`/config/${this.activeTab}`, { content: this.editorContent })
@@ -180,17 +145,13 @@ body.dark-mode .editor-container {
 
 .editor-body {
   flex-grow: 1;
-  height: 50vh;
+  height: 60vh;
   overflow: auto;
+  border-radius: 8px;
 }
 
 ::v-deep(.cm-editor) {
-  height: 50vh;
-}
-
-.codemirror-container {
-  height: 50vh;
-  position: relative;
+  height: 100%;
 }
 
 .editor-footer {
