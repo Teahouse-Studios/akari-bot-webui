@@ -79,8 +79,34 @@ export default {
   border-bottom: 1px solid #1f1f1f;
 }
 
-.theme-toggle {
-  background: #333;
+.menu-button {
+  background: transparent; /* 设置背景为透明 */
+  border: none; /* 移除按钮的边框 */
+  padding: 0; /* 去掉内边距，按钮会更紧凑 */
+  font-size: 24px; /* 设置图标的大小 */
+  color: inherit; /* 继承父元素的颜色（例如文字颜色） */
+  cursor: pointer; /* 设置鼠标悬停时的指针效果 */
+  transition: color 0.3s ease; /* 添加平滑过渡效果 */
+}
+
+.menu-button i {
+  font-size: 28px; /* 图标的大小调整 */
+}
+
+.menu-button:hover {
+  background-color: #bbb;
+  color: #555; /* 鼠标悬停时改变颜色 */
+}
+
+body.dark-mode .menu-button:hover {
+  background-color: #444;
+  color: #aaa; /* 鼠标悬停时改变颜色 */
+}
+
+
+/* 主题切换按钮的样式 */
+.theme-toggle-button {
+  background-color: #2e2e2e;
   color: white;
 }
 

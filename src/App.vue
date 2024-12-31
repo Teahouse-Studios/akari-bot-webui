@@ -151,7 +151,7 @@ body.dark-mode .content-footer {
 }
 
 /* 媒体查询：小屏幕下隐藏 Sidebar 并覆盖 Content */
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
   /* 默认状态下，Sidebar 隐藏 */
   .sidebar {
     position: fixed; /* Sidebar 固定在屏幕左侧 */
