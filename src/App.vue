@@ -3,10 +3,10 @@
     <AppHeader @refresh="refresh" @modifyPassword="modifyPassword" @toggle-sidebar="toggleSidebar" />
     <PasswordModal v-if="showPasswordModal" @success="showPasswordModal = false" />
     <el-container :style="{ marginTop: '60px' }">
-      <!-- 控制 Sidebar 是否显示 -->
       <AppSidebar v-if="isSidebarVisible" @menuSelect="handleMenuSelect" class="sidebar" />
       <el-main :class="['content', { 'content-with-sidebar': isSidebarVisible }]" :style="{ marginLeft: sidebarMarginLeft }">
-        <component :is="currentView"></component>
+        <!-- Only load the component if showPasswordModal is false -->
+        <component :is="currentView" v-if="!showPasswordModal" :showPasswordModal="showPasswordModal"></component>
         <div class="content-footer"></div>
       </el-main>
     </el-container>
@@ -29,7 +29,7 @@ export default {
   data() {
     return {
       currentView: null,
-      showPasswordModal: null,
+      showPasswordModal: true,
       isDarkMode: false,
       isSidebarVisible: true,  // 控制 Sidebar 是否显示
     };
@@ -50,6 +50,7 @@ export default {
   },
   watch: {
     '$route.name': function(newName) {
+      if (this.showPasswordModal) return; // Don't load views if the password modal is showing
       switch (newName) {
         case 'dashboard':
           import('./views/DashboardView.vue').then((module) => {

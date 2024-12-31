@@ -27,38 +27,39 @@
         <h3><i class="mdi mdi-server-outline"></i> 磁盘</h3>
         <p><span class="data-text">{{ disk.used ? disk.used.toFixed(1) : 0 }} GB / {{ disk.total ? disk.total.toFixed(1) : 0 }} GB</span></p>
         <br />
-        <el-progress 
-          type="dashboard" 
-          :percentage="cpu.cpu_percent ? cpu.cpu_percent.toFixed(1) : 0" 
-          :color="getProgressColor(cpu.cpu_percent)">
-          <template #default="{ percentage }">
-            <span class="percentage-value">{{ percentage }}%</span>
-            <span class="percentage-label">CPU</span>
-          </template>
-        </el-progress>
-        <el-progress 
-          type="dashboard" 
-          :percentage="memory.percent ? memory.percent.toFixed(1) : 0"
-          :color="getProgressColor(memory.percent)">
-          <template #default="{ percentage }">
-            <span class="percentage-value">{{ percentage }}%</span>
-            <span class="percentage-label">内存</span>
-          </template>
-        </el-progress>
-        <el-progress 
-          type="dashboard" 
-          :percentage="disk.percent ? disk.percent.toFixed(1) : 0" 
-          :color="getProgressColor(disk.percent)">
-          <template #default="{ percentage }">
-            <span class="percentage-value">{{ percentage }}%</span>
-            <span class="percentage-label">磁盘</span>
-          </template>
-        </el-progress>
+        <div class="memory-dashboards">
+          <el-progress 
+            type="dashboard" 
+            :percentage="cpu.cpu_percent ? cpu.cpu_percent.toFixed(1) : 0" 
+            :color="getProgressColor(cpu.cpu_percent)">
+            <template #default="{ percentage }">
+              <span class="percentage-value">{{ percentage }}%</span>
+              <span class="percentage-label">CPU</span>
+            </template>
+          </el-progress>
+          <el-progress 
+            type="dashboard" 
+            :percentage="memory.percent ? memory.percent.toFixed(1) : 0"
+            :color="getProgressColor(memory.percent)">
+            <template #default="{ percentage }">
+              <span class="percentage-value">{{ percentage }}%</span>
+              <span class="percentage-label">内存</span>
+            </template>
+          </el-progress>
+          <el-progress 
+            type="dashboard" 
+            :percentage="disk.percent ? disk.percent.toFixed(1) : 0" 
+            :color="getProgressColor(disk.percent)">
+            <template #default="{ percentage }">
+              <span class="percentage-value">{{ percentage }}%</span>
+              <span class="percentage-label">磁盘</span>
+            </template>
+          </el-progress>
+        </div>
       </el-card>
     </el-col>
   </el-row>
 </template>
-
 
 <script>
 import axios from '@/axios';
@@ -66,6 +67,12 @@ import axios from '@/axios';
 const progress_colors = ['#1989fa', '#e6a23c', '#f56c6c']
 
 export default {
+  props: {
+    showPasswordModal: {
+      type: Boolean,
+      default: false
+    }
+  },
   data() {
     return {
       os: {
@@ -96,7 +103,10 @@ export default {
     };
   },
   mounted() {
-    this.fetchDashboardData();
+    // Only fetch data if showPasswordModal is false
+    if (!this.showPasswordModal) {
+      this.fetchDashboardData();
+    }
   },
   methods: {
     // 格式化时间为 "xx小时xx分xx秒"
@@ -155,7 +165,6 @@ export default {
   }
 };
 </script>
-
 <style scoped>
 .el-card {
   margin-bottom: 20px;
@@ -178,5 +187,15 @@ export default {
   display: block;
   margin-top: 10px;
   font-size: 14px;
+}
+
+.memory-dashboards {
+  display: flex;
+  justify-content: center;
+}
+
+.el-progress--dashboard
+{
+  margin: 10px;
 }
 </style>

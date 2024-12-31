@@ -34,6 +34,12 @@ import { oneDark } from '@codemirror/theme-one-dark';
 
 export default {
   name: 'ConfigView',
+  props: {
+    showPasswordModal: {
+      type: Boolean,
+      default: false
+    }
+  },
   data() {
     return {
       activeTab: '',
@@ -107,7 +113,9 @@ export default {
     }
   },
   mounted() {
-    this.fetchConfigFiles();
+    if (!this.showPasswordModal) {
+      this.fetchConfigFiles();
+    }
 
     // 初始化 CodeMirror 编辑器
     const state = EditorState.create({
