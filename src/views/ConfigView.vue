@@ -167,6 +167,7 @@ body.dark-mode .editor-container ::v-deep(.el-tabs__item) {
   height: 60vh;
   overflow: auto;
   border-radius: 8px;
+  font-family: 'Noto Mono', monospace;
 }
 
 ::v-deep(.cm-editor) {
