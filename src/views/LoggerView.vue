@@ -1,6 +1,15 @@
 <template>
   <div class="log-viewer-container">
     <div class="filter-container">
+      <el-input
+        v-model="searchText"
+        placeholder="搜索日志……"
+        class="platform-tag-input"
+        @input="handleSearch"
+        clearable
+        :style="{ width: '100%' }"
+      />
+
       <el-button
         v-for="(level, index) in logLevels"
         :key="index"
@@ -20,12 +29,13 @@
 <script>
 import { ref, onMounted, onBeforeUnmount, watch } from 'vue';
 import { debounce } from 'lodash';
-import { ElButton } from 'element-plus';
+import { ElButton, ElInput } from 'element-plus';
 
 export default {
   name: 'LoggerView',
   components: {
-    ElButton
+    ElButton,
+    ElInput
   },
   setup() {
     const logData = ref('');
@@ -33,7 +43,8 @@ export default {
     const logViewer = ref(null);
     const logLevels = ref(['DEBUG', 'INFO', 'SUCCESS', 'WARNING', 'ERROR', 'CRITICAL']);
     const activeLogLevels = ref(['INFO', 'SUCCESS', 'WARNING', 'ERROR', 'CRITICAL']);
-    const websocket = ref(null);  // 将 websocket 声明为响应式变量
+    const searchText = ref('');
+    const websocket = ref(null);
 
     const connectWebSocket = () => {
       websocket.value = new WebSocket('ws://127.0.0.1:5000/ws/logs');
@@ -68,13 +79,12 @@ export default {
       if (buffer) formattedLines.push(formatLogLine(buffer));
 
       visibleLogs.value = formattedLines.filter(logLine => {
-        return activeLogLevels.value.some(level => logLine.includes(level));
-      });
+        const textMatch = searchText.value
+          ? logLine.toLowerCase().includes(searchText.value.toLowerCase())
+          : true;
 
-      const MAX_LOG_LINES = 500;
-      if (visibleLogs.value.length > MAX_LOG_LINES) {
-        visibleLogs.value = visibleLogs.value.slice(-MAX_LOG_LINES);
-      }
+        return textMatch && activeLogLevels.value.some(level => logLine.includes(level));
+      });
     }, 500);
 
     const formatLogLine = (logLine) => {
@@ -85,12 +95,11 @@ export default {
       const logModulesColor = '#e5e510';
       const logDatetimeColor = '#0dbc79';
       let logContentColor = '#fff';
-      let logBackgroundColor = 'transparent'; // 默认背景色为透明
+      let logBackgroundColor = 'transparent';
 
       if (match) {
         const [, logPlatform, logModules, logDatetime, logLevel, logContent] = match;
 
-        // 根据日志等级来确定颜色
         switch (logLevel) {
           case 'DEBUG':
             logContentColor = '#3b8ec9';
@@ -111,9 +120,6 @@ export default {
             logContentColor = '#fff';
             logBackgroundColor = '#cd3131';
             break;
-          default:
-            logContentColor = '#fff';
-            break;
         }
 
         return `<span style="color:${logPlatformColor}">[${logPlatform}]</span>` +
@@ -121,7 +127,6 @@ export default {
                `<span style="color:${logDatetimeColor}">[${logDatetime}]</span>` +
                `<span style="color:${logContentColor}; background-color:${logBackgroundColor}">[${logLevel}]:${logContent.replace(/\n/g, '<br>')}</span>`;
       }
-
       return `<span style="color:${logContentColor}">${logLine.replace(/\n/g, '<br>')}</span>`;
     };
 
@@ -134,26 +139,21 @@ export default {
       updateLogs();
     };
 
+    const handleSearch = () => {
+      updateLogs();
+    };
+
     onMounted(() => {
       connectWebSocket();
     });
 
-    watch(logData, () => {
-      updateLogs();
-      scrollToBottom();
-    });
+    watch(logData, updateLogs);
 
     onBeforeUnmount(() => {
       if (websocket.value) {
-        websocket.value.close(); // 正确关闭 WebSocket
+        websocket.value.close();
       }
     });
-
-    const scrollToBottom = () => {
-      if (logViewer.value) {
-        logViewer.value.scrollTop = logViewer.value.scrollHeight;
-      }
-    };
 
     return {
       logData,
@@ -161,8 +161,10 @@ export default {
       logViewer,
       logLevels,
       activeLogLevels,
+      searchText,
       updateLogs,
       toggleLogLevel,
+      handleSearch
     };
   }
 };
@@ -188,8 +190,14 @@ body.dark-mode .filter-container {
 }
 
 .el-button {
-  margin: 0 5px;
+  margin: 5px;
   background-color: transparent;
+}
+
+.el-input {
+  width: 100%;
+  margin-top: 5px;
+  margin-bottom: 5px;
 }
 
 .log-level-button.debug {
