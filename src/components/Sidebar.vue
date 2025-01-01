@@ -16,7 +16,7 @@
         <i class="mdi mdi-puzzle"></i>
         <span>模块</span>
       </el-menu-item>
-      <el-menu-item index="logger">
+      <el-menu-item index="logs">
         <i class="mdi mdi-console"></i>
         <span>日志</span>
       </el-menu-item>
@@ -42,7 +42,7 @@ export default {
   },
   methods: {
     getActiveMenuFromRoute() {
-      const validPaths = ['dashboard', 'config', 'modules', 'logger', 'setting', 'about'];
+      const validPaths = ['dashboard', 'config', 'modules', 'logs', 'setting', 'about'];
       const path = this.$route.name;
       if (validPaths.includes(path)) {
         return path;

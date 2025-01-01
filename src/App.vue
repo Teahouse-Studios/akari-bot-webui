@@ -74,8 +74,8 @@ export default {
             this.currentView = module.default;
           });
           break;
-        case 'logger':
-          import('./views/LoggerView.vue').then((module) => {
+        case 'logs':
+          import('./views/LogsView.vue').then((module) => {
             this.currentView = module.default;
           });
           break;

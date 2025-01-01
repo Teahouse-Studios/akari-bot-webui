@@ -11,7 +11,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import DashboardView from './views/DashboardView.vue'
 import ConfigView from './views/ConfigView.vue'
 import ModulesView from './views/ModulesView.vue'
-import LoggerView from './views/LoggerView.vue'
+import LogsView from './views/LogsView.vue'
 import SettingView from './views/SettingView.vue'
 import AboutView from './views/AboutView.vue'
 
@@ -37,9 +37,9 @@ const routes = [
     component: ModulesView
   },
   {
-    path: '/logger',
-    name: 'logger',
-    component: LoggerView
+    path: '/logs',
+    name: 'logs',
+    component: LogsView
   },
   {
     path: '/setting',

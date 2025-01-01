@@ -29,10 +29,10 @@
 <script>
 import { ref, onMounted, onBeforeUnmount, watch } from 'vue';
 import { debounce } from 'lodash';
-import { ElButton, ElInput } from 'element-plus';
+import { ElButton, ElInput, ElMessage } from 'element-plus';
 
 export default {
-  name: 'LoggerView',
+  name: 'LogsView',
   components: {
     ElButton,
     ElInput
@@ -47,19 +47,34 @@ export default {
     const websocket = ref(null);
 
     const connectWebSocket = () => {
-      websocket.value = new WebSocket('ws://127.0.0.1:5000/ws/logs');
-      websocket.value.onopen = () => {
-        console.log('WebSocket 连接已打开');
-      };
-      websocket.value.onmessage = (event) => {
+      try {
+        // 通过环境变量获取基础 URL
+        let baseUrl = process.env.VUE_APP_API_URL;
+
+        // 如果 VUE_APP_API_URL 中没有协议部分，默认为 http://
+        if (!/^https?:\/\//i.test(baseUrl)) {
+          baseUrl = 'http://' + baseUrl;
+        }
+
+        // 使用 URL 对象解析并处理协议
+        const url = new URL(baseUrl);
+
+        // 根据协议 (http/https) 转换为对应的 WebSocket 协议 (ws/wss)
+        const wsProtocol = url.protocol === 'https:' ? 'wss:' : 'ws:';
+        const wsUrl = `${wsProtocol}//${url.hostname}:${url.port}/ws/logs`;
+
+        websocket.value = new WebSocket(wsUrl);
+
+        websocket.value.onmessage = (event) => {
         logData.value += event.data + '\n';
-      };
-      websocket.value.onerror = (error) => {
-        console.error('WebSocket 错误:', error);
-      };
-      websocket.value.onclose = () => {
-        console.log('WebSocket 连接已关闭');
-      };
+        };
+        websocket.value.onerror = () => {
+          ElMessage.error('与服务端的连接中断');
+        };
+
+      } catch (error) {
+        ElMessage.error(`获取日志内容失败`);
+      }
     };
 
     const updateLogs = debounce(() => {
@@ -169,7 +184,6 @@ export default {
   }
 };
 </script>
-
 
 <style scoped>
 .log-viewer-container {

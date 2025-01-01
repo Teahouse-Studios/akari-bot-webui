@@ -2,7 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import DashboardView from './views/DashboardView.vue'
 import ConfigView from './views/ConfigView.vue'
 import ModulesView from './views/ModulesView.vue'
-import LoggerView from './views/LoggerView.vue'
+import LogsView from './views/LogsView.vue'
 import SettingView from './views/SettingView.vue'
 import AboutView from './views/AboutView.vue'
 
@@ -23,9 +23,9 @@ const routes = [
     component: ModulesView
   },
   {
-    path: '/logger',
-    name: 'logger',
-    component: LoggerView
+    path: '/logs',
+    name: 'logs',
+    component: LogsView
   },
   {
     path: '/setting',
@@ -52,7 +52,7 @@ const router = createRouter({
 
 // 在路由守卫中处理无效的路径
 router.beforeEach((to, from, next) => {
-  const validPaths = ['dashboard', 'config', 'modules', 'logger', 'setting', 'about']
+  const validPaths = ['dashboard', 'config', 'modules', 'logs', 'setting', 'about']
   if (validPaths.includes(to.name)) {
     next()
   } else {
