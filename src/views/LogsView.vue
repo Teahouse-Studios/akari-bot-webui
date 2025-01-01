@@ -282,7 +282,7 @@ body.dark-mode .filter-container {
   background-color: #0c0c0c;
   color: #fff;
   padding: 10px;
-  font-family: 'Noto Mono', monospace;
+  font-family: monospace;
   white-space: pre-wrap;
 }
 </style>
