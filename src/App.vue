@@ -76,14 +76,14 @@ export default {
       }
     },
     async checkCsrfToken() {
-      const csrfToken = Cookies.get('csrf_token');
+      const csrfToken = Cookies.get('csrfToken');
       if (!csrfToken) {
         try {
           const response = await axios.get('/get-csrf-token');
           if (response.status === 200) {
             const expirationDate = new Date();
-            expirationDate.setDate(expirationDate.getDate() + 1);
-            Cookies.set('csrf_token', response.data.csrfToken, {
+            expirationDate.setDate(expirationDate.getMinutes() + 30);
+            Cookies.set('csrfToken', response.data.csrfToken, {
               sameSite: 'Strict',
               expires: expirationDate
             });

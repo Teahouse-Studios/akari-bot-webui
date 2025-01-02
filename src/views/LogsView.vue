@@ -30,6 +30,7 @@
 import { ref, onMounted, onBeforeUnmount, watch } from 'vue';
 import { debounce } from 'lodash';
 import { ElButton, ElInput, ElMessage } from 'element-plus';
+import Cookies from 'js-cookie';
 
 export default {
   name: 'LogsView',
@@ -47,35 +48,54 @@ export default {
     const websocket = ref(null);
 
     const connectWebSocket = () => {
-      try {
-        // 通过环境变量获取基础 URL
-        let baseUrl = process.env.VUE_APP_API_URL;
+  try {
+    // 从 Cookie 中获取 deviceToken
+    const deviceToken = Cookies.get('deviceToken'); // 使用 js-cookie 获取 deviceToken
 
-        // 如果 VUE_APP_API_URL 中没有协议部分，默认为 http://
-        if (!/^https?:\/\//i.test(baseUrl)) {
-          baseUrl = 'http://' + baseUrl;
-        }
+    // 如果没有获取到 token，抛出错误
+    if (!deviceToken) {
+      throw new Error('Device token is missing');
+    }
 
-        // 使用 URL 对象解析并处理协议
-        const url = new URL(baseUrl);
+    // 通过环境变量获取基础 URL
+    let baseUrl = process.env.VUE_APP_API_URL;
 
-        // 根据协议 (http/https) 转换为对应的 WebSocket 协议 (ws/wss)
-        const wsProtocol = url.protocol === 'https:' ? 'wss:' : 'ws:';
-        const wsUrl = `${wsProtocol}//${url.hostname}:${url.port}/ws/logs`;
+    // 如果 VUE_APP_API_URL 中没有协议部分，默认为 http://
+    if (!/^https?:\/\//i.test(baseUrl)) {
+      baseUrl = 'http://' + baseUrl;
+    }
 
-        websocket.value = new WebSocket(wsUrl);
+    // 使用 URL 对象解析并处理协议
+    const url = new URL(baseUrl);
 
-        websocket.value.onmessage = (event) => {
-        logData.value += event.data + '\n';
-        };
-        websocket.value.onerror = () => {
-          ElMessage.error('与服务端的连接中断');
-        };
+    // 根据协议 (http/https) 转换为对应的 WebSocket 协议 (ws/wss)
+    const wsProtocol = url.protocol === 'https:' ? 'wss:' : 'ws:';
+    const wsUrl = `${wsProtocol}//${url.hostname}:${url.port}/ws/logs`;
 
-      } catch (error) {
-        ElMessage.error(`获取日志内容失败`);
-      }
+    // 建立 WebSocket 连接
+    websocket.value = new WebSocket(wsUrl);
+
+    // WebSocket 连接成功后，发送身份验证消息
+    websocket.value.onopen = () => {
+      // 发送身份验证信息
+      websocket.value.send(JSON.stringify({
+        type: 'auth',
+        token: deviceToken  // 将 deviceToken 发送到后端进行验证
+      }));
     };
+
+    websocket.value.onmessage = (event) => {
+      logData.value += event.data + '\n';
+    };
+
+    websocket.value.onerror = () => {
+      ElMessage.error('与服务端的连接中断');
+    };
+
+  } catch (error) {
+    ElMessage.error(`获取日志内容失败: ${error.message}`);
+  }
+};
 
     const updateLogs = debounce(() => {
       const rawLines = logData.value.split('\n');
