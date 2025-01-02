@@ -1,12 +1,12 @@
 <template>
   <div id="app">
     <AppHeader @refresh="refresh" @modifyPassword="modifyPassword" @toggle-sidebar="toggleSidebar" />
-    <PasswordModal v-if="showPasswordModal" @success="showPasswordModal = false" />
+    <PasswordModal v-if="!userVerified"/>
     <el-container :style="{ marginTop: '60px' }">
       <div v-if="isSidebarVisible && windowWidth <= 1024" class="sidebar-overlay" @click="closeSidebar"></div>
       <AppSidebar :class="['sidebar', { show: isSidebarVisible }]" @menuSelect="handleMenuSelect" />
       <el-main :class="['content', { 'content-with-sidebar': isSidebarVisible, 'show-sidebar': isSidebarVisible && windowWidth <= 1024 }]" :style="{ marginLeft: sidebarMarginLeft }">
-        <component :is="currentView" v-if="!showPasswordModal" :showPasswordModal="showPasswordModal"></component>
+        <component :is="currentView" v-if="userVerified" :userVerified="userVerified"></component>
       </el-main>
       <div class="content-footer"></div>
     </el-container>
@@ -29,135 +29,120 @@ export default {
   data() {
     return {
       currentView: null,
-      showPasswordModal: true,
-      isDarkMode: false,
-      isSidebarVisible: true,  // 控制 Sidebar 是否显示
-      windowWidth: window.innerWidth  // 存储当前屏幕宽度
+      userVerified: false,
+      isSidebarVisible: true,
+      windowWidth: window.innerWidth
     };
   },
   computed: {
-    // 动态计算 content 的 margin-left
     sidebarMarginLeft() {
       return this.isSidebarVisible ? '200px' : '0';
     },
   },
   mounted() {
-    // 在 mounted 时，初始化 Sidebar 的状态
     this.updateSidebarVisibility();
-    
-    // 监听窗口大小变化，更新状态
     window.addEventListener('resize', this.updateSidebarVisibility);
-
-    const deviceToken = Cookies.get('deviceToken');
-    if (deviceToken) {
-      this.showPasswordModal = false;
-    } else {
-      this.checkPassword();
-    }
+    this.initializeUserVerification();
   },
   watch: {
-    '$route.name': function(newName) {
-      if (this.showPasswordModal) return; // Don't load views if the password modal is showing
-      switch (newName) {
-        case 'dashboard':
-          import('./views/DashboardView.vue').then((module) => {
-            this.currentView = module.default;
-          });
-          break;
-        case 'config':
-          import('./views/ConfigView.vue').then((module) => {
-            this.currentView = module.default;
-          });
-          break;
-        case 'modules':
-          import('./views/ModulesView.vue').then((module) => {
-            this.currentView = module.default;
-          });
-          break;
-        case 'logs':
-          import('./views/LogsView.vue').then((module) => {
-            this.currentView = module.default;
-          });
-          break;
-        case 'setting':
-          import('./views/SettingView.vue').then((module) => {
-            this.currentView = module.default;
-          });
-          break;
-        case 'about':
-          import('./views/AboutView.vue').then((module) => {
-            this.currentView = module.default;
-          });
-          break;
-        default:
-          this.currentView = { template: '<div></div>' };
-      }
-    }
+    '$route.name': 'loadCurrentView',
   },
   beforeUnmount() {
-    // 销毁时移除事件监听
     window.removeEventListener('resize', this.updateSidebarVisibility);
   },
   methods: {
-    toggleSidebar() {
-      // 如果是大屏幕，强制显示 Sidebar
-      if (this.windowWidth <= 1024) {
-        this.isSidebarVisible = !this.isSidebarVisible;
-      }
-    },
-    updateSidebarVisibility() {
-      this.windowWidth = window.innerWidth;
-      // 在大屏幕下强制显示 Sidebar
-      if (this.windowWidth > 1024) {
-        this.isSidebarVisible = true;
+    async initializeUserVerification() {
+      const deviceToken = Cookies.get('deviceToken');
+      if (deviceToken) {
+        this.userVerified = true;
+        await this.checkCsrfToken();
       } else {
-        this.isSidebarVisible = false;
+        this.checkPassword();
       }
-    },
-    handleMenuSelect(view) {
-      this.currentView = this.$options.components[`${view.charAt(0).toUpperCase() + view.slice(1)}View`];
-    },
-    toggleDarkMode(isDark) {
-      this.isDarkMode = isDark;
     },
     async checkPassword() {
       try {
-        const deviceToken = Cookies.get('deviceToken');
-        if (deviceToken) {
-          this.showPasswordModal = false;
-          return;
-        }
         const response = await axios.post('/auth', { password: '' });
         if (response.status === 200) {
-          this.showPasswordModal = false;
+          this.userVerified = true;
+          await this.checkCsrfToken();
         }
       } catch (error) {
-        if (error.response && error.response.status === 401) {
-          this.showPasswordModal = true;
+        if (error.response?.status === 401) {
+          this.userVerified = false;
         } else {
           this.$message.error('请求失败，请稍后再试');
         }
       }
     },
-    // 关闭 Sidebar
+    async checkCsrfToken() {
+      const csrfToken = Cookies.get('csrf_token');
+      if (!csrfToken) {
+        try {
+          const response = await axios.get('/get-csrf-token');
+          if (response.status === 200) {
+            const expirationDate = new Date();
+            expirationDate.setDate(expirationDate.getDate() + 1);
+            Cookies.set('csrf_token', response.data.csrfToken, {
+              sameSite: 'Strict',
+              expires: expirationDate
+            });
+          }
+        } catch (error) {
+          console.error('Failed to retrieve CSRF token:', error);
+        }
+      }
+    },
+    updateSidebarVisibility() {
+      this.windowWidth = window.innerWidth;
+      this.isSidebarVisible = this.windowWidth > 1024;
+    },
+    handleMenuSelect(view) {
+      const viewComponent = `${view.charAt(0).toUpperCase() + view.slice(1)}View`;
+      import(`./views/${viewComponent}.vue`).then((module) => {
+        this.currentView = module.default;
+      });
+    },
+    toggleSidebar() {
+      if (this.windowWidth <= 1024) {
+        this.isSidebarVisible = !this.isSidebarVisible;
+      }
+    },
     closeSidebar() {
       this.isSidebarVisible = false;
+    },
+    loadCurrentView(newRouteName) {
+      if (this.userVerified) {
+        const viewMap = {
+          dashboard: 'Dashboard',
+          config: 'Config',
+          modules: 'Modules',
+          logs: 'Logs',
+          setting: 'Setting',
+          about: 'About'
+        };
+
+        const viewName = viewMap[newRouteName] || 'Empty';
+        import(`./views/${viewName}View.vue`).then((module) => {
+          this.currentView = module.default;
+        });
+      }
     }
   }
 };
 </script>
 
-<style>
+<style scoped>
 .content {
   top: 60px;
   overflow-y: auto;
   background-color: transparent;
   z-index: 0;
-  transition: margin-left 0.3s, transform 0.3s; /* 添加 transform 动画 */
+  transition: margin-left 0.3s, transform 0.3s;
 }
 
 .content-with-sidebar {
-  margin-left: 200px;  /* 有 Sidebar 时，Content 左边距为 200px */
+  margin-left: 200px;
 }
 
 .content-footer {
@@ -178,20 +163,15 @@ body.dark-mode .content-footer {
   background-color: #181818;
 }
 
-/* 默认状态下，Sidebar 应该在大屏幕时显示 */
 .sidebar {
-  position: fixed; /* Sidebar 固定在屏幕左侧 */
+  position: fixed;
   top: 60px;
-  left: 0; /* 强制显示 Sidebar */
+  left: 0;
   bottom: 0;
   width: 200px;
   background-color: #f4f4f4;
   z-index: 100;
   transition: transform 0.3s ease-in-out;
-}
-
-.content-with-sidebar {
-  margin-left: 200px; /* 强制显示 Sidebar 时，内容左移 */
 }
 
 .sidebar-overlay {
@@ -200,36 +180,22 @@ body.dark-mode .content-footer {
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5); /* 半透明黑色背景 */
-  z-index: 99; /* 位于 Sidebar 上面，保证遮罩层优先展示 */
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 99;
 }
 
-/* 小屏幕下，Sidebar 默认隐藏 */
 @media (max-width: 1024px) {
   .sidebar {
-    position: fixed; /* Sidebar 固定在屏幕左侧 */
-    top: 60px;
-    left: 0; /* 初始状态，Sidebar 在屏幕外 */
-    bottom: 0;
-    width: 200px;
-    background-color: #f4f4f4;
-    z-index: 100;
-    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
-    transform: translateX(-200px); /* 初始状态，Sidebar 在屏幕外 */
+    transform: translateX(-200px);
     transition: transform 0.3s ease-in-out;
   }
 
-  /* 当 Sidebar 被展示时，向右平移 200px */
   .sidebar.show {
     transform: translateX(0px);
   }
 
-  .content {
-    transform: translateX(0px);
-  }
-
   .content-with-sidebar {
-    margin-left: 0 !important; /* 小屏幕下 Content 左边距为 0 */
+    margin-left: 0 !important;
   }
 
   .sidebar-overlay {
@@ -237,19 +203,17 @@ body.dark-mode .content-footer {
   }
 }
 
-/* 大屏幕时，强制显示 Sidebar */
 @media (min-width: 1025px) {
   .sidebar {
-    left: 0; /* 始终显示在屏幕左侧 */
+    left: 0;
   }
 
   .content-with-sidebar {
-    margin-left: 200px; /* Content 左边距为 200px */
+    margin-left: 200px;
   }
 
   .sidebar-overlay {
     display: none;
   }
 }
-
 </style>

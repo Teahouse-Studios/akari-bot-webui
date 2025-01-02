@@ -34,7 +34,7 @@ import { oneDark } from '@codemirror/theme-one-dark';
 export default {
   name: 'ConfigView',
   props: {
-    showPasswordModal: {
+    userVerified: {
       type: Boolean,
       default: false
     }
@@ -112,7 +112,7 @@ export default {
     }
   },
   mounted() {
-    if (!this.showPasswordModal) {
+    if (this.userVerified) {
       this.fetchConfigFiles();
     }
 

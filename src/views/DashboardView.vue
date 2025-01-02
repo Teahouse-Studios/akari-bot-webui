@@ -67,7 +67,7 @@ const progress_colors = ['#1989fa', '#e6a23c', '#f56c6c']
 
 export default {
   props: {
-    showPasswordModal: {
+    userVerified: {
       type: Boolean,
       default: false
     }
@@ -103,8 +103,7 @@ export default {
     };
   },
   mounted() {
-    // Only fetch data if showPasswordModal is false
-    if (!this.showPasswordModal) {
+    if (this.userVerified) {
       this.fetchDashboardData();
     }
   },
