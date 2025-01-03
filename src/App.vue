@@ -3,10 +3,30 @@
     <AppHeader @toggle-sidebar="toggleSidebar" />
     <PasswordModal v-if="userVerified == false" />
     <el-container :style="{ marginTop: '60px' }">
-      <div v-if="isSidebarVisible && windowWidth <= 1024" class="sidebar-overlay" @click="closeSidebar"></div>
-      <AppSidebar :class="['sidebar', { show: isSidebarVisible }]" @menuSelect="handleMenuSelect" />
-      <el-main :class="['content', { 'content-with-sidebar': isSidebarVisible, 'show-sidebar': isSidebarVisible && windowWidth <= 1024 }]" :style="{ marginLeft: sidebarMarginLeft }">
-        <component :is="currentView" v-if="userVerified" :userVerified="userVerified"></component>
+      <div
+        v-if="isSidebarVisible && windowWidth <= 1024"
+        class="sidebar-overlay"
+        @click="closeSidebar"
+      ></div>
+      <AppSidebar
+        :class="['sidebar', { show: isSidebarVisible }]"
+        @menuSelect="handleMenuSelect"
+      />
+      <el-main
+        :class="[
+          'content',
+          {
+            'content-with-sidebar': isSidebarVisible,
+            'show-sidebar': isSidebarVisible && windowWidth <= 1024,
+          },
+        ]"
+        :style="{ marginLeft: sidebarMarginLeft }"
+      >
+        <component
+          :is="currentView"
+          v-if="userVerified"
+          :userVerified="userVerified"
+        ></component>
       </el-main>
       <div class="content-footer"></div>
     </el-container>
@@ -14,10 +34,10 @@
 </template>
 
 <script>
-import axios from '@/axios';
-import AppSidebar from './components/Sidebar.vue';
-import AppHeader from './components/Header.vue';
-import PasswordModal from './components/PasswordModal.vue';
+import axios from "@/axios";
+import AppSidebar from "./components/Sidebar.vue";
+import AppHeader from "./components/Header.vue";
+import PasswordModal from "./components/PasswordModal.vue";
 
 export default {
   components: {
@@ -30,29 +50,29 @@ export default {
       currentView: null, // 当前显示的视图
       userVerified: null, // 是否通过认证
       isSidebarVisible: true, // 侧边栏是否可见
-      windowWidth: window.innerWidth // 当前窗口宽度
+      windowWidth: window.innerWidth, // 当前窗口宽度
     };
   },
   computed: {
     sidebarMarginLeft() {
-      return this.isSidebarVisible ? '200px' : '0';
+      return this.isSidebarVisible ? "200px" : "0";
     },
   },
   mounted() {
     this.updateSidebarVisibility();
-    window.addEventListener('resize', this.updateSidebarVisibility);
+    window.addEventListener("resize", this.updateSidebarVisibility);
     this.initializeUserVerification();
   },
   watch: {
-    '$route.name': 'loadCurrentView', // 路由变化时加载视图
+    "$route.name": "loadCurrentView", // 路由变化时加载视图
   },
   beforeUnmount() {
-    window.removeEventListener('resize', this.updateSidebarVisibility);
+    window.removeEventListener("resize", this.updateSidebarVisibility);
   },
   methods: {
     async initializeUserVerification() {
       try {
-        const response = await axios.get('/api/verify-token');
+        const response = await axios.get("/api/verify-token");
         if (response.status === 200) {
           this.userVerified = true;
           await this.checkCsrfToken();
@@ -68,7 +88,7 @@ export default {
 
     async checkPassword() {
       try {
-        const response = await axios.post('/api/auth', {});
+        const response = await axios.post("/api/auth", {});
         if (response.status === 200) {
           this.userVerified = true;
           await this.checkCsrfToken();
@@ -79,20 +99,20 @@ export default {
         if (error.response?.status === 401) {
           this.userVerified = false;
         } else {
-          this.$message.error('请求失败，请稍后再试');
+          this.$message.error("请求失败，请稍后再试");
         }
       }
     },
 
     async checkCsrfToken() {
       try {
-        const response = await axios.get('/api/get-csrf-token');
+        const response = await axios.get("/api/get-csrf-token");
         if (response.status === 200) {
           // CSRF token成功获取
-          console.log('CSRF token retrieved successfully');
+          console.log("CSRF token retrieved successfully");
         }
       } catch (error) {
-        console.error('Failed to retrieve CSRF token:', error);
+        console.error("Failed to retrieve CSRF token:", error);
       }
     },
 
@@ -100,7 +120,7 @@ export default {
       this.windowWidth = window.innerWidth;
       this.isSidebarVisible = this.windowWidth > 1024;
     },
-    
+
     handleMenuSelect(view) {
       const viewComponent = `${view.charAt(0).toUpperCase() + view.slice(1)}View`;
       import(`./views/${viewComponent}.vue`).then((module) => {
@@ -122,21 +142,21 @@ export default {
     loadCurrentView(newRouteName) {
       if (this.userVerified) {
         const viewMap = {
-          dashboard: 'Dashboard',
-          config: 'Config',
-          modules: 'Modules',
-          logs: 'Logs',
-          setting: 'Setting',
-          about: 'About'
+          dashboard: "Dashboard",
+          config: "Config",
+          modules: "Modules",
+          logs: "Logs",
+          setting: "Setting",
+          about: "About",
         };
 
-        const viewName = viewMap[newRouteName] || 'Empty';
+        const viewName = viewMap[newRouteName] || "Empty";
         import(`./views/${viewName}View.vue`).then((module) => {
           this.currentView = module.default;
         });
       }
-    }
-  }
+    },
+  },
 };
 </script>
 
@@ -146,7 +166,9 @@ export default {
   overflow-y: auto;
   background-color: transparent;
   z-index: 0;
-  transition: margin-left 0.3s, transform 0.3s;
+  transition:
+    margin-left 0.3s,
+    transform 0.3s;
 }
 
 .content-with-sidebar {

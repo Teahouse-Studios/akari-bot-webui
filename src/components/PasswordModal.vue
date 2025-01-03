@@ -2,23 +2,30 @@
   <div class="overlay">
     <div class="password-modal">
       <span>登录以继续</span>
-      <el-input v-model="password" placeholder="输入密码" show-password @keyup.enter="checkPassword"></el-input>
+      <el-input
+        v-model="password"
+        placeholder="输入密码"
+        show-password
+        @keyup.enter="checkPassword"
+      ></el-input>
 
       <div class="remember-device-container">
         <el-checkbox v-model="rememberDevice">记住登录状态</el-checkbox>
-        <span 
-          class="forgot-password" 
-          @mouseenter="showTooltip = true" 
+        <span
+          class="forgot-password"
+          @mouseenter="showTooltip = true"
           @mouseleave="showTooltip = false"
-        >忘记密码
+          >忘记密码
         </span>
-        <div v-show="showTooltip" class="tooltip">请前往服务端，进入“assets/private/api”目录，删除“.password”文件后重新设置密码。</div>
+        <div v-show="showTooltip" class="tooltip">
+          请前往服务端，进入“assets/private/api”目录，删除“.password”文件后重新设置密码。
+        </div>
       </div>
 
-      <el-button 
-        type="primary" 
-        @click="checkPassword" 
-        :loading="loading" 
+      <el-button
+        type="primary"
+        @click="checkPassword"
+        :loading="loading"
         :disabled="loading"
       >
         登录
@@ -28,12 +35,12 @@
 </template>
 
 <script>
-import axios from '@/axios';
+import axios from "@/axios";
 
 export default {
   data() {
     return {
-      password: '',
+      password: "",
       rememberDevice: false,
       loading: false,
       showTooltip: false,
@@ -43,24 +50,27 @@ export default {
     async checkPassword() {
       this.loading = true;
       try {
-        const response = await axios.post('/api/auth', { password: this.password, remember: this.rememberDevice });
+        const response = await axios.post("/api/auth", {
+          password: this.password,
+          remember: this.rememberDevice,
+        });
 
         if (response.status === 200) {
           location.reload();
         } else {
-          this.$message.error('请求失败，请稍后再试');
+          this.$message.error("请求失败，请稍后再试");
         }
       } catch (error) {
         if (error.response && error.response.status === 401) {
-          this.$message.error('密码错误，请重新输入');
+          this.$message.error("密码错误，请重新输入");
         } else {
-          this.$message.error('请求失败，请稍后再试');
+          this.$message.error("请求失败，请稍后再试");
         }
       } finally {
         this.loading = false;
       }
-    }
-  }
+    },
+  },
 };
 </script>
 

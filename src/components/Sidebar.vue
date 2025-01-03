@@ -1,9 +1,10 @@
 <template>
   <el-aside width="200px" class="sidebar">
-    <el-menu 
-    :default-active="activeMenu"
-    class="sidebar-menu"
-    @select="handleSelect">
+    <el-menu
+      :default-active="activeMenu"
+      class="sidebar-menu"
+      @select="handleSelect"
+    >
       <el-menu-item index="dashboard">
         <i class="mdi mdi-view-dashboard"></i>
         <span>面板</span>
@@ -34,7 +35,7 @@
 
 <script>
 export default {
-  name: 'AppSidebar',
+  name: "AppSidebar",
   data() {
     return {
       activeMenu: this.getActiveMenuFromRoute(),
@@ -42,23 +43,30 @@ export default {
   },
   methods: {
     getActiveMenuFromRoute() {
-      const validPaths = ['dashboard', 'config', 'modules', 'logs', 'setting', 'about'];
+      const validPaths = [
+        "dashboard",
+        "config",
+        "modules",
+        "logs",
+        "setting",
+        "about",
+      ];
       const path = this.$route.name;
       if (validPaths.includes(path)) {
         return path;
       }
-      return ''; // 如果路径无效，则没有任何菜单项选中
+      return ""; // 如果路径无效，则没有任何菜单项选中
     },
     handleSelect(index) {
       this.activeMenu = index;
       this.$router.push({ name: index });
-    }
+    },
   },
   watch: {
-    '$route.name': function() {
+    "$route.name": function () {
       this.activeMenu = this.getActiveMenuFromRoute();
-    }
-  }
+    },
+  },
 };
 </script>
 
@@ -119,5 +127,4 @@ body.dark-mode .el-menu-item {
 body.dark-mode .el-menu-item.is-active {
   color: #0091ff;
 }
-
 </style>

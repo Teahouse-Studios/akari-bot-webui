@@ -1,7 +1,12 @@
 <template>
   <div class="editor-container">
     <el-tabs v-model="activeTab" @tab-click="handleTabClick">
-      <el-tab-pane v-for="file in configFiles" :key="file" :label="file" :name="file"></el-tab-pane>
+      <el-tab-pane
+        v-for="file in configFiles"
+        :key="file"
+        :label="file"
+        :name="file"
+      ></el-tab-pane>
     </el-tabs>
     <div class="editor-body">
       <codemirror
@@ -15,8 +20,7 @@
         <el-button type="warning" @click="resetConfig">
           <i class="mdi mdi-restart"></i> 重置
         </el-button>
-        <el-button type="success"
-          @click="applyConfig">
+        <el-button type="success" @click="applyConfig">
           <i class="mdi mdi-content-save-outline"></i> 应用
         </el-button>
       </div>
@@ -25,31 +29,31 @@
 </template>
 
 <script>
-import axios from '@/axios';
-import { EditorView } from '@codemirror/view';
-import { basicSetup } from 'codemirror';
-import { EditorState } from '@codemirror/state';
-import { oneDark } from '@codemirror/theme-one-dark';
+import axios from "@/axios";
+import { EditorView } from "@codemirror/view";
+import { basicSetup } from "codemirror";
+import { EditorState } from "@codemirror/state";
+import { oneDark } from "@codemirror/theme-one-dark";
 
 export default {
-  name: 'ConfigView',
+  name: "ConfigView",
   props: {
     userVerified: {
       type: Boolean,
-      default: false
-    }
+      default: false,
+    },
   },
   data() {
     return {
-      activeTab: '',
+      activeTab: "",
       configFiles: [],
-      editorContent: '',
+      editorContent: "",
       editorView: null,
       editorOptions: {
         lineWrapping: true,
         theme: oneDark,
         lineNumbers: true,
-        scrollbarStyle: 'native',
+        scrollbarStyle: "native",
       },
       fileContents: {},
     };
@@ -57,14 +61,14 @@ export default {
   methods: {
     async fetchConfigFiles() {
       try {
-        const response = await axios.get('/api/config');
+        const response = await axios.get("/api/config");
         this.configFiles = response.data.cfg_files;
         if (this.configFiles.length > 0) {
           this.activeTab = this.configFiles[0];
           this.fetchConfig(this.activeTab);
         }
       } catch (error) {
-        this.$message.error('无法获取配置文件列表，请稍后再试');
+        this.$message.error("无法获取配置文件列表，请稍后再试");
       }
     },
     async fetchConfig(fileName, force = false) {
@@ -80,24 +84,31 @@ export default {
         this.editorContent = response.data.content;
         this.updateEditorContent();
       } catch (error) {
-        this.$message.error('请求失败，请稍后再试');
+        this.$message.error("请求失败，请稍后再试");
       }
     },
     resetConfig() {
       this.fetchConfig(this.activeTab, true);
     },
     applyConfig() {
-      axios.post(`/api/config/${this.activeTab}`, { content: this.editorContent })
+      axios
+        .post(`/api/config/${this.activeTab}`, { content: this.editorContent })
         .then(() => {
-          this.$message.success('配置更新成功');
+          this.$message.success("配置更新成功");
         })
         .catch(() => {
-          this.$message.error('配置更新失败，请稍后再试');
+          this.$message.error("配置更新失败，请稍后再试");
         });
     },
     updateEditorContent() {
       if (this.editorView) {
-        this.editorView.dispatch({ changes: { from: 0, to: this.editorView.state.doc.length, insert: this.editorContent } });
+        this.editorView.dispatch({
+          changes: {
+            from: 0,
+            to: this.editorView.state.doc.length,
+            insert: this.editorContent,
+          },
+        });
       }
     },
     handleTabClick(pane) {
@@ -109,7 +120,7 @@ export default {
         this.editorContent = newContent;
         this.fileContents[this.activeTab] = newContent;
       }
-    }
+    },
   },
   mounted() {
     if (this.userVerified) {
@@ -120,16 +131,17 @@ export default {
     const state = EditorState.create({
       doc: this.editorContent,
       extensions: [
-      basicSetup,
-      oneDark,
-      EditorView.updateListener.of(this.handleEditorChange)]
+        basicSetup,
+        oneDark,
+        EditorView.updateListener.of(this.handleEditorChange),
+      ],
     });
 
     this.editorView = new EditorView({
       state,
-      parent: this.$refs.editor
+      parent: this.$refs.editor,
     });
-  }
+  },
 };
 </script>
 
