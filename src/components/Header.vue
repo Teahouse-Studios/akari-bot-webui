@@ -2,8 +2,8 @@
   <el-header class="header" :class="{ 'dark-mode': isDarkMode }">
     <div class="header-left">
       <div class="logo">
-        <el-button 
-          class="menu-button" 
+        <el-button
+          class="menu-button"
           @click="switchSidebar"
           v-if="screenWidth < 1024"
         >
@@ -19,7 +19,11 @@
     <div class="header-right">
       <el-button class="help-button" @click="goToHelp">帮助文档</el-button>
       <el-button class="theme-toggle-button" @click="toggleDarkMode">
-        <i :class="isDarkMode ? 'mdi mdi-weather-sunny' : 'mdi mdi-weather-night'"></i>
+        <i
+          :class="
+            isDarkMode ? 'mdi mdi-weather-sunny' : 'mdi mdi-weather-night'
+          "
+        ></i>
       </el-button>
     </div>
   </el-header>
@@ -27,29 +31,29 @@
 
 <script>
 export default {
-  name: 'AppHeader',
-  emits: ['toggle-dark-mode', 'toggle-sidebar'],
+  name: "AppHeader",
+  emits: ["toggle-dark-mode", "toggle-sidebar"],
   data() {
     return {
       isDarkMode: false,
-      screenWidth: window.innerWidth  // 初始屏幕宽度
+      screenWidth: window.innerWidth, // 初始屏幕宽度
     };
   },
   mounted() {
-    const savedTheme = localStorage.getItem('isDarkMode');
+    const savedTheme = localStorage.getItem("isDarkMode");
     if (savedTheme !== null) {
       this.isDarkMode = JSON.parse(savedTheme);
     }
     if (this.isDarkMode) {
-      document.body.classList.add('dark-mode');
+      document.body.classList.add("dark-mode");
     }
 
     // 监听窗口大小变化
-    window.addEventListener('resize', this.updateScreenWidth);
+    window.addEventListener("resize", this.updateScreenWidth);
   },
   beforeUnmount() {
     // 组件销毁时移除事件监听
-    window.removeEventListener('resize', this.updateScreenWidth);
+    window.removeEventListener("resize", this.updateScreenWidth);
   },
   methods: {
     // 更新屏幕宽度的方法
@@ -57,18 +61,18 @@ export default {
       this.screenWidth = window.innerWidth;
     },
     goToHelp() {
-      window.open('https://bot.teahouse.team', '_blank');
+      window.open("https://bot.teahouse.team", "_blank");
     },
     toggleDarkMode() {
       this.isDarkMode = !this.isDarkMode;
-      document.body.classList.toggle('dark-mode', this.isDarkMode);
-      localStorage.setItem('isDarkMode', JSON.stringify(this.isDarkMode));
-      this.$emit('toggle-dark-mode', this.isDarkMode);
+      document.body.classList.toggle("dark-mode", this.isDarkMode);
+      localStorage.setItem("isDarkMode", JSON.stringify(this.isDarkMode));
+      this.$emit("toggle-dark-mode", this.isDarkMode);
     },
     switchSidebar() {
-      this.$emit('toggle-sidebar');
-    }
-  }
+      this.$emit("toggle-sidebar");
+    },
+  },
 };
 </script>
 
