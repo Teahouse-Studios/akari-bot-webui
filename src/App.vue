@@ -38,6 +38,7 @@ import axios from "@/axios";
 import AppSidebar from "./components/Sidebar.vue";
 import AppHeader from "./components/Header.vue";
 import PasswordModal from "./components/PasswordModal.vue";
+import Cookies from 'js-cookie';
 
 export default {
   components: {
@@ -65,7 +66,7 @@ export default {
     this.initializeUserVerification();
   },
   watch: {
-    "$route.name": "loadCurrentView", // 路由变化时加载视图
+    "$route.name": "loadCurrentView",
   },
   beforeUnmount() {
     window.removeEventListener("resize", this.updateSidebarVisibility);
@@ -86,7 +87,6 @@ export default {
         this.checkPassword();
       }
     },
-
     async checkPassword() {
       try {
         const response = await axios.post("/api/auth", {});
@@ -104,24 +104,34 @@ export default {
         }
       }
     },
-
     async checkCsrfToken() {
-      try {
+      let csrfToken = Cookies.get("XSRF-TOKEN");
+
+      if (csrfToken) {
+        axios.defaults.headers.common["X-XSRF-TOKEN"] = csrfToken;
+      } else {
         const response = await axios.get("/api/get-csrf-token");
+
         if (response.status === 200) {
-          // CSRF token成功获取
-          console.log("CSRF token retrieved successfully");
+          const csrfTokenFromResponse = response.data.csrf_token;
+          
+          if (csrfTokenFromResponse) {
+            Cookies.set("XSRF-TOKEN", csrfTokenFromResponse, { 
+              expires: 60 / (24 * 60),
+              sameSite: 'Strict',
+              secure: true
+            });
+          
+          let csrfToken = Cookies.get("XSRF-TOKEN");
+          axios.defaults.headers.common["X-XSRF-TOKEN"] = csrfToken;
+          }
         }
-      } catch (error) {
-        console.error("Failed to retrieve CSRF token:", error);
       }
     },
-
     updateSidebarVisibility() {
       this.windowWidth = window.innerWidth;
       this.isSidebarVisible = this.windowWidth > 1024;
     },
-
     handleMenuSelect(view) {
       const viewComponent = `${view.charAt(0).toUpperCase() + view.slice(1)}View`;
       import(`./views/${viewComponent}.vue`).then((module) => {
@@ -129,17 +139,14 @@ export default {
         this.$router.push({ name: view });
       });
     },
-
     toggleSidebar() {
       if (this.windowWidth <= 1024) {
         this.isSidebarVisible = !this.isSidebarVisible;
       }
     },
-
     closeSidebar() {
       this.isSidebarVisible = false;
     },
-
     loadCurrentView(newRouteName) {
       if (this.userVerified) {
         const viewMap = {
@@ -150,7 +157,6 @@ export default {
           setting: "Setting",
           about: "About",
         };
-
         const viewName = viewMap[newRouteName] || "Empty";
         import(`./views/${viewName}View.vue`).then((module) => {
           this.currentView = module.default;

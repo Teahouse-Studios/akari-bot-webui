@@ -90,9 +90,12 @@ export default {
       }
     };
 
-    const connectWebSocket = () => {
+    const connectWebSocket = async() => {
       try {
-        let baseUrl = process.env.VUE_APP_API_URL;
+        const response = await fetch('/config.json');
+        const config = await response.json();
+        const apiUrl = config.api_url;
+        let baseUrl = apiUrl;
 
         // 如果 VUE_APP_API_URL 中没有协议部分，默认为 http://
         if (!/^https?:\/\//i.test(baseUrl)) {
