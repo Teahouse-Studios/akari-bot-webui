@@ -39,6 +39,7 @@ import { ref, onMounted, onBeforeUnmount, watch } from "vue";
 import { debounce } from "lodash";
 import { ElButton, ElInput, ElMessage } from "element-plus";
 import axios from "axios";
+import DOMPurify from 'dompurify';
 
 export default {
   name: "LogsView",
@@ -67,21 +68,25 @@ export default {
     ]);
     const searchText = ref("");
     const websocket = ref(null);
+    const cancelTokenSource = axios.CancelToken.source();
 
-    // 用于验证deviceToken
     const authenticateToken = async () => {
       try {
-        // 调用后端API进行身份验证
-        const response = await axios.get("/api/verify-token");
+        const response = await axios.get("/api/verify-token", {
+          cancelToken: cancelTokenSource.token,
+        });
 
         if (response.status === 200) {
-          // 通过身份验证后，开始连接 WebSocket
           connectWebSocket();
         } else {
           ElMessage.error("身份验证失败");
         }
-      } catch {
-        ElMessage.error("身份验证失败");
+      } catch (error) {
+        if (axios.isCancel(error)) {
+          console.log("Request canceled", error.message);
+        } else {
+          ElMessage.error("身份验证失败");
+        }
       }
     };
 
@@ -97,15 +102,12 @@ export default {
         // 使用 URL 对象解析并处理协议
         const url = new URL(baseUrl);
 
-        // 根据协议 (http/https) 转换为对应的 WebSocket 协议 (ws/wss)
         const wsProtocol = url.protocol === "https:" ? "wss:" : "ws:";
         const wsUrl = `${wsProtocol}//${url.hostname}:${url.port}/ws/logs`;
 
-        // 建立 WebSocket 连接
         websocket.value = new WebSocket(wsUrl);
 
         websocket.value.onopen = () => {
-          // WebSocket 连接成功后，发送身份验证信息
           websocket.value.send(JSON.stringify({ type: "auth" }));
         };
 
@@ -186,11 +188,13 @@ export default {
             break;
         }
 
+        const safeContent = DOMPurify.sanitize(logContent);
+
         return (
           `<span style="color:${logPlatformColor}">[${logPlatform}]</span>` +
           `<span style="color:${logModulesColor}">[${logModules}]</span>` +
           `<span style="color:${logDatetimeColor}">[${logDatetime}]</span>` +
-          `<span style="color:${logContentColor}; background-color:${logBackgroundColor}">[${logLevel}]:${logContent.replace(/\n/g, "<br>")}</span>`
+          `<span style="color:${logContentColor}; background-color:${logBackgroundColor}">[${logLevel}]:${safeContent.replace(/\n/g, "<br>")}</span>`
         );
       }
       return `<span style="color:${logContentColor}">${logLine.replace(/\n/g, "<br>")}</span>`;
@@ -221,6 +225,7 @@ export default {
       if (websocket.value) {
         websocket.value.close();
       }
+      cancelTokenSource.cancel("Component unmounted");
     });
 
     return {

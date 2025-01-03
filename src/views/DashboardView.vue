@@ -145,12 +145,16 @@ export default {
         used: 0,
         percent: 0,
       },
+      cancelTokenSource: axios.CancelToken.source(),
     };
   },
   mounted() {
     if (this.userVerified) {
       this.fetchDashboardData();
     }
+  },
+  beforeUnmount() {
+    this.cancelTokenSource.cancel("Component unmounted");
   },
   methods: {
     // 格式化时间为 "xx小时xx分xx秒"
@@ -176,7 +180,9 @@ export default {
     // 获取 API 数据
     async fetchDashboardData() {
       try {
-        const response = await axios.get("/api/server-info");
+        const response = await axios.get("/api/server-info", {
+          cancelToken: this.cancelTokenSource.token,
+        });
         const data = response.data;
 
         this.os = { ...this.os, ...data.os };
@@ -185,7 +191,11 @@ export default {
         this.memory = { ...this.memory, ...data.memory };
         this.disk = { ...this.disk, ...data.disk };
       } catch (error) {
-        this.$message.error("请求失败，请稍后再试");
+        if (axios.isCancel(error)) {
+          console.log("Request canceled", error.message);
+        } else {
+          this.$message.error("请求失败，请稍后再试");
+        }
       }
     },
     // 根据百分比值返回合适的颜色

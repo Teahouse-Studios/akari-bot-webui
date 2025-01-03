@@ -56,19 +56,49 @@ export default {
         scrollbarStyle: "native",
       },
       fileContents: {},
+      cancelTokenSource: axios.CancelToken.source(),
     };
+  },
+  mounted() {
+    if (this.userVerified) {
+      this.fetchConfigFiles();
+    }
+
+    // 初始化 CodeMirror 编辑器
+    const state = EditorState.create({
+      doc: this.editorContent,
+      extensions: [
+        basicSetup,
+        oneDark,
+        EditorView.updateListener.of(this.handleEditorChange),
+      ],
+    });
+
+    this.editorView = new EditorView({
+      state,
+      parent: this.$refs.editor,
+    });
+  },
+  beforeUnmount() {
+    this.cancelTokenSource.cancel("Component unmounted");
   },
   methods: {
     async fetchConfigFiles() {
       try {
-        const response = await axios.get("/api/config");
+        const response = await axios.get("/api/config", {
+          cancelToken: this.cancelTokenSource.token,
+        });
         this.configFiles = response.data.cfg_files;
         if (this.configFiles.length > 0) {
           this.activeTab = this.configFiles[0];
           this.fetchConfig(this.activeTab);
         }
       } catch (error) {
-        this.$message.error("无法获取配置文件列表，请稍后再试");
+        if (axios.isCancel(error)) {
+          console.log("Request canceled", error.message);
+        } else {
+          this.$message.error("无法获取配置文件列表，请稍后再试");
+        }
       }
     },
     async fetchConfig(fileName, force = false) {
@@ -79,12 +109,18 @@ export default {
       }
 
       try {
-        const response = await axios.get(`/api/config/${fileName}`);
+        const response = await axios.get(`/api/config/${fileName}`, {
+          cancelToken: this.cancelTokenSource.token,
+        });
         this.fileContents[fileName] = response.data.content;
         this.editorContent = response.data.content;
         this.updateEditorContent();
       } catch (error) {
-        this.$message.error("请求失败，请稍后再试");
+        if (axios.isCancel(error)) {
+          console.log("Request canceled", error.message);
+        } else {
+          this.$message.error("请求失败，请稍后再试");
+        }
       }
     },
     resetConfig() {
@@ -121,26 +157,6 @@ export default {
         this.fileContents[this.activeTab] = newContent;
       }
     },
-  },
-  mounted() {
-    if (this.userVerified) {
-      this.fetchConfigFiles();
-    }
-
-    // 初始化 CodeMirror 编辑器
-    const state = EditorState.create({
-      doc: this.editorContent,
-      extensions: [
-        basicSetup,
-        oneDark,
-        EditorView.updateListener.of(this.handleEditorChange),
-      ],
-    });
-
-    this.editorView = new EditorView({
-      state,
-      parent: this.$refs.editor,
-    });
   },
 };
 </script>

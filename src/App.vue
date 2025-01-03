@@ -47,10 +47,11 @@ export default {
   },
   data() {
     return {
-      currentView: null, // 当前显示的视图
-      userVerified: null, // 是否通过认证
-      isSidebarVisible: true, // 侧边栏是否可见
-      windowWidth: window.innerWidth, // 当前窗口宽度
+      currentView: null,
+      userVerified: null,
+      isSidebarVisible: true,
+      windowWidth: window.innerWidth,
+      cancelTokenSource: axios.CancelToken.source(),
     };
   },
   computed: {
