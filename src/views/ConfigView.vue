@@ -57,7 +57,7 @@ export default {
   methods: {
     async fetchConfigFiles() {
       try {
-        const response = await axios.get('/config');
+        const response = await axios.get('/api/config');
         this.configFiles = response.data.cfg_files;
         if (this.configFiles.length > 0) {
           this.activeTab = this.configFiles[0];
@@ -75,7 +75,7 @@ export default {
       }
 
       try {
-        const response = await axios.get(`/config/${fileName}`);
+        const response = await axios.get(`/api/config/${fileName}`);
         this.fileContents[fileName] = response.data.content;
         this.editorContent = response.data.content;
         this.updateEditorContent();
@@ -87,7 +87,7 @@ export default {
       this.fetchConfig(this.activeTab, true);
     },
     applyConfig() {
-      axios.post(`/config/${this.activeTab}`, { content: this.editorContent })
+      axios.post(`/api/config/${this.activeTab}`, { content: this.editorContent })
         .then(() => {
           this.$message.success('配置更新成功');
         })

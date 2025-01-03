@@ -30,7 +30,7 @@
 import { ref, onMounted, onBeforeUnmount, watch } from 'vue';
 import { debounce } from 'lodash';
 import { ElButton, ElInput, ElMessage } from 'element-plus';
-import Cookies from 'js-cookie';
+import axios from 'axios';
 
 export default {
   name: 'LogsView',
@@ -47,55 +47,59 @@ export default {
     const searchText = ref('');
     const websocket = ref(null);
 
+    // 用于验证deviceToken
+    const authenticateToken = async () => {
+      try {
+        // 调用后端API进行身份验证
+        const response = await axios.get('/api/verify-token');
+        
+        if (response.status === 200) {
+          // 通过身份验证后，开始连接 WebSocket
+          connectWebSocket();
+        } else {
+          ElMessage.error('身份验证失败');
+        }
+      } catch {
+        ElMessage.error('身份验证失败');
+      }
+    };
+
     const connectWebSocket = () => {
-  try {
-    // 从 Cookie 中获取 deviceToken
-    const deviceToken = Cookies.get('deviceToken'); // 使用 js-cookie 获取 deviceToken
+      try {
+        let baseUrl = process.env.VUE_APP_API_URL;
 
-    // 如果没有获取到 token，抛出错误
-    if (!deviceToken) {
-      throw new Error('Device token is missing');
-    }
+        // 如果 VUE_APP_API_URL 中没有协议部分，默认为 http://
+        if (!/^https?:\/\//i.test(baseUrl)) {
+          baseUrl = 'http://' + baseUrl;
+        }
 
-    // 通过环境变量获取基础 URL
-    let baseUrl = process.env.VUE_APP_API_URL;
+        // 使用 URL 对象解析并处理协议
+        const url = new URL(baseUrl);
 
-    // 如果 VUE_APP_API_URL 中没有协议部分，默认为 http://
-    if (!/^https?:\/\//i.test(baseUrl)) {
-      baseUrl = 'http://' + baseUrl;
-    }
+        // 根据协议 (http/https) 转换为对应的 WebSocket 协议 (ws/wss)
+        const wsProtocol = url.protocol === 'https:' ? 'wss:' : 'ws:';
+        const wsUrl = `${wsProtocol}//${url.hostname}:${url.port}/ws/logs`;
 
-    // 使用 URL 对象解析并处理协议
-    const url = new URL(baseUrl);
+        // 建立 WebSocket 连接
+        websocket.value = new WebSocket(wsUrl);
 
-    // 根据协议 (http/https) 转换为对应的 WebSocket 协议 (ws/wss)
-    const wsProtocol = url.protocol === 'https:' ? 'wss:' : 'ws:';
-    const wsUrl = `${wsProtocol}//${url.hostname}:${url.port}/ws/logs`;
+        websocket.value.onopen = () => {
+          // WebSocket 连接成功后，发送身份验证信息
+          websocket.value.send(JSON.stringify({ type: 'auth' }));
+        };
 
-    // 建立 WebSocket 连接
-    websocket.value = new WebSocket(wsUrl);
+        websocket.value.onmessage = (event) => {
+          logData.value += event.data + '\n';
+        };
 
-    // WebSocket 连接成功后，发送身份验证消息
-    websocket.value.onopen = () => {
-      // 发送身份验证信息
-      websocket.value.send(JSON.stringify({
-        type: 'auth',
-        token: deviceToken  // 将 deviceToken 发送到后端进行验证
-      }));
+        websocket.value.onerror = () => {
+          ElMessage.error('与服务端的连接中断');
+        };
+
+      } catch (error) {
+        ElMessage.error('获取日志内容失败: ' + error.message);
+      }
     };
-
-    websocket.value.onmessage = (event) => {
-      logData.value += event.data + '\n';
-    };
-
-    websocket.value.onerror = () => {
-      ElMessage.error('与服务端的连接中断');
-    };
-
-  } catch (error) {
-    ElMessage.error(`获取日志内容失败: ${error.message}`);
-  }
-};
 
     const updateLogs = debounce(() => {
       const rawLines = logData.value.split('\n');
@@ -179,7 +183,7 @@ export default {
     };
 
     onMounted(() => {
-      connectWebSocket();
+      authenticateToken();
     });
 
     watch(logData, updateLogs);
@@ -204,6 +208,7 @@ export default {
   }
 };
 </script>
+
 
 <style scoped>
 .log-viewer-container {

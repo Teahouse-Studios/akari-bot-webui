@@ -131,7 +131,7 @@ export default {
     // 获取 API 数据
     async fetchDashboardData() {
       try {
-        const response = await axios.get('/server-info');
+        const response = await axios.get('/api/server-info');
         const data = response.data;
 
         this.os = { ...this.os, ...data.os };

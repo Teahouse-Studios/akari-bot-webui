@@ -1,7 +1,7 @@
 <template>
   <div id="app">
-    <AppHeader @refresh="refresh" @modifyPassword="modifyPassword" @toggle-sidebar="toggleSidebar" />
-    <PasswordModal v-if="!userVerified"/>
+    <AppHeader @toggle-sidebar="toggleSidebar" />
+    <PasswordModal v-if="userVerified == false" />
     <el-container :style="{ marginTop: '60px' }">
       <div v-if="isSidebarVisible && windowWidth <= 1024" class="sidebar-overlay" @click="closeSidebar"></div>
       <AppSidebar :class="['sidebar', { show: isSidebarVisible }]" @menuSelect="handleMenuSelect" />
@@ -18,7 +18,6 @@ import axios from '@/axios';
 import AppSidebar from './components/Sidebar.vue';
 import AppHeader from './components/Header.vue';
 import PasswordModal from './components/PasswordModal.vue';
-import Cookies from 'js-cookie';
 
 export default {
   components: {
@@ -28,10 +27,10 @@ export default {
   },
   data() {
     return {
-      currentView: null,
-      userVerified: false,
-      isSidebarVisible: true,
-      windowWidth: window.innerWidth
+      currentView: null, // 当前显示的视图
+      userVerified: null, // 是否通过认证
+      isSidebarVisible: true, // 侧边栏是否可见
+      windowWidth: window.innerWidth // 当前窗口宽度
     };
   },
   computed: {
@@ -45,27 +44,36 @@ export default {
     this.initializeUserVerification();
   },
   watch: {
-    '$route.name': 'loadCurrentView',
+    '$route.name': 'loadCurrentView', // 路由变化时加载视图
   },
   beforeUnmount() {
     window.removeEventListener('resize', this.updateSidebarVisibility);
   },
   methods: {
     async initializeUserVerification() {
-      const deviceToken = Cookies.get('deviceToken');
-      if (deviceToken) {
-        this.userVerified = true;
-        await this.checkCsrfToken();
-      } else {
-        this.checkPassword();
-      }
-    },
-    async checkPassword() {
       try {
-        const response = await axios.post('/auth', { password: '' });
+        const response = await axios.get('/api/verify-token');
         if (response.status === 200) {
           this.userVerified = true;
           await this.checkCsrfToken();
+          // 用户验证成功后自动加载当前视图
+          this.loadCurrentView(this.$route.name);
+        } else {
+          this.checkPassword();
+        }
+      } catch (error) {
+        this.checkPassword();
+      }
+    },
+
+    async checkPassword() {
+      try {
+        const response = await axios.post('/api/auth', {});
+        if (response.status === 200) {
+          this.userVerified = true;
+          await this.checkCsrfToken();
+          // 用户验证成功后自动加载当前视图
+          this.loadCurrentView(this.$route.name);
         }
       } catch (error) {
         if (error.response?.status === 401) {
@@ -75,42 +83,42 @@ export default {
         }
       }
     },
+
     async checkCsrfToken() {
-      const csrfToken = Cookies.get('csrfToken');
-      if (!csrfToken) {
-        try {
-          const response = await axios.get('/get-csrf-token');
-          if (response.status === 200) {
-            const expirationDate = new Date();
-            expirationDate.setDate(expirationDate.getMinutes() + 30);
-            Cookies.set('csrfToken', response.data.csrfToken, {
-              sameSite: 'Strict',
-              expires: expirationDate
-            });
-          }
-        } catch (error) {
-          console.error('Failed to retrieve CSRF token:', error);
+      try {
+        const response = await axios.get('/api/get-csrf-token');
+        if (response.status === 200) {
+          // CSRF token成功获取
+          console.log('CSRF token retrieved successfully');
         }
+      } catch (error) {
+        console.error('Failed to retrieve CSRF token:', error);
       }
     },
+
     updateSidebarVisibility() {
       this.windowWidth = window.innerWidth;
       this.isSidebarVisible = this.windowWidth > 1024;
     },
+    
     handleMenuSelect(view) {
       const viewComponent = `${view.charAt(0).toUpperCase() + view.slice(1)}View`;
       import(`./views/${viewComponent}.vue`).then((module) => {
         this.currentView = module.default;
+        this.$router.push({ name: view });
       });
     },
+
     toggleSidebar() {
       if (this.windowWidth <= 1024) {
         this.isSidebarVisible = !this.isSidebarVisible;
       }
     },
+
     closeSidebar() {
       this.isSidebarVisible = false;
     },
+
     loadCurrentView(newRouteName) {
       if (this.userVerified) {
         const viewMap = {

@@ -29,7 +29,6 @@
 
 <script>
 import axios from '@/axios';
-import Cookies from 'js-cookie';
 
 export default {
   data() {
@@ -44,13 +43,10 @@ export default {
     async checkPassword() {
       this.loading = true;
       try {
-        const response = await axios.post('/auth', { password: this.password, remember: this.rememberDevice });
+        const response = await axios.post('/api/auth', { password: this.password, remember: this.rememberDevice });
 
         if (response.status === 200) {
           location.reload();
-          
-          const expiresIn = this.rememberDevice ? 365 : 1;
-          Cookies.set('deviceToken', response.data.deviceToken, { expires: expiresIn, sameSite: 'Strict' });
         } else {
           this.$message.error('请求失败，请稍后再试');
         }
