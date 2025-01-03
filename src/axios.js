@@ -14,7 +14,7 @@ const loadConfig = async () => {
 const initAxios = async () => {
   const config = await loadConfig()
 
-  axios.defaults.baseURL = config.API_URL || process.env.VUE_APP_API_URL  // 如果 config.json 没有提供 API_URL, 使用环境变量
+  axios.defaults.baseURL = config.API_URL || process.env.VUE_APP_API_URL // 如果 config.json 没有提供 API_URL, 使用环境变量
   axios.defaults.timeout = 50000
 
   axios.interceptors.request.use(
