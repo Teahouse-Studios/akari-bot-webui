@@ -1,7 +1,6 @@
 <template>
   <el-header class="header" :class="{ 'dark-mode': isDarkMode }">
     <div class="header-left">
-      <div class="logo">
         <el-button
           class="menu-button"
           @click="switchSidebar"
@@ -9,10 +8,14 @@
         >
           <i class="mdi mdi-menu"></i>
         </el-button>
+      <div class="logo">
         <img src="@/assets/logo.png" alt="Logo" class="logo-image" />
         <div class="logo-text">
           <span class="akari-bot-text">AkariBot</span>
-          <span class="web-ui-text">WebUI</span>
+          <div class="webui-container">
+            <span class="web-ui-text">WebUI </span> 
+            <span class="beta-tag">Alpha</span>
+          </div>
         </div>
       </div>
     </div>
@@ -82,7 +85,7 @@ export default {
   justify-content: space-between;
   align-items: center;
   padding: 0 20px;
-  background-color: #f4f4f4;
+  background-color: white;
   height: 60px;
   position: fixed;
   top: 0;
@@ -108,12 +111,12 @@ export default {
 }
 
 .menu-button:hover {
-  background-color: #bbb;
-  color: #555;
+  background-color: white;
+  color: #666;
 }
 
-body.dark-mode .menu-button:hover {
-  background-color: #444;
+.dark-mode .menu-button:hover {
+  background-color: #333;
   color: #aaa;
 }
 
@@ -122,28 +125,31 @@ body.dark-mode .menu-button:hover {
   color: white;
 }
 
-body.dark-mode .theme-toggle {
+.dark-mode .theme-toggle {
   background: white;
   color: #333;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
 }
 
 .logo {
   font-size: 22px;
   font-weight: bold;
   display: flex;
-  align-items: center;
-  justify-content: center;
+  justify-content: left;
   padding: 20px 0;
 }
 
 .logo-image {
-  height: 40px;
+  height: 46px;
   width: auto;
-  margin-right: 8px;
+  margin-right: 2px;
 }
 
 .logo-text {
-  display: flex;
   flex-direction: column;
   justify-content: flex-start;
 }
@@ -152,9 +158,25 @@ body.dark-mode .theme-toggle {
   font-size: 18px;
 }
 
+.webui-container {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
 .web-ui-text {
   font-size: 12px;
   color: #888;
+}
+
+.beta-tag {
+  display: inline-block;
+  background-color: #ff5100; /* 蓝色背景 */
+  color: white; /* 白色文字 */
+  font-size: 8px;
+  padding: 1px 5px;
+  border-radius: 12px; /* 圆角 */
+  text-transform: uppercase;
 }
 
 .theme-toggle-button {
@@ -170,12 +192,12 @@ body.dark-mode .theme-toggle {
   color: white;
 }
 
-body.dark-mode .theme-toggle-button {
+.dark-mode .theme-toggle-button {
   background-color: #eee;
   color: #333;
 }
 
-body.dark-mode .theme-toggle-button:hover {
+.dark-mode .theme-toggle-button:hover {
   background-color: #c0c0c0;
   color: #333;
 }

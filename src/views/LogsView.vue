@@ -255,13 +255,13 @@ export default {
 
 .filter-container {
   padding: 10px;
-  background-color: #c8c8c8;
+  background-color: #ddd;
   border-radius: 8px;
   margin-bottom: 10px;
 }
 
-body.dark-mode .filter-container {
-  background-color: #5a5a5a;
+.dark-mode .filter-container {
+  background-color: #555;
 }
 
 .el-button {
@@ -343,7 +343,7 @@ body.dark-mode .filter-container {
   background-color: #0c0c0c;
   color: #fff;
   padding: 10px;
-  font-family: monospace;
+  font-family: 'Consolas', 'Noto Sans Mono', 'Courier New', Courier, monospace;
   white-space: pre-wrap;
 }
 </style>

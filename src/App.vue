@@ -188,7 +188,7 @@ export default {
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: white;
+  background-color: #f4f4f4;
   z-index: -1;
 }
 
@@ -196,7 +196,7 @@ export default {
   color: white;
 }
 
-body.dark-mode .content-footer {
+.dark-mode .content-footer {
   background-color: #181818;
 }
 
@@ -206,7 +206,7 @@ body.dark-mode .content-footer {
   left: 0;
   bottom: 0;
   width: 200px;
-  background-color: #f4f4f4;
+  background-color: white;
   z-index: 100;
   transition: transform 0.3s ease-in-out;
 }

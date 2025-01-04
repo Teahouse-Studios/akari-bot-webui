@@ -162,7 +162,7 @@ export default {
 </script>
 
 <style scoped>
-body.dark-mode .el-progress ::v-deep(.el-progress__text) {
+.dark-mode .el-progress ::v-deep(.el-progress__text) {
   color: #aaa;
 }
 
@@ -171,7 +171,7 @@ body.dark-mode .el-progress ::v-deep(.el-progress__text) {
   flex-direction: column;
 }
 
-body.dark-mode .editor-container {
+.dark-mode .editor-container {
   color: white;
 }
 
@@ -179,7 +179,7 @@ body.dark-mode .editor-container {
   color: #555;
 }
 
-body.dark-mode .editor-container ::v-deep(.el-tabs__item) {
+.dark-mode .editor-container ::v-deep(.el-tabs__item) {
   color: #ddd;
 }
 
@@ -199,6 +199,14 @@ body.dark-mode .editor-container ::v-deep(.el-tabs__item) {
 
 ::v-deep(.cm-editor) {
   height: 100%;
+}
+
+::v-deep(.cm-gutters) {
+  font-family: 'Consolas', 'Noto Sans Mono', 'Courier New', Courier, monospace;
+}
+
+::v-deep(.cm-content) {
+  font-family: 'Consolas', 'Noto Sans Mono', 'Courier New', Courier, monospace;
 }
 
 .editor-footer {
