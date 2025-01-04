@@ -215,7 +215,7 @@ export default {
 </script>
 <style scoped>
 .el-card {
-  background-color: #eee;
+  background-color: white;
   border: 1px solid #e0e0e0;
   box-shadow: none;
   margin-bottom: 20px;
@@ -223,7 +223,7 @@ export default {
   white-space: nowrap;
 }
 
-body.dark-mode .el-card {
+.dark-mode .el-card {
   background-color: #333;
   color: white;
   border: 1px solid #1f1f1f;
@@ -234,7 +234,7 @@ body.dark-mode .el-card {
   text-overflow: ellipsis;
 }
 
-body.dark-mode .data-text {
+.dark-mode .data-text {
   color: #ccc;
 }
 
@@ -243,15 +243,15 @@ body.dark-mode .data-text {
   color: #333;
 }
 
-body.dark-mode .data-title {
+.dark-mode .data-title {
   color: white;
 }
 
 .memory-dashboards .el-progress--dashboard {
-  background-color: #eee;
+  background-color: white;
 }
 
-body.dark-mode .memory-dashboards .el-progress--dashboard {
+.dark-mode .memory-dashboards .el-progress--dashboard {
   background-color: #333;
 }
 
@@ -259,7 +259,7 @@ body.dark-mode .memory-dashboards .el-progress--dashboard {
   color: #555;
 }
 
-body.dark-mode .memory-dashboards ::v-deep(.el-progress__text) {
+.dark-mode .memory-dashboards ::v-deep(.el-progress__text) {
   color: #aaa;
 }
 

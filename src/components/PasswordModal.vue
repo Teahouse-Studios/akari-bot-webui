@@ -98,7 +98,7 @@ export default {
   width: 300px;
 }
 
-body.dark-mode .password-modal {
+.dark-mode .password-modal {
   background: #333;
   color: white;
 }
@@ -107,7 +107,7 @@ body.dark-mode .password-modal {
   color: #333;
 }
 
-body.dark-mode .el-checkbox {
+.dark-mode .el-checkbox {
   color: white;
 }
 
@@ -131,11 +131,11 @@ body.dark-mode .el-checkbox {
   color: #333;
 }
 
-body.dark-mode .forgot-password {
+.dark-mode .forgot-password {
   color: #ccc;
 }
 
-body.dark-mode .forgot-password:hover {
+.dark-mode .forgot-password:hover {
   color: white;
 }
 

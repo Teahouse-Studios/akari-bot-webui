@@ -72,7 +72,7 @@ export default {
 
 <style scoped>
 .sidebar {
-  background-color: #f4f4f4;
+  background-color: white;
   position: fixed;
   left: 0;
   bottom: 0;
@@ -82,17 +82,17 @@ export default {
   border-right: 1px solid #e0e0e0;
 }
 
-body.dark-mode .sidebar {
+.dark-mode .sidebar {
   background-color: #333;
   border-right: 1px solid #1f1f1f;
 }
 
 .sidebar-menu {
   border-right: none !important;
-  background-color: #f4f4f4;
+  background-color: white;
 }
 
-body.dark-mode .sidebar-menu {
+.dark-mode .sidebar-menu {
   background-color: #333;
 }
 
@@ -112,7 +112,7 @@ body.dark-mode .sidebar-menu {
   background-color: #bbb;
 }
 
-body.dark-mode .el-menu-item:hover {
+.dark-mode .el-menu-item:hover {
   background-color: #444;
 }
 
@@ -120,11 +120,11 @@ body.dark-mode .el-menu-item:hover {
   color: #0091ff;
 }
 
-body.dark-mode .el-menu-item {
+.dark-mode .el-menu-item {
   color: #ccc;
 }
 
-body.dark-mode .el-menu-item.is-active {
+.dark-mode .el-menu-item.is-active {
   color: #0091ff;
 }
 </style>
