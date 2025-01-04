@@ -13,21 +13,9 @@
         <i class="mdi mdi-cog"></i>
         <span>配置</span>
       </el-menu-item>
-      <el-menu-item index="modules">
-        <i class="mdi mdi-puzzle"></i>
-        <span>模块</span>
-      </el-menu-item>
       <el-menu-item index="logs">
         <i class="mdi mdi-console"></i>
         <span>日志</span>
-      </el-menu-item>
-      <el-menu-item index="setting">
-        <i class="mdi mdi-tune"></i>
-        <span>更多设置</span>
-      </el-menu-item>
-      <el-menu-item index="about">
-        <i class="mdi mdi-information-outline"></i>
-        <span>关于</span>
       </el-menu-item>
     </el-menu>
   </el-aside>
@@ -46,10 +34,7 @@ export default {
       const validPaths = [
         "dashboard",
         "config",
-        "modules",
         "logs",
-        "setting",
-        "about",
       ];
       const path = this.$route.name;
       if (validPaths.includes(path)) {
