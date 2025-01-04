@@ -14,7 +14,7 @@
           <span class="akari-bot-text">AkariBot</span>
           <div class="webui-container">
             <span class="web-ui-text">WebUI </span> 
-            <span class="beta-tag">Alpha</span>
+            <span class="beta-tag">Beta</span>
           </div>
         </div>
       </div>
@@ -171,7 +171,7 @@ export default {
 
 .beta-tag {
   display: inline-block;
-  background-color: #ff5100; /* 蓝色背景 */
+  background-color: #0091ff; /* 蓝色背景 */
   color: white; /* 白色文字 */
   font-size: 8px;
   padding: 1px 5px;
