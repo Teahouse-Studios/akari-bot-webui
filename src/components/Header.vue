@@ -111,12 +111,12 @@ export default {
 }
 
 .menu-button:hover {
-  background-color: #bbb;
-  color: #555;
+  background-color: white;
+  color: #666;
 }
 
-body.dark-mode .menu-button:hover {
-  background-color: #444;
+.dark-mode .menu-button:hover {
+  background-color: #333;
   color: #aaa;
 }
 
@@ -125,7 +125,7 @@ body.dark-mode .menu-button:hover {
   color: white;
 }
 
-body.dark-mode .theme-toggle {
+.dark-mode .theme-toggle {
   background: white;
   color: #333;
 }
@@ -150,7 +150,6 @@ body.dark-mode .theme-toggle {
 }
 
 .logo-text {
-  display: flex;
   flex-direction: column;
   justify-content: flex-start;
 }
@@ -193,12 +192,12 @@ body.dark-mode .theme-toggle {
   color: white;
 }
 
-body.dark-mode .theme-toggle-button {
+.dark-mode .theme-toggle-button {
   background-color: #eee;
   color: #333;
 }
 
-body.dark-mode .theme-toggle-button:hover {
+.dark-mode .theme-toggle-button:hover {
   background-color: #c0c0c0;
   color: #333;
 }

@@ -248,11 +248,7 @@ export default {
 }
 
 .memory-dashboards .el-progress--dashboard {
-  background-color: white;
-}
-
-.dark-mode .memory-dashboards .el-progress--dashboard {
-  background-color: #333;
+  background-color: transparent;
 }
 
 .memory-dashboards ::v-deep(.el-progress__text) {

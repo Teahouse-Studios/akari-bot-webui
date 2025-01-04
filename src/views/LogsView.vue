@@ -343,7 +343,7 @@ export default {
   background-color: #0c0c0c;
   color: #fff;
   padding: 10px;
-  font-family: 'Noto Sans Mono', monospace;
+  font-family: 'Consolas', 'Noto Sans Mono', 'Courier New', Courier, monospace;
   white-space: pre-wrap;
 }
 </style>
