@@ -8,63 +8,45 @@ import AboutView from "./views/AboutView.vue";
 
 const routes = [
   {
-    path: "/dashboard",
+    path: "/webui/dashboard",
     name: "dashboard",
     component: DashboardView,
   },
   {
-    path: "/config",
+    path: "/webui/config",
     name: "config",
     component: ConfigView,
   },
   {
-    path: "/modules",
+    path: "/webui/modules",
     name: "modules",
     component: ModulesView,
   },
   {
-    path: "/logs",
+    path: "/webui/logs",
     name: "logs",
     component: LogsView,
   },
   {
-    path: "/setting",
+    path: "/webui/setting",
     name: "setting",
     component: SettingView,
   },
   {
-    path: "/about",
+    path: "/webui/about",
     name: "about",
     component: AboutView,
   },
-  // 无效路由处理：匹配任何未定义的路径，显示空内容
+  // 无效路由处理：匹配任何未定义的路径，重定向到仪表板
   {
-    path: "/:pathMatch(.*)*",
-    name: "notFound",
-    component: { template: "<div></div>" },
+    path: "/webui/:pathMatch(.*)*",
+    redirect: "/webui/dashboard",
   },
 ];
 
 const router = createRouter({
   history: createWebHistory(),
   routes,
-});
-
-// 在路由守卫中处理无效的路径
-router.beforeEach((to, from, next) => {
-  const validPaths = [
-    "dashboard",
-    "config",
-    "modules",
-    "logs",
-    "setting",
-    "about",
-  ];
-  if (validPaths.includes(to.name)) {
-    next();
-  } else {
-    next({ name: "notFound" }); // 导航到空白视图
-  }
 });
 
 export default router;
