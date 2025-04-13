@@ -1,6 +1,6 @@
 <template>
   <el-row :gutter="20">
-    <el-col :span="24" :xs="30">
+    <el-col :span="20" :xs="24">
       <el-card :body-style="{ height: '400px' }" v-loading="loading">
         <div class="card-header">
           <h3><i class="mdi mdi-chart-line"></i> 命令统计</h3>
