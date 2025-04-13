@@ -152,6 +152,11 @@ export default {
 .logo-text {
   flex-direction: column;
   justify-content: flex-start;
+  font-family:
+          "Roboto",
+          system-ui,
+          -apple-system,
+          sans-serif;
 }
 
 .akari-bot-text {

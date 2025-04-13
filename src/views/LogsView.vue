@@ -7,7 +7,12 @@
         class="platform-tag-input"
         @input="handleSearch"
         clearable
-        :style="{ width: '100%' }"
+        :style="{ width: 'calc(100% - 135px)' }"
+      />
+
+      <span class="auto-scroll-label">自动滚动</span>
+      <el-switch
+        v-model="autoScroll"
       />
 
       <el-button
@@ -25,19 +30,17 @@
     </div>
 
     <div class="log-viewer" ref="logViewer">
-      <div
-        v-for="(logLine, index) in visibleLogs"
-        :key="index"
-        v-html="logLine"
-      ></div>
-    </div>
-  </div>
+  <div v-for="(logLine, index) in visibleLogs" :key="index" v-html="logLine"></div>
+
+  <div v-if="visibleLogs.length === 0" class="log-viewer-placeholder">There are currently no matching logs here...<br>Use the filter box above to adjust the options.</div>
+</div>
+</div>
 </template>
 
 <script>
 import { ref, onMounted, onBeforeUnmount, watch } from "vue";
 import { debounce } from "lodash";
-import { ElButton, ElInput, ElMessage } from "element-plus";
+import { ElButton, ElInput, ElMessage, ElSwitch } from "element-plus";
 import axios from "axios";
 import DOMPurify from "dompurify";
 
@@ -46,6 +49,7 @@ export default {
   components: {
     ElButton,
     ElInput,
+    ElSwitch,
   },
   setup() {
     const logData = ref("");
@@ -69,6 +73,7 @@ export default {
     const searchText = ref("");
     const websocket = ref(null);
     const cancelTokenSource = axios.CancelToken.source();
+    const autoScroll = ref(true);
 
     const authenticateToken = async () => {
       try {
@@ -97,14 +102,11 @@ export default {
         const apiUrl = config.api_url;
         let baseUrl = apiUrl;
 
-        // 如果 VUE_APP_API_URL 中没有协议部分，默认为 http://
         if (!/^https?:\/\//i.test(baseUrl)) {
           baseUrl = "http://" + baseUrl;
         }
 
-        // 使用 URL 对象解析并处理协议
         const url = new URL(baseUrl);
-
         const wsProtocol = url.protocol === "https:" ? "wss:" : "ws:";
         const wsUrl = `${wsProtocol}//${url.hostname}:${url.port}/ws/logs`;
 
@@ -152,6 +154,12 @@ export default {
           activeLogLevels.value.some((level) => logLine.includes(level))
         );
       });
+
+      if (autoScroll.value && logViewer.value) {
+        setTimeout(() => {
+          logViewer.value.scrollTop = logViewer.value.scrollHeight;
+        }, 200);
+      }
     }, 500);
 
     const formatLogLine = (logLine) => {
@@ -241,6 +249,7 @@ export default {
       updateLogs,
       toggleLogLevel,
       handleSearch,
+      autoScroll,
     };
   },
 };
@@ -264,9 +273,18 @@ export default {
   background-color: #555;
 }
 
+.auto-scroll-label {
+  margin-left: 15px;
+  margin-right: 5px;
+}
+
 .el-button {
   margin: 5px;
   background-color: transparent;
+}
+
+.el-button + .el-button {
+  margin-left: 5px;
 }
 
 .el-input {
@@ -345,5 +363,9 @@ export default {
   padding: 10px;
   font-family: "Consolas", "Noto Sans Mono", "Courier New", Courier, monospace;
   white-space: pre-wrap;
+}
+
+.log-viewer-placeholder {
+  color: #636363;
 }
 </style>
