@@ -1,13 +1,13 @@
 <template>
   <el-header class="header" :class="{ 'dark-mode': isDarkMode }">
     <div class="header-left">
-        <el-button
-          class="menu-button"
-          @click="switchSidebar"
-          v-if="screenWidth < 1024"
-        >
-          <i class="mdi mdi-menu"></i>
-        </el-button>
+      <el-button
+        class="menu-button"
+        @click="switchSidebar"
+        v-if="screenWidth < 1024"
+      >
+        <i class="mdi mdi-menu"></i>
+      </el-button>
       <div class="logo">
         <img src="@/assets/logo.png" alt="Logo" class="logo-image" />
         <div class="logo-text">
@@ -152,6 +152,11 @@ export default {
 .logo-text {
   flex-direction: column;
   justify-content: flex-start;
+  font-family:
+          "Roboto",
+          system-ui,
+          -apple-system,
+          sans-serif;
 }
 
 .akari-bot-text {
