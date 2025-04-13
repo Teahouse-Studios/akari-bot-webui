@@ -103,14 +103,19 @@
       </el-card>
     </el-col>
   </el-row>
+  <AnalyticsCard :userVerified="true" />
 </template>
 
 <script>
 import axios from "@/axios";
+import AnalyticsCard from "@/components/AnalyticsCard.vue";
 
 const progress_colors = ["#1989fa", "#e6a23c", "#f56c6c"];
 
 export default {
+  components: {
+    AnalyticsCard,  // 在 components 中注册
+  },
   props: {
     userVerified: {
       type: Boolean,
@@ -157,18 +162,16 @@ export default {
     this.cancelTokenSource.cancel("Component unmounted");
   },
   methods: {
-    // 格式化时间为 "xx小时xx分xx秒"
     formatRunningTime(seconds) {
       const hours = Math.floor(seconds / 3600);
       const minutes = Math.floor((seconds % 3600) / 60);
       const remainingSeconds = Math.floor(seconds % 60);
       return `${hours}小时${minutes}分${remainingSeconds}秒`;
     },
-    // 格式化时间戳
     formatTime(timestamp) {
       const date = new Date(timestamp * 1000);
       return date.toLocaleString("zh-CN", {
-        hour12: false, // 禁用12小时制，使用24小时制
+        hour12: false,
         year: "numeric",
         month: "2-digit",
         day: "2-digit",
@@ -198,15 +201,14 @@ export default {
         }
       }
     },
-    // 根据百分比值返回合适的颜色
     getProgressColor(percentage) {
       if (percentage >= 90) {
-        return progress_colors[2]; // 红色
+        return progress_colors[2];
       } else {
         if (percentage >= 60) {
-          return progress_colors[1]; // 黄色
+          return progress_colors[1];
         } else {
-          return progress_colors[0]; // 蓝色
+          return progress_colors[0];
         }
       }
     },
