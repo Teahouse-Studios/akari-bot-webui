@@ -217,18 +217,10 @@ export default {
 </script>
 <style scoped>
 .el-card {
-  background-color: white;
-  border: 1px solid #e0e0e0;
   box-shadow: none;
   margin-bottom: 20px;
   line-height: 1;
   white-space: nowrap;
-}
-
-.dark-mode .el-card {
-  background-color: #333;
-  color: white;
-  border: 1px solid #1f1f1f;
 }
 
 .data-text {
@@ -236,7 +228,7 @@ export default {
   text-overflow: ellipsis;
 }
 
-.dark-mode .data-text {
+.dark .data-text {
   color: #ccc;
 }
 
@@ -245,7 +237,7 @@ export default {
   color: #333;
 }
 
-.dark-mode .data-title {
+.dark .data-title {
   color: white;
 }
 
@@ -255,10 +247,6 @@ export default {
 
 .memory-dashboards ::v-deep(.el-progress__text) {
   color: #555;
-}
-
-.dark-mode .memory-dashboards ::v-deep(.el-progress__text) {
-  color: #aaa;
 }
 
 .percentage-value {

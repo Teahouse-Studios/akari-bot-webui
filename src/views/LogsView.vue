@@ -268,8 +268,7 @@ export default {
   border-radius: 8px;
   margin-bottom: 10px;
 }
-
-.dark-mode .filter-container {
+.dark .filter-container {
   background-color: #555;
 }
 

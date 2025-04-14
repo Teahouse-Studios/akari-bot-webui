@@ -97,19 +97,11 @@ export default {
   gap: 14px;
   width: 300px;
 }
-
-.dark-mode .password-modal {
+.dark .password-modal {
   background: #333;
   color: white;
 }
 
-.el-checkbox {
-  color: #333;
-}
-
-.dark-mode .el-checkbox {
-  color: white;
-}
 
 .remember-device-container {
   display: flex;
@@ -118,7 +110,6 @@ export default {
   gap: 10px;
 }
 
-/* 忘记密码文字样式 */
 .forgot-password {
   color: #666;
   cursor: pointer;
@@ -126,16 +117,15 @@ export default {
   text-decoration: underline;
   transition: color 0.3s;
 }
-
 .forgot-password:hover {
   color: #333;
 }
 
-.dark-mode .forgot-password {
+.dark .forgot-password {
   color: #ccc;
 }
 
-.dark-mode .forgot-password:hover {
+.dark .forgot-password:hover {
   color: white;
 }
 

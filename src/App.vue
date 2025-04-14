@@ -191,12 +191,7 @@ export default {
   background-color: #f4f4f4;
   z-index: -1;
 }
-
-.dark-mode .content {
-  color: white;
-}
-
-.dark-mode .content-footer {
+.dark .content-footer {
   background-color: #181818;
 }
 

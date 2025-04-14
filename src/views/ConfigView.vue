@@ -162,25 +162,9 @@ export default {
 </script>
 
 <style scoped>
-.dark-mode .el-progress ::v-deep(.el-progress__text) {
-  color: #aaa;
-}
-
 .editor-container {
   display: flex;
   flex-direction: column;
-}
-
-.dark-mode .editor-container {
-  color: white;
-}
-
-.editor-container ::v-deep(.el-tabs__item) {
-  color: #555;
-}
-
-.dark-mode .editor-container ::v-deep(.el-tabs__item) {
-  color: #ddd;
 }
 
 .editor-actions {
