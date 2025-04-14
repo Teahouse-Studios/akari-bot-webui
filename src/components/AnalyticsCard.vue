@@ -1,6 +1,6 @@
 <template>
   <el-row :gutter="20">
-    <el-col :span="20" :xs="24">
+    <el-col :span="16" :xs="24">
       <el-card :body-style="{ height: '400px' }" v-loading="loading">
         <div class="card-header">
           <h3><i class="mdi mdi-chart-line"></i> 命令统计</h3>
@@ -12,7 +12,45 @@
             <el-option label="过去 365 天" value="365"></el-option>
           </el-select>
         </div>
-        <div ref="chartContainer" style="height: 300px;"></div>
+        <div class="statistics-content">
+  <div class="data-group">
+    <strong class="data-title">总消息数</strong>
+    <span class="data-text">{{ count || 0 }}</span>
+  </div>
+  <div class="data-group">
+    <strong class="data-title">平均消息数</strong>
+    <span class="data-text">{{ averageCount || 0 }}</span>
+  </div>
+  <div class="data-group">
+    <strong class="data-title">改变率</strong>
+    <span
+      :class="{
+        positive: changeRate > 0,
+        negative: changeRate < 0,
+        'data-text': changeRate === 0
+      }"
+    >
+      {{ changeRate > 0 ? `+${changeRate}%` : changeRate === 0 ? '0%' : `${changeRate}%` }}
+    </span>
+  </div>
+</div>
+        <div ref="chartContainer" class="chart-container"></div>
+      </el-card>
+
+    </el-col>
+    <el-col :span="8" :xs="24">
+      <el-card :body-style="{ height: '400px' }" v-loading="loading">
+        <div class="card-header">
+          <h3><i class="mdi mdi-format-list-numbered"></i> 平台命令统计</h3>
+        </div>
+        <el-scrollbar height="320px">
+          <div v-for="(item, index) in commandStats" :key="item.prefix" class="ranking-item">
+            <div class="ranking-label">
+              <strong>{{ index + 1 }}. {{ item.prefix }}</strong>
+              <span>{{ item.count }} 条</span>
+            </div>
+          </div>
+        </el-scrollbar>
       </el-card>
     </el-col>
   </el-row>
@@ -27,16 +65,33 @@ export default {
     return {
       trendData: [],
       selectedDays: "1",
+      count: 0,
+      averageCount: 0,
+      changeRate: 0,
+      commandStats: [],
+      totalCommands: 0,
       loading: false,
+      chartInstance: null,
+      resizeObserver: null,
     };
   },
   mounted() {
     this.fetchAnalyticsData(this.selectedDays);
-    window.addEventListener("resize", this.resizeChart);
-    this.resizeChart();
+
+    this.resizeObserver = new ResizeObserver(() => {
+      this.resizeChart();
+    });
+
+    this.resizeObserver.observe(this.$refs.chartContainer);
   },
   beforeUnmount() {
-    window.removeEventListener("resize", this.resizeChart);
+    if (this.resizeObserver && this.$refs.chartContainer) {
+      this.resizeObserver.unobserve(this.$refs.chartContainer);
+      this.resizeObserver.disconnect();
+    }
+    if (this.chartInstance) {
+      this.chartInstance.dispose();
+    }
   },
   methods: {
     async fetchAnalyticsData(days) {
@@ -49,23 +104,39 @@ export default {
       } catch (error) {
         this.$message.error("数据加载失败，请稍后再试");
       } finally {
-    this.loading = false;  // 加载完成后，设置 loading 为 false
+    this.loading = false;
   }
     },
 
-    processData(data) {
-      const timeInterval = '30min';
-      const timeGroupedData = this.groupDataByTimeInterval(data.data, timeInterval);
-      this.fillMissingData(timeGroupedData, timeInterval); // 根据时间范围填充空数据
+    processData(data, days) {
+      const timeGroupedData = this.groupDataByTimeInterval(data.data);
+      this.fillMissingData(timeGroupedData, days);
 
       this.trendData = timeGroupedData.map(item => ({
         date: this.formatTimestamp(item.date),
-        count: item.count
+        count: item.count,
       })).sort((a, b) => new Date(a.date) - new Date(b.date));
+
+      this.count = timeGroupedData.reduce((sum, item) => sum + item.count, 0);
+      this.averageCount = Math.round(this.count / days);
+
+      this.changeRate = Math.floor(data.change_rate * 100);
+      const prefixCountMap = {};
+      data.data.forEach(item => {
+        const prefix = item.target_id?.split("|")[0] || "未知";
+        prefixCountMap[prefix] = (prefixCountMap[prefix] || 0) + 1;
+      });
+
+      const sorted = Object.entries(prefixCountMap)
+        .map(([prefix, count]) => ({ prefix, count }))
+        .sort((a, b) => b.count - a.count);
+
+      this.commandStats = sorted;
+      this.totalCommands = sorted.reduce((sum, item) => sum + item.count, 0);
     },
 
-    fillMissingData(timeGroupedData, interval) {
-      const allTimeIntervals = this.generateAllTimeIntervals(interval); // 生成对应的时间刻度
+    fillMissingData(timeGroupedData, days) {
+      const allTimeIntervals = this.generateAllTimeIntervals(days);
       const timeKeys = new Set(timeGroupedData.map(item => item.date));
 
       allTimeIntervals.forEach(time => {
@@ -74,16 +145,16 @@ export default {
         }
       });
 
-      // 重新排序数据，确保时间顺序
       timeGroupedData.sort((a, b) => new Date(a.date) - new Date(b.date));
     },
 
-    generateAllTimeIntervals() {
+    generateAllTimeIntervals(days) {
     const timeIntervals = [];
     const now = new Date();
-    const baseTime = new Date(now.getTime() - 30 * 60 * 1000); // 當前時間減去30分鐘
+    const interval = 48 * days
+    const baseTime = new Date(now.getTime() - 30 * 60 * 1000);
 
-    for (let i = 0; i < 48; i++) { // 24小時，每30分鐘一個
+    for (let i = 0; i < interval; i++) {
         const newTime = new Date(baseTime.getTime() - i * 30 * 60 * 1000);
         timeIntervals.push(newTime.toISOString());
       }
@@ -94,7 +165,7 @@ export default {
     groupDataByTimeInterval(data) {
       const groupedData = {};
       const now = new Date();
-      const baseTime = new Date(now.getTime() - 30 * 60 * 1000); // 當前時間減去30分鐘
+      const baseTime = new Date(now.getTime() - 30 * 60 * 1000);
 
       data.forEach(item => {
         const timestamp = new Date(item.timestamp);
@@ -116,38 +187,52 @@ export default {
       const date = new Date(timestamp);
       return date.toLocaleString([], { year: 'numeric', month: 'numeric', day: 'numeric', 
         hour: '2-digit', minute: '2-digit', hour12: false 
-      }).replace(',', '');  // 去除日期后面的逗号
+      }).replace(',', '');
     },
 
     renderChart() {
-      const chart = echarts.init(this.$refs.chartContainer);
-      const option = {
-        tooltip: {
-          trigger: 'axis'
-        },
-        xAxis: {
-          type: 'category',
-          data: this.trendData.map(item => item.date),
-        },
-        yAxis: {
-          type: 'value',
-        },
-        series: [
-          {
-            data: this.trendData.map(item => item.count),
-            type: 'line',
-            smooth: true,
+      this.$nextTick(() => {
+        if (this.chartInstance) {
+          this.chartInstance.dispose();
+        }
+
+        const chartDom = this.$refs.chartContainer;
+        if (!chartDom || chartDom.offsetWidth === 0) return;
+
+        const chart = echarts.init(this.$refs.chartContainer);
+        const option = {
+          tooltip: { trigger: 'axis' },
+          dataZoom: [
+            { type: 'slider', start: 0, end: 100 },
+            { type: 'inside', start: 0, end: 100 }
+          ],
+          xAxis: {
+            type: 'category',
+            data: this.trendData.map(item => item.date),
           },
-        ],
-      };
-      chart.setOption(option);
-      this.chartInstance = chart;
+          yAxis: {
+            type: 'value',
+          },
+          series: [
+            {
+              name: '命令数量',
+              data: this.trendData.map(item => item.count),
+              type: 'line',
+              smooth: true,
+            },
+          ],
+        };
+        chart.setOption(option);
+        this.chartInstance = chart;
+      });
     },
 
     resizeChart() {
-      if (this.chartInstance) {
-        this.chartInstance.resize();
-      }
+      this.$nextTick(() => {
+        if (this.chartInstance) {
+          this.chartInstance.resize();
+        }
+      });
     },
 
     onTimeRangeChange(newValue) {
@@ -158,18 +243,94 @@ export default {
 </script>
 
 <style scoped>
+
 .el-card {
   background-color: white;
   border: 1px solid #e0e0e0;
   box-shadow: none;
+  margin-bottom: 20px;
+  line-height: 1;
+  white-space: nowrap;
 }
+
+.dark-mode .el-card {
+  background-color: #333;
+  color: white;
+  border: 1px solid #1f1f1f;
+}
+
 .card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 10px;
 }
+
 .time-range-select {
   width: 150px;
+}
+
+.statistics-content {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 60px;
+  margin: 20px 0;
+  margin-bottom: 0;
+}
+
+.data-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.data-title, .data-text {
+  display: inline-block;
+}
+
+.data-title {
+  flex: 1 1 100%;
+  margin-bottom: 4px;
+  color: #333;
+}
+
+.dark-mode .data-title {
+  color: white;
+}
+
+.data-text {
+  flex: 1 1 100%;
+  color: #666;
+  text-overflow: ellipsis;
+}
+
+.dark-mode .data-text {
+  color: #ccc;
+}
+
+.positive {
+  color: forestgreen;
+}
+
+.negative {
+  color: red;
+}
+
+.chart-container {
+  height: 250px;
+  width: 100%;
+}
+
+.ranking-item {
+  margin-bottom: 12px;
+}
+
+.ranking-label {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 4px;
+  font-size: 14px;
 }
 </style>
