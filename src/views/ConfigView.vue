@@ -37,12 +37,6 @@ import { oneDark } from "@codemirror/theme-one-dark";
 
 export default {
   name: "ConfigView",
-  props: {
-    userVerified: {
-      type: Boolean,
-      default: false,
-    },
-  },
   data() {
     return {
       activeTab: "",
@@ -60,11 +54,8 @@ export default {
     };
   },
   mounted() {
-    if (this.userVerified) {
-      this.fetchConfigFiles();
-    }
+    this.fetchConfigFiles();
 
-    // 初始化 CodeMirror 编辑器
     const state = EditorState.create({
       doc: this.editorContent,
       extensions: [
