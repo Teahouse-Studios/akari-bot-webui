@@ -1,7 +1,8 @@
 <template>
   <el-row :gutter="20">
     <el-col :span="16" :xs="24">
-      <el-card :body-style="{ height: '400px' }" v-loading="loading">
+      <el-card :body-style="{ height: '400px' }" 
+        v-loading="loading">
         <div class="card-header">
           <h3><i class="mdi mdi-chart-line"></i> 命令统计</h3>
           <el-select v-model="selectedDays" @change="onTimeRangeChange" class="time-range-select">
@@ -39,7 +40,8 @@
 
     </el-col>
     <el-col :span="8" :xs="24">
-      <el-card :body-style="{ height: '400px' }" v-loading="loading">
+      <el-card :body-style="{ height: '400px' }"
+        v-loading="loading">
         <div class="card-header">
           <h3><i class="mdi mdi-format-list-numbered"></i> 平台命令统计</h3>
         </div>
@@ -272,18 +274,10 @@ export default {
 
 <style scoped>
 .el-card {
-  background-color: white;
-  border: 1px solid #e0e0e0;
   box-shadow: none;
   margin-bottom: 20px;
   line-height: 1;
   white-space: nowrap;
-}
-
-.dark-mode .el-card {
-  background-color: #333;
-  color: white;
-  border: 1px solid #1f1f1f;
 }
 
 .card-header {
@@ -322,8 +316,7 @@ export default {
   margin-bottom: 4px;
   color: #333;
 }
-
-.dark-mode .data-title {
+.dark .data-title {
   color: white;
 }
 
@@ -332,8 +325,7 @@ export default {
   color: #666;
   text-overflow: ellipsis;
 }
-
-.dark-mode .data-text {
+.dark .data-text {
   color: #ccc;
 }
 
@@ -366,12 +358,8 @@ export default {
   height: 12px;
   overflow: hidden;
   margin-top: 10px;
-  background-color: #f0f0f0;
+  background-color: var(--el-fill-color-light);
   border-radius: 10px;
-}
-
-.dark-mode .proportion-bar {
-  background-color: #444;
 }
 
 .proportion-segment {

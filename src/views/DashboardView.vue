@@ -103,8 +103,24 @@
       </el-card>
     </el-col>
   </el-row>
+
+  <el-button
+    class="refresh-button"
+    circle
+    size="large"
+    type="primary"
+    :icon="Refresh"
+    :loading="loading"
+    @click="refreshData"
+    style="position: fixed; bottom: 20px; right: 20px; z-index: 9999;">
+  </el-button>
+
   <AnalyticsCard :userVerified="true" />
 </template>
+
+<script setup>
+import { Refresh } from '@element-plus/icons-vue'
+</script>
 
 <script>
 import axios from "@/axios";
@@ -114,7 +130,7 @@ const progress_colors = ["#1989fa", "#e6a23c", "#f56c6c"];
 
 export default {
   components: {
-    AnalyticsCard,  // 在 components 中注册
+    AnalyticsCard,
   },
   props: {
     userVerified: {
@@ -151,6 +167,7 @@ export default {
         percent: 0,
       },
       cancelTokenSource: axios.CancelToken.source(),
+      loading: false,
     };
   },
   mounted() {
@@ -183,6 +200,7 @@ export default {
     // 获取 API 数据
     async fetchDashboardData() {
       try {
+        this.loading = true;
         const response = await axios.get("/api/server-info", {
           cancelToken: this.cancelTokenSource.token,
         });
@@ -199,7 +217,12 @@ export default {
         } else {
           this.$message.error("请求失败，请稍后再试");
         }
+      } finally {
+        this.loading = false; // Stop loading
       }
+    },
+    refreshData() {
+      this.fetchDashboardData();
     },
     getProgressColor(percentage) {
       if (percentage >= 90) {
@@ -215,20 +238,13 @@ export default {
   },
 };
 </script>
+
 <style scoped>
 .el-card {
-  background-color: white;
-  border: 1px solid #e0e0e0;
   box-shadow: none;
   margin-bottom: 20px;
   line-height: 1;
   white-space: nowrap;
-}
-
-.dark-mode .el-card {
-  background-color: #333;
-  color: white;
-  border: 1px solid #1f1f1f;
 }
 
 .data-text {
@@ -236,7 +252,7 @@ export default {
   text-overflow: ellipsis;
 }
 
-.dark-mode .data-text {
+.dark .data-text {
   color: #ccc;
 }
 
@@ -245,7 +261,7 @@ export default {
   color: #333;
 }
 
-.dark-mode .data-title {
+.dark .data-title {
   color: white;
 }
 
@@ -255,10 +271,6 @@ export default {
 
 .memory-dashboards ::v-deep(.el-progress__text) {
   color: #555;
-}
-
-.dark-mode .memory-dashboards ::v-deep(.el-progress__text) {
-  color: #aaa;
 }
 
 .percentage-value {
@@ -280,5 +292,12 @@ export default {
 
 .el-progress--dashboard {
   margin: 5px;
+}
+
+.refresh-button {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 9999;
 }
 </style>

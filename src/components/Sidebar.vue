@@ -67,7 +67,7 @@ export default {
   border-right: 1px solid #e0e0e0;
 }
 
-.dark-mode .sidebar {
+.dark .sidebar {
   background-color: #333;
   border-right: 1px solid #1f1f1f;
 }
@@ -77,39 +77,18 @@ export default {
   background-color: white;
 }
 
-.dark-mode .sidebar-menu {
+.dark .sidebar-menu {
   background-color: #333;
 }
 
 .el-menu-item {
   display: flex;
   align-items: center;
-  color: #333;
   padding: 12px 20px;
 }
 
 .el-menu-item i {
   margin-right: 20px;
   font-size: 2ch;
-}
-
-.el-menu-item:hover {
-  background-color: #bbb;
-}
-
-.dark-mode .el-menu-item:hover {
-  background-color: #444;
-}
-
-.el-menu-item.is-active {
-  color: #0091ff;
-}
-
-.dark-mode .el-menu-item {
-  color: #ccc;
-}
-
-.dark-mode .el-menu-item.is-active {
-  color: #0091ff;
 }
 </style>

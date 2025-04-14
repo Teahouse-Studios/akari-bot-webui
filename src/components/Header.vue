@@ -1,5 +1,5 @@
 <template>
-  <el-header class="header" :class="{ 'dark-mode': isDarkMode }">
+  <el-header class="header">
     <div class="header-left">
       <el-button
         class="menu-button"
@@ -35,11 +35,11 @@
 <script>
 export default {
   name: "AppHeader",
-  emits: ["toggle-dark-mode", "toggle-sidebar"],
+  emits: ["toggle-sidebar"],
   data() {
     return {
       isDarkMode: false,
-      screenWidth: window.innerWidth, // 初始屏幕宽度
+      screenWidth: window.innerWidth,
     };
   },
   mounted() {
@@ -47,19 +47,13 @@ export default {
     if (savedTheme !== null) {
       this.isDarkMode = JSON.parse(savedTheme);
     }
-    if (this.isDarkMode) {
-      document.body.classList.add("dark-mode");
-    }
 
-    // 监听窗口大小变化
     window.addEventListener("resize", this.updateScreenWidth);
   },
   beforeUnmount() {
-    // 组件销毁时移除事件监听
     window.removeEventListener("resize", this.updateScreenWidth);
   },
   methods: {
-    // 更新屏幕宽度的方法
     updateScreenWidth() {
       this.screenWidth = window.innerWidth;
     },
@@ -68,9 +62,9 @@ export default {
     },
     toggleDarkMode() {
       this.isDarkMode = !this.isDarkMode;
+      document.documentElement.classList.toggle("dark", this.isDarkMode);
       document.body.classList.toggle("dark-mode", this.isDarkMode);
       localStorage.setItem("isDarkMode", JSON.stringify(this.isDarkMode));
-      this.$emit("toggle-dark-mode", this.isDarkMode);
     },
     switchSidebar() {
       this.$emit("toggle-sidebar");
@@ -95,9 +89,8 @@ export default {
   border-bottom: 1px solid #e0e0e0;
 }
 
-.header.dark-mode {
+.dark .header {
   background-color: #333;
-  color: white;
   border-bottom: 1px solid #1f1f1f;
 }
 
@@ -115,7 +108,7 @@ export default {
   color: #666;
 }
 
-.dark-mode .menu-button:hover {
+.dark .menu-button:hover {
   background-color: #333;
   color: #aaa;
 }
@@ -125,7 +118,7 @@ export default {
   color: white;
 }
 
-.dark-mode .theme-toggle {
+.dark .theme-toggle {
   background: white;
   color: #333;
 }
@@ -176,11 +169,11 @@ export default {
 
 .beta-tag {
   display: inline-block;
-  background-color: #0091ff; /* 蓝色背景 */
-  color: white; /* 白色文字 */
+  background-color: #ff5100;
+  color: white;
   font-size: 8px;
   padding: 1px 5px;
-  border-radius: 12px; /* 圆角 */
+  border-radius: 12px;
   text-transform: uppercase;
 }
 
@@ -197,12 +190,12 @@ export default {
   color: white;
 }
 
-.dark-mode .theme-toggle-button {
+.dark .theme-toggle-button {
   background-color: #eee;
   color: #333;
 }
 
-.dark-mode .theme-toggle-button:hover {
+.dark .theme-toggle-button:hover {
   background-color: #c0c0c0;
   color: #333;
 }
