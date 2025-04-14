@@ -169,7 +169,7 @@ export default {
 
 .beta-tag {
   display: inline-block;
-  background-color: #ff5100;
+  background-color: #0091ff;
   color: white;
   font-size: 8px;
   padding: 1px 5px;
