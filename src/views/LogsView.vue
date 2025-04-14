@@ -357,12 +357,14 @@ export default {
   flex-grow: 1;
   height: 60vh;
   overflow-y: auto;
+  overflow-x: hidden;
   border-radius: 8px;
   background-color: #0c0c0c;
   color: #fff;
   padding: 10px;
   font-family: "Consolas", "Noto Sans Mono", "Courier New", Courier, monospace;
   white-space: pre-wrap;
+  word-wrap: break-word;
 }
 
 .log-viewer-placeholder {
