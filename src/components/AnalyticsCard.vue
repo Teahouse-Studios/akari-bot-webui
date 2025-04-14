@@ -14,11 +14,11 @@
         </div>
         <div class="statistics-content">
   <div class="data-group">
-    <strong class="data-title">总消息数</strong>
+    <strong class="data-title">总命令数</strong>
     <span class="data-text">{{ count || 0 }}</span>
   </div>
   <div class="data-group">
-    <strong class="data-title">平均消息数</strong>
+    <strong class="data-title">平均命令数</strong>
     <span class="data-text">{{ averageCount || 0 }}</span>
   </div>
   <div class="data-group">
@@ -43,13 +43,25 @@
         <div class="card-header">
           <h3><i class="mdi mdi-format-list-numbered"></i> 平台命令统计</h3>
         </div>
-        <el-scrollbar height="320px">
+        <el-scrollbar>
           <div v-for="(item, index) in commandStats" :key="item.prefix" class="ranking-item">
             <div class="ranking-label">
               <strong>{{ index + 1 }}. {{ item.prefix }}</strong>
               <span>{{ item.count }} 条</span>
             </div>
           </div>
+        <div class="proportion-bar">
+          <div
+            v-for="item in commandStats"
+            :key="item.prefix"
+            class="proportion-segment"
+            :style="{
+              width: ((item.count / count) * 100).toFixed(2) + '%',
+              backgroundColor: getColorByIndex(item.prefix)
+            }"
+            :title="`${item.prefix}: ${item.count} (${((item.count / count) * 100).toFixed(1)}%)`"
+          ></div>
+        </div>
         </el-scrollbar>
       </el-card>
     </el-col>
@@ -69,7 +81,6 @@ export default {
       averageCount: 0,
       changeRate: 0,
       commandStats: [],
-      totalCommands: 0,
       loading: false,
       chartInstance: null,
       resizeObserver: null,
@@ -132,7 +143,6 @@ export default {
         .sort((a, b) => b.count - a.count);
 
       this.commandStats = sorted;
-      this.totalCommands = sorted.reduce((sum, item) => sum + item.count, 0);
     },
 
     fillMissingData(timeGroupedData, days) {
@@ -237,6 +247,24 @@ export default {
 
     onTimeRangeChange(newValue) {
       this.fetchAnalyticsData(newValue);
+    },
+    getColorByIndex(prefix) {
+      const colors = [
+        '#F56C6C', // 红
+        '#E6A23C', // 橙
+        '#FAE384', // 黄
+        '#67C23A', // 绿
+        '#1ABC9C', // 青
+        '#409EFF', // 蓝
+        '#9B59B6', // 紫
+        '#E84393', // 粉
+      ];
+      // 使用 prefix 的哈希来选颜色
+      let hash = 0;
+      for (let i = 0; i < prefix.length; i++) {
+        hash += prefix.charCodeAt(i);
+      }
+      return colors[hash % colors.length];
     }
   },
 };
@@ -331,5 +359,23 @@ export default {
   justify-content: space-between;
   margin-bottom: 4px;
   font-size: 14px;
+}
+
+.proportion-bar {
+  display: flex;
+  height: 12px;
+  overflow: hidden;
+  margin-top: 10px;
+  background-color: #f0f0f0;
+  border-radius: 10px;
+}
+
+.dark-mode .proportion-bar {
+  background-color: #444;
+}
+
+.proportion-segment {
+  height: 100%;
+  transition: width 0.3s ease;
 }
 </style>
