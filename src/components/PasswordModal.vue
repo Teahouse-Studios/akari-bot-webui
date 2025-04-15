@@ -56,6 +56,8 @@ export default {
         });
 
         if (response.status === 200) {
+          this.$message.success("登录成功");
+          localStorage.setItem("noPassword", JSON.stringify(response.data.no_password));
           location.reload();
         } else {
           this.$message.error("请求失败，请稍后再试");

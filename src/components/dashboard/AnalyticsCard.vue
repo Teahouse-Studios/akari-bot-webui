@@ -45,25 +45,38 @@
         <div class="card-header">
           <h3><i class="mdi mdi-format-list-numbered"></i> 平台命令统计</h3>
         </div>
-        <el-scrollbar>
+          <div class="proportion-bar">
+            <div
+              v-for="item in commandStats"
+              :key="item.prefix"
+              class="proportion-segment"
+              :style="{
+                width: (Math.round((item.count / count) * 100 * 100) / 100) + '%',
+                backgroundColor: getColorByIndex(item.prefix)
+              }"
+              :title="`${item.prefix}: ${item.count} (${(Math.round((item.count / count) * 100 * 100) / 100)}%)`"
+            ></div>
+        </div>
+        <div class="ranking-total-label">
+          <strong>总命令数</strong>
+          <span>{{ count || 0 }} 条</span>
+        </div>
+        <el-scrollbar height="260px">
           <div v-for="(item, index) in commandStats" :key="item.prefix" class="ranking-item">
+              <span :style="{
+                backgroundColor: getColorByIndex(item.prefix),
+                color: '#fff',
+                borderRadius: '100%',
+                padding: '6px 10px',
+                display: 'inline-block',
+                marginRight: '8px',
+              }">{{ index + 1 }}
+              </span>
             <div class="ranking-label">
-              <strong>{{ index + 1 }}. {{ item.prefix }}</strong>
+              <strong>{{ item.prefix }}</strong>
               <span>{{ item.count }} 条</span>
             </div>
           </div>
-        <div class="proportion-bar">
-          <div
-            v-for="item in commandStats"
-            :key="item.prefix"
-            class="proportion-segment"
-            :style="{
-              width: ((item.count / count) * 100).toFixed(2) + '%',
-              backgroundColor: getColorByIndex(item.prefix)
-            }"
-            :title="`${item.prefix}: ${item.count} (${((item.count / count) * 100).toFixed(1)}%)`"
-          ></div>
-        </div>
         </el-scrollbar>
       </el-card>
     </el-col>
@@ -117,8 +130,8 @@ export default {
       } catch (error) {
         this.$message.error("数据加载失败，请稍后再试");
       } finally {
-    this.loading = false;
-  }
+        this.loading = false;
+      }
     },
 
     processData(data, days) {
@@ -161,18 +174,18 @@ export default {
     },
 
     generateAllTimeIntervals(days) {
-    const timeIntervals = [];
-    const now = new Date();
-    const interval = 48 * days
-    const baseTime = new Date(now.getTime() - 30 * 60 * 1000);
+      const timeIntervals = [];
+      const now = new Date();
+      const interval = 48 * days
+      const baseTime = new Date(now.getTime() - 30 * 60 * 1000);
 
-    for (let i = 0; i < interval; i++) {
+      for (let i = 0; i < interval; i++) {
         const newTime = new Date(baseTime.getTime() - i * 30 * 60 * 1000);
         timeIntervals.push(newTime.toISOString());
       }
 
-    return timeIntervals;
-  },
+      return timeIntervals;
+    },
 
     groupDataByTimeInterval(data) {
       const groupedData = {};
@@ -250,6 +263,7 @@ export default {
     onTimeRangeChange(newValue) {
       this.fetchAnalyticsData(newValue);
     },
+
     getColorByIndex(prefix) {
       const colors = [
         '#F56C6C', // 红
@@ -344,20 +358,32 @@ export default {
 
 .ranking-item {
   margin-bottom: 12px;
+  display: flex;
+  align-items: center;
 }
 
 .ranking-label {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   margin-bottom: 4px;
   font-size: 14px;
+  width: 100%;
+}
+
+.ranking-total-label {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  font-size: 14px;
+  width: 100%;
 }
 
 .proportion-bar {
   display: flex;
   height: 12px;
   overflow: hidden;
-  margin-top: 20px;
+  margin-bottom: 20px;
   background-color: var(--el-fill-color-light);
   border-radius: 10px;
 }
