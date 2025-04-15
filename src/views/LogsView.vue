@@ -130,29 +130,33 @@ export default {
 
     const updateLogs = debounce(() => {
       const rawLines = logData.value.split("\n");
+      const fullLogs = [];
       let buffer = "";
-      const formattedLines = [];
 
       rawLines.forEach((line) => {
         if (/^\[.*?\]\[.*?\]\[.*?\]\[.*?\]:/.test(line)) {
-          if (buffer) formattedLines.push(formatLogLine(buffer));
-          buffer = line;
-        } else {
-          buffer += "\n" + line;
+        if (buffer && /^\[.*?\]\[.*?\]\[.*?\]\[.*?\]:/.test(buffer)) {
+          fullLogs.push(buffer);
         }
-      });
+        buffer = line;
+      } else {
+        buffer += "\n" + line;
+      }
+    });
+      
+    if (buffer && /^\[.*?\]\[.*?\]\[.*?\]\[.*?\]:/.test(buffer)) {
+      fullLogs.push(buffer);
+    }
 
-      if (buffer) formattedLines.push(formatLogLine(buffer));
+    const limitedLogs = fullLogs.slice(-1000);
 
-      visibleLogs.value = formattedLines.filter((logLine) => {
+    visibleLogs.value = limitedLogs
+      .map(formatLogLine)
+      .filter((logLine) => {
         const textMatch = searchText.value
           ? logLine.toLowerCase().includes(searchText.value.toLowerCase())
           : true;
-
-        return (
-          textMatch &&
-          activeLogLevels.value.some((level) => logLine.includes(level))
-        );
+        return activeLogLevels.value.some((level) => logLine.includes(level)) && textMatch;
       });
 
       if (autoScroll.value && logViewer.value) {
