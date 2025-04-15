@@ -78,7 +78,6 @@ export default {
         if (response.status === 200) {
           this.userVerified = true;
           await this.checkCsrfToken();
-          // 用户验证成功后自动加载当前视图
           this.loadCurrentView(this.$route.name);
         } else {
           this.checkPassword();
@@ -92,8 +91,8 @@ export default {
         const response = await axios.post("/api/auth", {});
         if (response.status === 200) {
           this.userVerified = true;
+          localStorage.setItem("noPassword", JSON.stringify(response.data.no_password));
           await this.checkCsrfToken();
-          // 用户验证成功后自动加载当前视图
           this.loadCurrentView(this.$route.name);
         }
       } catch (error) {

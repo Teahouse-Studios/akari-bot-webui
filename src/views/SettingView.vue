@@ -1,12 +1,13 @@
 <template>
-  <div>
-    <h1>更多设置</h1>
-    <p>这是设置页面。</p>
-  </div>
+  <changePasswordForm />
 </template>
 
 <script>
+import changePasswordForm from "@/components/setting/changePasswordForm.vue";
+
 export default {
-  name: "SettingView",
-};
+  components: {
+    changePasswordForm,
+  }
+}
 </script>
