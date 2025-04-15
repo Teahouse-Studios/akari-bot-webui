@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from "vue-router";
 import DashboardView from "./views/DashboardView.vue";
 import ConfigView from "./views/ConfigView.vue";
 import LogsView from "./views/LogsView.vue";
+import SettingView from "./views/SettingView.vue";
 
 const routes = [
   {
@@ -18,6 +19,11 @@ const routes = [
     path: "/webui/logs",
     name: "logs",
     component: LogsView,
+  },
+  {
+    path: "/webui/setting",
+    name: "setting",
+    component: SettingView,
   },
   {
     path: "/webui/:pathMatch(.*)*",

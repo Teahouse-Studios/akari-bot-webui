@@ -17,6 +17,10 @@
         <i class="mdi mdi-console"></i>
         <span>日志</span>
       </el-menu-item>
+      <el-menu-item index="setting">
+        <i class="mdi mdi-tune"></i>
+        <span>更多设置</span>
+      </el-menu-item>
     </el-menu>
   </el-aside>
 </template>
@@ -34,7 +38,10 @@ export default {
       const validPaths = [
         "dashboard",
         "config",
+        "modules",
         "logs",
+        "setting",
+        "about",
       ];
       const path = this.$route.name;
       if (validPaths.includes(path)) {
