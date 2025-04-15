@@ -155,8 +155,8 @@ export default {
         );
       });
 
-      if (visibleLogs.value.length > 1000) {
-        visibleLogs.value = visibleLogs.value.slice(-1000);
+      if (visibleLogs.value.length > 65536) {
+        visibleLogs.value = visibleLogs.value.slice(-65536);
       }
 
       if (autoScroll.value && logViewer.value) {
