@@ -79,7 +79,7 @@ export default {
   justify-content: space-between;
   align-items: center;
   padding: 0 20px;
-  background-color: white;
+  background-color: #f4f4f4;
   height: 60px;
   position: fixed;
   top: 0;

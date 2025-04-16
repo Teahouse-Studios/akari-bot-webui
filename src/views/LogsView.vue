@@ -4,7 +4,7 @@
       <el-input
         v-model="searchText"
         placeholder="搜索日志……"
-        class="platform-tag-input"
+        class="log-search-input"
         @input="handleSearch"
         clearable
         :style="{ width: 'calc(100% - 135px)' }"
@@ -155,8 +155,8 @@ export default {
         );
       });
 
-      if (visibleLogs.value.length > 65536) {
-        visibleLogs.value = visibleLogs.value.slice(-65536);
+      if (visibleLogs.value.length > 16384) {
+        visibleLogs.value = visibleLogs.value.slice(-16384);
       }
 
       if (autoScroll.value && logViewer.value) {
@@ -260,6 +260,11 @@ export default {
 </script>
 
 <style scoped>
+.dark .log-search-input {
+  background-color: #181818;
+  border-radius: 5px;
+}
+
 .log-viewer-container {
   display: flex;
   flex-direction: column;

@@ -64,7 +64,7 @@ export default {
 
 <style scoped>
 .sidebar {
-  background-color: white;
+  background-color: #f4f4f4 !important;
   position: fixed;
   left: 0;
   bottom: 0;
@@ -75,13 +75,13 @@ export default {
 }
 
 .dark .sidebar {
-  background-color: #333;
+  background-color: #333 !important;
   border-right: 1px solid #1f1f1f;
 }
 
 .sidebar-menu {
-  border-right: none !important;
-  background-color: white;
+  border-right: none;
+  background-color: #f4f4f4;
 }
 
 .dark .sidebar-menu {
