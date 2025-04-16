@@ -97,10 +97,10 @@ export default {
           location.reload();
         }
       } catch (error) {
-        if (error.response && error.response.status === 401) {
+        if (error.response?.status === 401) {
           ElMessage.error('密码错误，请重新输入');
         } else {
-          this.$message.error("请求失败：" + error.message);
+          ElMessage.error("请求失败：" + error.message);
         }
       }
     };
@@ -128,10 +128,10 @@ export default {
           location.reload();
         }
       } catch (error) {
-        if (error.response && error.response.status === 401) {
-          ElMessage.error('密码错误，请重新输入');
+        if (error.response?.status === 401) {
+          ElMessage.error("密码错误，请重新输入");
         } else {
-          this.$message.error("请求失败：" + error.message);
+          ElMessage.error("请求失败：" + error.message);
         }
       } finally {
       dialogVisible.value = false;

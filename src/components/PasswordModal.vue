@@ -61,9 +61,11 @@ export default {
           location.reload();
         }
       } catch (error) {
-        if (error.response && error.response.status === 401) {
+        if (error.response?.status === 401) {
           this.$message.error("密码错误，请重新输入");
-        } else {
+        } else if (error.response?.status === 403) {
+          ElMessage.error("登录失败次数过多，请稍后再试");
+        }else {
           this.$message.error("请求失败：" + error.message);
         }
       } finally {

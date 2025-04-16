@@ -98,6 +98,9 @@ export default {
       } catch (error) {
         if (error.response?.status === 401) {
           this.userVerified = false;
+        } else if (error.response?.status === 403) {
+          this.userVerified = false;
+          this.$message.error("登录失败次数过多，请稍后再试");
         } else {
           this.$message.error("请求失败：" + error.message);
         }
