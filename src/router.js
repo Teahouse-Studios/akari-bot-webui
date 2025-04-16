@@ -3,6 +3,7 @@ import DashboardView from "./views/DashboardView.vue";
 import ConfigView from "./views/ConfigView.vue";
 import LogsView from "./views/LogsView.vue";
 import SettingView from "./views/SettingView.vue";
+import AboutView from "./views/AboutView.vue";
 
 const routes = [
   {
@@ -24,6 +25,11 @@ const routes = [
     path: "/webui/setting",
     name: "setting",
     component: SettingView,
+  },
+  {
+    path: "/webui/about",
+    name: "about",
+    component: AboutView,
   },
   {
     path: "/webui/:pathMatch(.*)*",
