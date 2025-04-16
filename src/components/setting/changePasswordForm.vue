@@ -65,7 +65,7 @@ export default {
         { required: true, message: '请确认新密码', trigger: 'blur' },
         { validator: (rule, value, callback) => {
           if (value !== form.value.new_password) {
-            callback(new Error('新密码与确认密码不一致'));
+            callback(new Error('两次密码输入不一致'));
           } else {
             callback();
           }
@@ -95,14 +95,12 @@ export default {
           ElMessage.success('密码修改成功');
           Cookies.remove('XSRF-TOKEN');
           location.reload();
-        } else {
-          ElMessage.error('请求失败，请稍后再试');
         }
       } catch (error) {
         if (error.response && error.response.status === 401) {
           ElMessage.error('密码错误，请重新输入');
         } else {
-          ElMessage.error('请求失败，请稍后再试');
+          this.$message.error("请求失败：" + error.message);
         }
       }
     };
@@ -128,14 +126,12 @@ export default {
           ElMessage.success('密码已清除');
           Cookies.remove('XSRF-TOKEN');
           location.reload();
-        } else {
-          ElMessage.error('请求失败，请稍后再试');
         }
       } catch (error) {
         if (error.response && error.response.status === 401) {
           ElMessage.error('密码错误，请重新输入');
         } else {
-          ElMessage.error('请求失败，请稍后再试');
+          this.$message.error("请求失败：" + error.message);
         }
       } finally {
       dialogVisible.value = false;
@@ -158,7 +154,7 @@ export default {
 
 <style scoped>
 .el-input {
-  width: 40%;
+  width: 50%;
 }
 
 .el-form-item {

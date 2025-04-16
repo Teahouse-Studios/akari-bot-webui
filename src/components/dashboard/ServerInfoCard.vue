@@ -188,9 +188,9 @@ export default {
         this.disk = { ...this.disk, ...data.disk };
       } catch (error) {
         if (axios.isCancel(error)) {
-          console.log("Request canceled", error.message);
+          console.log("Request canceled");
         } else {
-          this.$message.error("请求失败，请稍后再试");
+          this.$message.error("请求失败：" + error.message);
         }
       } finally {
         this.loading = false;

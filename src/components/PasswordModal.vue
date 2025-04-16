@@ -59,14 +59,12 @@ export default {
           this.$message.success("登录成功");
           localStorage.setItem("noPassword", JSON.stringify(response.data.no_password));
           location.reload();
-        } else {
-          this.$message.error("请求失败，请稍后再试");
         }
       } catch (error) {
         if (error.response && error.response.status === 401) {
           this.$message.error("密码错误，请重新输入");
         } else {
-          this.$message.error("请求失败，请稍后再试");
+          this.$message.error("请求失败：" + error.message);
         }
       } finally {
         this.loading = false;

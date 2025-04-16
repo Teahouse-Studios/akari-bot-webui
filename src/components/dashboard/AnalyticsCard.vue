@@ -96,9 +96,10 @@ export default {
       averageCount: 0,
       changeRate: 0,
       commandStats: [],
-      loading: false,
       chartInstance: null,
       resizeObserver: null,
+      cancelTokenSource: axios.CancelToken.source(),
+      loading: false,
     };
   },
   mounted() {
@@ -111,6 +112,7 @@ export default {
     this.resizeObserver.observe(this.$refs.chartContainer);
   },
   beforeUnmount() {
+    this.cancelTokenSource.cancel("Component unmounted");
     if (this.resizeObserver && this.$refs.chartContainer) {
       this.resizeObserver.unobserve(this.$refs.chartContainer);
       this.resizeObserver.disconnect();
@@ -123,12 +125,18 @@ export default {
     async fetchAnalyticsData(days) {
       this.loading = true;
       try {
-        const response = await axios.get("/api/analytics", { params: { days } });
+        const response = await axios.get("/api/analytics", { 
+          cancelToken: this.cancelTokenSource.token,
+          params: { days } });
         const { data } = response;
         this.processData(data, days);
         this.renderChart(days);
       } catch (error) {
-        this.$message.error("数据加载失败，请稍后再试");
+        if (axios.isCancel(error)) {
+          console.log("Request canceled");
+        } else {
+          this.$message.error("请求失败：" + error.message);
+        }
       } finally {
         this.loading = false;
       }

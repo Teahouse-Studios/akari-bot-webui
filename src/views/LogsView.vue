@@ -88,7 +88,7 @@ export default {
         }
       } catch (error) {
         if (axios.isCancel(error)) {
-          console.log("Request canceled", error.message);
+          console.log("Request canceled");
         } else {
           ElMessage.error("身份验证失败");
         }

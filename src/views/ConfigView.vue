@@ -86,9 +86,9 @@ export default {
         }
       } catch (error) {
         if (axios.isCancel(error)) {
-          console.log("Request canceled", error.message);
+          console.log("Request canceled");
         } else {
-          this.$message.error("无法获取配置文件列表，请稍后再试");
+          this.$message.error("请求失败：" + error.message);
         }
       }
     },
@@ -108,9 +108,9 @@ export default {
         this.updateEditorContent();
       } catch (error) {
         if (axios.isCancel(error)) {
-          console.log("Request canceled", error.message);
+          console.log("Request canceled");
         } else {
-          this.$message.error("请求失败，请稍后再试");
+          this.$message.error("请求失败：" + error.message);
         }
       }
     },
@@ -123,8 +123,8 @@ export default {
         .then(() => {
           this.$message.success("配置更新成功");
         })
-        .catch(() => {
-          this.$message.error("配置更新失败，请稍后再试");
+        .catch((error) => {
+          this.$message.error("配置更新失败：" + error.message);
         });
     },
     updateEditorContent() {

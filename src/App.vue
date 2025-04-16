@@ -99,7 +99,7 @@ export default {
         if (error.response?.status === 401) {
           this.userVerified = false;
         } else {
-          this.$message.error("请求失败，请稍后再试");
+          this.$message.error("请求失败：" + error.message);
         }
       }
     },
