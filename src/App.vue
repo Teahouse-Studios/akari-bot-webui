@@ -187,7 +187,7 @@ export default {
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: #f4f4f4;
+  background-color: white;
   z-index: -1;
 }
 .dark .content-footer {
