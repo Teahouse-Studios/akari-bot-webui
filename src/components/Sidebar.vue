@@ -21,6 +21,10 @@
         <i class="mdi mdi-tune"></i>
         <span>更多设置</span>
       </el-menu-item>
+      <el-menu-item index="about">
+        <i class="mdi mdi-information-outline"></i>
+        <span>关于</span>
+      </el-menu-item>
     </el-menu>
   </el-aside>
 </template>
