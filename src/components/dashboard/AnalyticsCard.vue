@@ -86,6 +86,7 @@
 <script>
 import axios from "@/axios";
 import * as echarts from "echarts";
+import { ElMessage } from 'element-plus';
 
 export default {
   data() {
@@ -135,7 +136,7 @@ export default {
         if (axios.isCancel(error)) {
           console.log("Request canceled");
         } else {
-          this.$message.error("请求失败：" + error.message);
+          ElMessage.error("请求失败：" + error.message);
         }
       } finally {
         this.loading = false;

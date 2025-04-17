@@ -112,6 +112,7 @@
 
 <script>
 import axios from "@/axios";
+import { ElMessage } from 'element-plus';
 
 const progress_colors = ["#1989fa", "#e6a23c", "#f56c6c"];
 
@@ -190,7 +191,7 @@ export default {
         if (axios.isCancel(error)) {
           console.log("Request canceled");
         } else {
-          this.$message.error("请求失败：" + error.message);
+          ElMessage.error("请求失败：" + error.message);
         }
       } finally {
         this.loading = false;
