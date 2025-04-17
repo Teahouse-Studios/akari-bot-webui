@@ -1,17 +1,18 @@
 <template>
   <div id="app">
+    <div class="loading-overlay" v-loading="userVerified === null"></div>
     <AppHeader @toggle-sidebar="toggleSidebar" />
     <PasswordModal v-if="userVerified == false" />
+    <div
+      v-if="isSidebarVisible && windowWidth <= 1024"
+      class="sidebar-overlay"
+      @click="closeSidebar"
+    ></div>
+    <AppSidebar
+      :class="['sidebar', { show: isSidebarVisible }]"
+      @menuSelect="handleMenuSelect"
+    />
     <el-container :style="{ marginTop: '60px' }">
-      <div
-        v-if="isSidebarVisible && windowWidth <= 1024"
-        class="sidebar-overlay"
-        @click="closeSidebar"
-      ></div>
-      <AppSidebar
-        :class="['sidebar', { show: isSidebarVisible }]"
-        @menuSelect="handleMenuSelect"
-      />
       <el-main
         :class="[
           'content',
@@ -38,6 +39,7 @@ import axios from "@/axios";
 import AppSidebar from "./components/Sidebar.vue";
 import AppHeader from "./components/Header.vue";
 import PasswordModal from "./components/PasswordModal.vue";
+import { ElMessage } from 'element-plus';
 import Cookies from "js-cookie";
 
 export default {
@@ -100,9 +102,9 @@ export default {
           this.userVerified = false;
         } else if (error.response?.status === 403) {
           this.userVerified = false;
-          this.$message.error("登录失败次数过多，请稍后再试");
+          ElMessage.error("登录失败次数过多，请稍后再试");
         } else {
-          this.$message.error("请求失败：" + error.message);
+          ElMessage.error("请求失败：" + error.message);
         }
       }
     },
@@ -170,6 +172,14 @@ export default {
 </script>
 
 <style scoped>
+.loading-overlay {
+  position: fixed;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 999;
+}
+
 .content {
   top: 60px;
   overflow-y: auto;

@@ -23,7 +23,7 @@
     </el-form-item>
   </el-form>
 
-  <el-dialog v-model="dialogVisible" title="确认清除密码">
+  <el-dialog v-model="dialogVisible">
     <span>你确定要清除密码吗？</span>
     <template #footer>
       <el-button @click="dialogVisible = false">取消</el-button>

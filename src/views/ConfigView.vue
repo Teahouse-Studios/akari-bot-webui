@@ -1,5 +1,5 @@
 <template>
-  <div class="editor-container">
+  <div class="editor-container" v-loading="loading">
     <el-tabs v-model="activeTab" @tab-click="handleTabClick">
       <el-tab-pane
         v-for="file in configFiles"
@@ -34,6 +34,7 @@ import { EditorView } from "@codemirror/view";
 import { basicSetup } from "codemirror";
 import { EditorState } from "@codemirror/state";
 import { oneDark } from "@codemirror/theme-one-dark";
+import { ElMessage } from 'element-plus';
 
 export default {
   name: "ConfigView",
@@ -51,6 +52,7 @@ export default {
       },
       fileContents: {},
       cancelTokenSource: axios.CancelToken.source(),
+      loading: false,
     };
   },
   mounted() {
@@ -75,6 +77,7 @@ export default {
   },
   methods: {
     async fetchConfigFiles() {
+      this.loading = true;
       try {
         const response = await axios.get("/api/config", {
           cancelToken: this.cancelTokenSource.token,
@@ -88,8 +91,10 @@ export default {
         if (axios.isCancel(error)) {
           console.log("Request canceled");
         } else {
-          this.$message.error("请求失败：" + error.message);
+          ElMessage.error("请求失败：" + error.message);
         }
+      } finally {
+        this.loading = false;
       }
     },
     async fetchConfig(fileName, force = false) {
@@ -110,7 +115,7 @@ export default {
         if (axios.isCancel(error)) {
           console.log("Request canceled");
         } else {
-          this.$message.error("请求失败：" + error.message);
+          ElMessage("请求失败：" + error.message);
         }
       }
     },
@@ -121,10 +126,10 @@ export default {
       axios
         .post(`/api/config/${this.activeTab}`, { content: this.editorContent })
         .then(() => {
-          this.$message.success("配置更新成功");
+          ElMessage.success("配置更新成功");
         })
         .catch((error) => {
-          this.$message.error("配置更新失败：" + error.message);
+          ElMessage.error("配置更新失败：" + error.message);
         });
     },
     updateEditorContent() {

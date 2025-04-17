@@ -36,6 +36,7 @@
 
 <script>
 import axios from "@/axios";
+import { ElMessage } from 'element-plus';
 
 export default {
   data() {
@@ -56,17 +57,17 @@ export default {
         });
 
         if (response.status === 200) {
-          this.$message.success("登录成功");
+          ElMessage.success("登录成功");
           localStorage.setItem("noPassword", JSON.stringify(response.data.no_password));
           location.reload();
         }
       } catch (error) {
         if (error.response?.status === 401) {
-          this.$message.error("密码错误，请重新输入");
+          ElMessage.error("密码错误，请重新输入");
         } else if (error.response?.status === 403) {
           ElMessage.error("登录失败次数过多，请稍后再试");
         }else {
-          this.$message.error("请求失败：" + error.message);
+          ElMessage.error("请求失败：" + error.message);
         }
       } finally {
         this.loading = false;
@@ -79,6 +80,7 @@ export default {
 <style scoped>
 .overlay {
   position: fixed;
+  top: 60px;
   left: 0;
   width: 100%;
   height: calc(100% - 60px);
