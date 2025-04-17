@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from "vue-router";
 import DashboardView from "./views/DashboardView.vue";
 import ConfigView from "./views/ConfigView.vue";
 import LogsView from "./views/LogsView.vue";
+import ChatView from "./views/ChatView.vue";
 import SettingView from "./views/SettingView.vue";
 import AboutView from "./views/AboutView.vue";
 
@@ -20,6 +21,11 @@ const routes = [
     path: "/webui/logs",
     name: "logs",
     component: LogsView,
+  },
+  {
+    path: "/webui/chat",
+    name: "chat",
+    component: ChatView,
   },
   {
     path: "/webui/setting",

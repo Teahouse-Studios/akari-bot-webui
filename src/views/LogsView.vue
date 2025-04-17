@@ -124,7 +124,7 @@ export default {
           ElMessage.error("与服务端的连接中断");
         };
       } catch (error) {
-        ElMessage.error("获取日志内容失败: " + error.message);
+        ElMessage.error("连接失败: " + error.message);
       }
     };
 

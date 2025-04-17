@@ -17,6 +17,10 @@
         <i class="mdi mdi-console"></i>
         <span>日志</span>
       </el-menu-item>
+      <el-menu-item index="chat">
+        <i class="mdi mdi-chat"></i>
+        <span>聊天</span>
+      </el-menu-item>
       <el-menu-item index="setting">
         <i class="mdi mdi-tune"></i>
         <span>更多设置</span>
@@ -44,6 +48,7 @@ export default {
         "config",
         "modules",
         "logs",
+        "chat",
         "setting",
         "about",
       ];
