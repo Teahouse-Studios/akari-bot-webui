@@ -1,6 +1,9 @@
 <template>
   <div id="app">
-    <div class="loading-overlay" v-loading="userVerified === null"></div>
+    <div class="loading-overlay"
+    v-if="userVerified === null"
+    v-loading="userVerified === null"
+    ></div>
     <AppHeader @toggle-sidebar="toggleSidebar" />
     <PasswordModal v-if="userVerified == false" />
     <div
