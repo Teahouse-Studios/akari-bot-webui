@@ -58,7 +58,7 @@
             </a>
           </template>
           <template v-else-if="part.type === 'img'">
-            <img :src="part.src" style="max-width: 100%; margin: 8px 0;" />
+            <img :src="part.src" style="max-width: 80%; max-height: 300px; margin: 8px 0; object-fit: contain;" />
           </template>
         </span>
       </div>

@@ -6,6 +6,7 @@
     ></div>
     <AppHeader @toggle-sidebar="toggleSidebar" />
     <PasswordModal v-if="userVerified == false" />
+    <SuggestSetPasswordModal v-model="showSuggestPasswordModal" />
     <div
       v-if="isSidebarVisible && windowWidth <= 1024"
       class="sidebar-overlay"
@@ -42,6 +43,7 @@ import axios from "@/axios";
 import AppSidebar from "./components/Sidebar.vue";
 import AppHeader from "./components/Header.vue";
 import PasswordModal from "./components/PasswordModal.vue";
+import SuggestSetPasswordModal from "./components/SuggestSetPasswordModal.vue";
 import { ElMessage } from 'element-plus';
 import Cookies from "js-cookie";
 
@@ -50,12 +52,14 @@ export default {
     AppHeader,
     AppSidebar,
     PasswordModal,
+    SuggestSetPasswordModal,
   },
   data() {
     return {
       currentView: null,
       userVerified: null,
       isSidebarVisible: true,
+      showSuggestPasswordModal: false,
       windowWidth: window.innerWidth,
       cancelTokenSource: axios.CancelToken.source(),
     };
@@ -96,7 +100,15 @@ export default {
         const response = await axios.post("/api/auth", {});
         if (response.status === 200) {
           this.userVerified = true;
+          
+          const noPassword = response.data.no_password;
           localStorage.setItem("noPassword", JSON.stringify(response.data.no_password));
+          
+          const promptDisabled = localStorage.getItem("noPasswordPromptDisabled") === "true";
+          if (noPassword && !promptDisabled) {
+            this.showSuggestPasswordModal = true;
+          }
+
           await this.checkCsrfToken();
           this.loadCurrentView(this.$route.name);
         }
