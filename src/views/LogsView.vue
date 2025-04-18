@@ -30,11 +30,19 @@
     </div>
 
     <div class="log-viewer" ref="logViewer">
-  <div v-for="(logLine, index) in visibleLogs" :key="index" v-html="logLine"></div>
+      <div v-for="(logLine, index) in visibleLogs" :key="index">
+        <span
+          v-for="(part, partIndex) in logLine"
+          :key="partIndex"
+          :style="part.style"
+        >
+          {{ part.text }}
+        </span>
+      </div>
 
-  <div v-if="visibleLogs.length === 0" class="log-viewer-placeholder">There are currently no matching logs here...<br>Use the filter box above to adjust the options.</div>
-</div>
-</div>
+      <div v-if="visibleLogs.length === 0" class="log-viewer-placeholder">There are currently no matching logs here...<br>Use the filter box above to adjust the options.</div>
+    </div>
+  </div>
 </template>
 
 <script>
@@ -42,7 +50,6 @@ import { ref, onMounted, onBeforeUnmount, watch } from "vue";
 import { debounce } from "lodash";
 import { ElButton, ElInput, ElMessage, ElSwitch } from "element-plus";
 import axios from "axios";
-import DOMPurify from "dompurify";
 
 export default {
   name: "LogsView",
@@ -124,7 +131,7 @@ export default {
           ElMessage.error("与服务端的连接中断");
         };
       } catch (error) {
-        ElMessage.error("获取日志内容失败: " + error.message);
+        ElMessage.error("连接失败: " + error.message);
       }
     };
 
@@ -146,12 +153,14 @@ export default {
 
       visibleLogs.value = formattedLines.filter((logLine) => {
         const textMatch = searchText.value
-          ? logLine.toLowerCase().includes(searchText.value.toLowerCase())
+          ? logLine.some(part => part.text.toLowerCase().includes(searchText.value.toLowerCase()))
           : true;
 
         return (
           textMatch &&
-          activeLogLevels.value.some((level) => logLine.includes(level))
+          activeLogLevels.value.some((level) =>
+            logLine.some(part => part.text.includes(level))
+          )
         );
       });
 
@@ -167,8 +176,7 @@ export default {
     }, 500);
 
     const formatLogLine = (logLine) => {
-      const logPattern =
-        /^\[([^\]]+)\]\[([^\]]+)\]\[([^\]]+)\]\[([^\]]+)\]:(.*)$/s;
+      const logPattern = /^\[([^\]]+)\]\[([^\]]+)\]\[([^\]]+)\]\[([^\]]+)\]:(.*)$/s;
       const match = logLine.match(logPattern);
 
       const logPlatformColor = "#11a8cd";
@@ -178,8 +186,7 @@ export default {
       let logBackgroundColor = "transparent";
 
       if (match) {
-        const [, logPlatform, logModules, logDatetime, logLevel, logContent] =
-          match;
+        const [, logPlatform, logModules, logDatetime, logLevel, logContent] = match;
 
         switch (logLevel) {
           case "DEBUG":
@@ -203,16 +210,28 @@ export default {
             break;
         }
 
-        const safeContent = DOMPurify.sanitize(logContent);
-
-        return (
-          `<span style="color:${logPlatformColor}">[${logPlatform}]</span>` +
-          `<span style="color:${logModulesColor}">[${logModules}]</span>` +
-          `<span style="color:${logDatetimeColor}">[${logDatetime}]</span>` +
-          `<span style="color:${logContentColor}; background-color:${logBackgroundColor}">[${logLevel}]:${safeContent.replace(/\n/g, "<br>")}</span>`
-        );
+        return [
+          { text: `[${logPlatform}]`, style: { color: logPlatformColor } },
+          { text: `[${logModules}]`, style: { color: logModulesColor } },
+          { text: `[${logDatetime}]`, style: { color: logDatetimeColor } },
+          {
+            text: `[${logLevel}]:${logContent}`,
+            style: {
+              color: logContentColor,
+              backgroundColor: logBackgroundColor,
+            },
+          },
+        ];
       }
-      return `<span style="color:${logContentColor}">${logLine.replace(/\n/g, "<br>")}</span>`;
+
+      return [
+        {
+          text: logLine,
+          style: {
+            color: "#fff",
+          },
+        },
+      ];
     };
 
     const toggleLogLevel = (level) => {

@@ -161,6 +161,7 @@ export default {
           config: "Config",
           modules: "Modules",
           logs: "Logs",
+          chat: "Chat",
           setting: "Setting",
           about: "About",
         };
