@@ -194,7 +194,7 @@ export default {
     const processMessage = (text) => {
       const parts = [];
       const codeBlockRegex = /```\n*([\s\S]*?)\n*```/g;
-      const imageRegex = /\[image-base64:([^<]+)\]/g;
+      const imageRegex = /\[image:([^<]+)\]/g;
 
       let lastIndex = 0;
       let match;
@@ -222,7 +222,7 @@ export default {
           parts.push(...processInlineMessage(beforeImage));
           }
 
-          const base64Content = `data:image/${match[1].split(';')[0]};base64,${match[1]}`;
+          const base64Content = `${match[1]}`;
           if (base64Content.startsWith("data:image/png;base64,") || base64Content.startsWith("data:image/jpeg;base64,") || base64Content.startsWith("data:image/gif;base64,")) {
             parts.push({
               type: 'img',
@@ -324,7 +324,7 @@ export default {
               if (base64Content.startsWith("data:image/png;base64,") || 
                   base64Content.startsWith("data:image/jpeg;base64,") || 
                   base64Content.startsWith("data:image/gif;base64,")) {
-                return `[image-base64:${base64Content}]`;
+                return `[image:${base64Content}]`;
               }
               return "";
             }
