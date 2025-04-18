@@ -14,7 +14,7 @@
     </el-form-item>
 
     <el-form-item v-if="noPassword">
-      <el-button type="primary" @click="handleUpdatePassword">修改密码</el-button>
+      <el-button type="primary" @click="handleUpdatePassword">设置密码</el-button>
     </el-form-item>
 
     <el-form-item v-if="!noPassword" class="password-buttons">

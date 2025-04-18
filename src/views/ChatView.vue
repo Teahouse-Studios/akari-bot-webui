@@ -99,7 +99,7 @@ export default {
     const inputText = ref("");
     const messages = ref([]);
     const chatBox = ref(null);
-    const socket = ref(null);
+    const websocket = ref(null);
     const connectionStatus = ref("disconnected");
     const cancelTokenSource = axios.CancelToken.source();
 
@@ -117,20 +117,20 @@ export default {
         const wsProtocol = url.protocol === "https:" ? "wss:" : "ws:";
         const wsUrl = `${wsProtocol}//${url.hostname}:${url.port}/ws/chat`;
 
-        socket.value = new WebSocket(wsUrl);
+        websocket.value = new WebSocket(wsUrl);
 
-        socket.value.onopen = () => {
+        websocket.value.onopen = () => {
           connectionStatus.value = "connected";
-          socket.value.send(JSON.stringify({ type: "auth" }));
+          websocket.value.send(JSON.stringify({ type: "auth" }));
         };
 
-        socket.value.onmessage = (event) => {
+        websocket.value.onmessage = (event) => {
           const data = JSON.parse(event.data);
           messages.value.push({ from: "bot", text: renderResponse(data) });
           scrollToBottom();
         };
 
-        socket.value.onerror = () => {
+        websocket.value.onerror = () => {
           connectionStatus.value = "disconnected";
           ElMessage.error("与服务端的连接中断");
         };
@@ -149,13 +149,15 @@ export default {
         if (response.status === 200) {
           connectWebSocket();
         } else {
+          connectionStatus.value = "disconnected";
           ElMessage.error("身份验证失败");
         }
       } catch (error) {
         if (axios.isCancel(error)) {
           console.log("Request canceled");
         } else {
-          ElMessage.error("身份验证失败");
+          connectionStatus.value = "disconnected";
+          ElMessage.error("请求失败：" + error.message);
         }
       }
     };
@@ -165,7 +167,7 @@ export default {
       if (!text) return;
 
       messages.value.push({ from: "user", text: text });
-      socket.value?.send(text);
+      websocket.value?.send(text);
       inputText.value = "";
       scrollToBottom();
     };
@@ -173,8 +175,8 @@ export default {
     const resetChat = () => {
       messages.value = [];
 
-      if (socket.value && socket.value.readyState === WebSocket.OPEN) {
-          socket.value.close();
+      if (websocket.value && websocket.value.readyState === WebSocket.OPEN) {
+          websocket.value.close();
       }
 
       authenticateToken();
@@ -346,8 +348,8 @@ export default {
     });
 
     onBeforeUnmount(() => {
-      if (socket.value) {
-        socket.value.close();
+      if (websocket.value) {
+        websocket.value.close();
       }
       cancelTokenSource.cancel("Component unmounted");
     });
@@ -448,12 +450,11 @@ export default {
     font-weight: bold;
   }
 
-
   .reset-button {
   background: transparent;
   border: none;
   padding: 0;
-  font-size: 24px !important;
+  font-size: 22px !important;
   color: inherit;
   transition: color 0.3s ease;
   }

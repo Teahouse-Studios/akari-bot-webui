@@ -7,9 +7,16 @@
         class="log-search-input"
         @input="handleSearch"
         clearable
-        :style="{ width: 'calc(100% - 135px)' }"
+        :style="{ width: 'calc(100% - 175px)' }"
       />
-
+      <el-button
+        class="log-refresh-button"
+        @click="refreshLog"
+        title="刷新"
+        circle
+      >
+        <i class="mdi mdi-refresh"></i>
+      </el-button>
       <span class="auto-scroll-label">自动滚动</span>
       <el-switch
         v-model="autoScroll"
@@ -97,7 +104,7 @@ export default {
         if (axios.isCancel(error)) {
           console.log("Request canceled");
         } else {
-          ElMessage.error("身份验证失败");
+          ElMessage.error("请求失败：" + error.message);
         }
       }
     };
@@ -174,6 +181,20 @@ export default {
         }, 200);
       }
     }, 500);
+    
+    const refreshLog = () => {
+      logData.value = "";
+      visibleLogs.value = [];
+      if (logViewer.value) {
+        logViewer.value.scrollTop = 0;
+      }
+
+      if (websocket.value && websocket.value.readyState === WebSocket.OPEN) {
+          websocket.value.close();
+      }
+
+      authenticateToken();
+    };
 
     const formatLogLine = (logLine) => {
       const logPattern = /^\[([^\]]+)\]\[([^\]]+)\]\[([^\]]+)\]\[([^\]]+)\]:(.*)$/s;
@@ -265,6 +286,7 @@ export default {
     return {
       logData,
       visibleLogs,
+      refreshLog,
       logViewer,
       logLevels,
       activeLogLevels,
@@ -300,17 +322,37 @@ export default {
   background-color: #555;
 }
 
-.auto-scroll-label {
-  margin-left: 15px;
+.log-refresh-button {
+  background: transparent;
+  border: none;
+  padding: 0;
+  font-size: 24px !important;
+  margin-left: 10px;
   margin-right: 5px;
+  color: inherit;
+  transition: color 0.3s ease;
+  }
+
+.log-refresh-button:hover {
+  background-color: #ddd;
+  color: #888;
 }
 
-.el-button {
+.dark .log-refresh-button:hover {
+  background-color: #555;
+  color: #aaa;
+}
+
+.auto-scroll-label {
+  margin: 5px;
+}
+
+.log-level-button {
   margin: 5px;
   background-color: transparent;
 }
 
-.el-button + .el-button {
+.log-level-button + .log-level-button {
   margin-left: 5px;
 }
 
