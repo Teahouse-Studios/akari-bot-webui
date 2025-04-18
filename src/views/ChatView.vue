@@ -158,7 +158,7 @@ export default {
       const text = inputText.value.trim();
       if (!text) return;
 
-      messages.value.push({ from: "user", text: escapeHTML(text) });
+      messages.value.push({ from: "user", text: text });
       socket.value?.send(text);
       inputText.value = "";
       scrollToBottom();
@@ -312,17 +312,12 @@ export default {
         });
     };
 
-    const escapeHTML = (str) =>
-      str.replace(/[&<>"']/g, (char) =>
-          ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[char])
-      );
-
     const renderResponse = (data) => {
       if (Array.isArray(data)) {
         return data
           .map((item) => {
             if (item.type === "text") {
-              return escapeHTML(item.content);
+              return item.content;
             }
             if (item.type === "image") {
               const base64Content = item.content;
