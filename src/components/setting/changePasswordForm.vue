@@ -22,18 +22,10 @@
       <el-button type="danger" @click="handleClearPassword">清除密码</el-button>
     </el-form-item>
   </el-form>
-
-  <el-dialog v-model="dialogVisible">
-    <span>你确定要清除密码吗？</span>
-    <template #footer>
-      <el-button @click="dialogVisible = false">取消</el-button>
-      <el-button type="primary" @click="confirmClearPassword">确定</el-button>
-    </template>
-  </el-dialog>
 </template>
 
 <script>
-import { ElMessage } from 'element-plus';
+import { ElMessage, ElMessageBox } from 'element-plus';
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
 import Cookies from "js-cookie";
@@ -48,7 +40,6 @@ export default {
     });
 
     const noPassword = ref(false);
-    const dialogVisible = ref(false);
 
     onMounted(() => {
       noPassword.value = localStorage.getItem('noPassword') === 'true';
@@ -75,12 +66,8 @@ export default {
 
     const handleUpdatePassword = async () => {
       try {
-        try {
-          await formRef.value.validate();
-        } catch {
-          return;
-        }
-
+        await formRef.value.validate();
+        
         const requestData = {
           new_password: form.value.new_password,
         };
@@ -108,10 +95,21 @@ export default {
     const handleClearPassword = async () => {
       try {
         await formRef.value.validateField('old_password');
+        
+        ElMessageBox.confirm('你确定要清除密码吗？', '警告', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning',
+        })
+        .then(async () => {
+          await confirmClearPassword();
+        })
+        .catch(() => {
+          return;
+        });
       } catch {
         return;
       }
-      dialogVisible.value = true;
     };
 
     const confirmClearPassword = async () => {
@@ -125,6 +123,7 @@ export default {
         if (response.status === 200) {
           ElMessage.success('密码已清除');
           Cookies.remove('XSRF-TOKEN');
+          localStorage.removeItem("noPasswordPromptDisabled");
           location.reload();
         }
       } catch (error) {
@@ -133,8 +132,6 @@ export default {
         } else {
           ElMessage.error("请求失败：" + error.message);
         }
-      } finally {
-      dialogVisible.value = false;
       }
     };
 
@@ -146,7 +143,6 @@ export default {
       noPassword,
       handleClearPassword,
       confirmClearPassword,
-      dialogVisible,
     };
   },
 };
