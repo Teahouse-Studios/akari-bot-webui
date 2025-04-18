@@ -297,7 +297,7 @@ export default {
 
 <style scoped>
 .el-card {
-  box-shadow: none;
+  box-shadow: none !important;
   margin-bottom: 20px;
   line-height: 1;
   white-space: nowrap;
