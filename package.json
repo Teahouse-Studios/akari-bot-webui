@@ -9,7 +9,6 @@
   },
   "dependencies": {
     "@codemirror/theme-one-dark": "^6.1.2",
-    "@element-plus/icons-vue": "^2.3.1",
     "@fortawesome/fontawesome-free": "^6.7.2",
     "@mdi/font": "^7.4.47",
     "axios": "^1.8.2",

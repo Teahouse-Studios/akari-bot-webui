@@ -104,8 +104,8 @@ export default {
 }
 
 .menu-button:hover {
-  background-color: white;
-  color: #666;
+  background-color: #f4f4f4;
+  color: #888;
 }
 
 .dark .menu-button:hover {

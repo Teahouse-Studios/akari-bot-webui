@@ -6,18 +6,11 @@
     circle
     size="large"
     type="primary"
-    :icon="Refresh"
     @click="refreshData"
-    style="position: fixed; bottom: 20px; right: 20px; z-index: 9999;">
+  >
+    <i class="mdi mdi-refresh"></i>
   </el-button>
 </template>
-
-<script setup>
-import { Refresh } from '@element-plus/icons-vue'
-import { ref } from 'vue'
-
-const analyticsCard = ref(null);
-</script>
 
 <script>
 import AnalyticsCard from "@/components/dashboard/AnalyticsCard.vue";
@@ -49,5 +42,6 @@ methods: {
   bottom: 20px;
   right: 20px;
   z-index: 9999;
+  font-size: 22px !important; 
 }
 </style>
