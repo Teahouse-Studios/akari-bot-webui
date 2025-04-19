@@ -596,4 +596,8 @@ export default {
     background-color: #181818;
     border-radius: 5px;
   }
+
+  .el-button:disabled {
+    cursor: default !important;
+  }
 </style>
