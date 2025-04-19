@@ -2,7 +2,7 @@
   <div class="container">
     <img width="380" src="@/assets/character_marked.png" alt="Akaribot">
     <h1 class="title">小可 · AkariBot</h1>
-    <span class="quote">多功能、多语言、多平台支持的异步聊天机器人</span>
+    <span class="quote">{{ $t("about.quote") }}</span>
     <span class="text">By <a href="https://github.com/OasisAkari">OasisAkari</a> via <a href="https://teahouse.team">Teahouse Studios</a></span>
 
     <!-- GitHub Repos -->
@@ -10,27 +10,27 @@
       <div class="github-link">
         <el-button class="repo-button" @click="goToRepo">
           <i class="fab fa-github"></i>
-          <span>主项目</span>
+          <span>{{ $t("about.button.repo.main") }}</span>
         </el-button>
-        <img src="https://img.shields.io/github/stars/Teahouse-Studios/akari-bot?style=social" alt="Repo Stars" :title="`你的 Star 是对我们非常大的鼓励！`">
+        <img src="https://img.shields.io/github/stars/Teahouse-Studios/akari-bot?style=social" alt="Repo Stars" :title="$t('about.star.tooltip')">
       </div>
       <div class="github-link">
         <el-button class="repo-button" @click="goToWebUIRepo">
           <i class="fab fa-github"></i>
-          <span>WebUI</span>
+          <span>{{ $t("about.button.repo.webui") }}</span>
         </el-button>
-        <img src="https://img.shields.io/github/stars/DoroWolf/akari-bot-webui?style=social" alt="Repo Stars" :title="`你的 Star 是对我们非常大的鼓励！`">
+        <img src="https://img.shields.io/github/stars/DoroWolf/akari-bot-webui?style=social" alt="Repo Stars" :title="$t('about.star.tooltip')">
       </div>
     </div>
 
     <div class="other-links">
       <el-button class="locale-button" @click="goToI18N">
         <i class="mdi mdi-translate"></i>
-        <span>帮助翻译</span>
+        <span>{{ $t("about.button.locale") }}</span>
       </el-button>
       <el-button class="sponsor-button" @click="goToSponsor">
         <i class="mdi mdi-heart-outline"></i>
-        <span>赞助我们</span>
+        <span>{{ $t("about.button.sponsor") }}</span>
       </el-button>
     </div>
     <span class="footer-text">Made with love❤️ and Python🐍.</span>
@@ -39,26 +39,35 @@
 
 
 <script>
-export default {
-  name: "AboutView",
-  methods: {
-    updateScreenWidth() {
-      this.screenWidth = window.innerWidth;
+  import { useI18n } from 'vue-i18n';
+    
+  export default {
+    name: "AboutView",
+    setup() {
+      const { t } = useI18n();
+
+      return {
+        t
+      };
     },
-    goToRepo() {
-      window.open("https://github.com/Teahouse-Studios/akari-bot", "_blank");
-    },
-    goToWebUIRepo() {
-      window.open("https://github.com/DoroWolf/akari-bot-webui", "_blank");
-    },
-    goToI18N() {
-      window.open("https://crowdin.com/project/akari-bot", "_blank");
-    },
-    goToSponsor() {
-      window.open("https://afdian.com/a/teahouse", "_blank");
+    methods: {
+      updateScreenWidth() {
+        this.screenWidth = window.innerWidth;
+      },
+      goToRepo() {
+        window.open("https://github.com/Teahouse-Studios/akari-bot", "_blank");
+      },
+      goToWebUIRepo() {
+        window.open("https://github.com/DoroWolf/akari-bot-webui", "_blank");
+      },
+      goToI18N() {
+        window.open("https://crowdin.com/project/akari-bot", "_blank");
+      },
+      goToSponsor() {
+        window.open("https://afdian.com/a/teahouse", "_blank");
+      }
     }
-  }
-};
+  };
 </script>
 
 <style scoped>

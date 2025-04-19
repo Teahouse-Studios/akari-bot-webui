@@ -3,25 +3,25 @@
     <el-col :span="10" :xs="24">
       <el-card :body-style="{ height: '200px' }"
         v-loading="loading">
-        <h3><i class="mdi mdi-robot-outline"></i> 机器人</h3>
+        <h3><i class="mdi mdi-robot-outline"></i> {{ $t("dashboard.server_info.bot.title") }}</h3>
         <p>
-          <strong class="data-title">Python 版本</strong
+          <strong class="data-title">{{ $t("dashboard.server_info.bot.label.python_version") }}</strong
           ><span class="data-text">{{ bot.python_version || "-" }}</span>
         </p>
         <p>
-          <strong class="data-title">机器人版本</strong
+          <strong class="data-title">{{ $t("dashboard.server_info.bot.label.bot_version") }}</strong
           ><span class="data-text">{{
             bot.version ? bot.version.slice(0, 6) : "-"
           }}</span>
         </p>
         <p>
-          <strong class="data-title">WebRender 已就绪</strong
+          <strong class="data-title">{{ $t("dashboard.server_info.bot.label.web_render_status") }}</strong
           ><span class="data-text">{{
-            bot.web_render_status ? "是" : "否"
+            bot.web_render_status ? $t("true") : $t("false")
           }}</span>
         </p>
         <p>
-          <strong class="data-title">运行时间</strong
+          <strong class="data-title">{{ $t("dashboard.server_info.bot.label.running_time") }}</strong
           ><span class="data-text">{{
             formatRunningTime(bot.running_time || 0)
           }}</span>
@@ -29,20 +29,20 @@
       </el-card>
       <el-card :body-style="{ height: '160px' }"
         v-loading="loading">
-        <h3><i class="mdi mdi-laptop"></i> 系统</h3>
+        <h3><i class="mdi mdi-laptop"></i> {{ $t("dashboard.server_info.system.title") }}</h3>
         <p>
-          <strong class="data-title">架构</strong
+          <strong class="data-title">{{ $t("dashboard.server_info.system.label.machine") }}</strong
           ><span class="data-text"
             >{{ os.system || "-" }} {{ os.machine ? "-" : "" }}
             {{ os.machine || "" }}</span
           >
         </p>
         <p>
-          <strong class="data-title">版本</strong
+          <strong class="data-title">{{ $t("dashboard.server_info.system.label.version") }}</strong
           ><span class="data-text">{{ os.version || "-" }}</span>
         </p>
         <p>
-          <strong class="data-title">启动时间</strong
+          <strong class="data-title">{{ $t("dashboard.server_info.system.label.boot_time") }}</strong
           ><span class="data-text">{{ formatTime(os.boot_time || 0) }}</span>
         </p>
       </el-card>
@@ -51,19 +51,19 @@
     <el-col :span="14" :xs="24">
       <el-card :body-style="{ height: '420px' }"
         v-loading="loading">
-        <h3><i class="mdi mdi-memory"></i> CPU</h3>
-        <p><strong class="data-title">型号</strong></p>
+        <h3><i class="mdi mdi-memory"></i> {{ $t("dashboard.server_info.cpu.title") }}</h3>
+        <p><strong class="data-title">{{ $t("dashboard.server_info.cpu.label.brand") }}</strong></p>
         <p>
           <span class="data-text">{{ cpu.cpu_brand || "-" }}</span>
         </p>
-        <h3><i class="mdi mdi-sd"></i> 内存</h3>
+        <h3><i class="mdi mdi-sd"></i> {{ $t("dashboard.server_info.memory.title") }}</h3>
         <p>
           <span class="data-text"
             >{{ memory.used ? memory.used.toFixed() : 0 }} MB /
             {{ memory.total ? memory.total.toFixed() : 0 }} MB</span
           >
         </p>
-        <h3><i class="mdi mdi-server-outline"></i> 磁盘</h3>
+        <h3><i class="mdi mdi-server-outline"></i> {{ $t("dashboard.server_info.disk.title") }}</h3>
         <p>
           <span class="data-text"
             >{{ disk.used ? disk.used.toFixed(1) : 0 }} GB /
@@ -79,7 +79,7 @@
           >
             <template #default="{ percentage }">
               <span class="percentage-value">{{ percentage }}%</span>
-              <span class="percentage-label">CPU</span>
+              <span class="percentage-label">{{ $t("dashboard.server_info.cpu.title") }}</span>
             </template>
           </el-progress>
           <el-progress
@@ -89,7 +89,7 @@
           >
             <template #default="{ percentage }">
               <span class="percentage-value">{{ percentage }}%</span>
-              <span class="percentage-label">内存</span>
+              <span class="percentage-label">{{ $t("dashboard.server_info.memory.title") }}</span>
             </template>
           </el-progress>
           <el-progress
@@ -99,24 +99,30 @@
           >
             <template #default="{ percentage }">
               <span class="percentage-value">{{ percentage }}%</span>
-              <span class="percentage-label">磁盘</span>
+              <span class="percentage-label">{{ $t("dashboard.server_info.disk.title") }}</span>
             </template>
           </el-progress>
         </div>
       </el-card>
     </el-col>
   </el-row>
-
 </template>
-
 
 <script>
 import axios from "@/axios";
 import { ElMessage } from 'element-plus';
+import { useI18n } from 'vue-i18n';
 
 const progress_colors = ["#1989fa", "#e6a23c", "#f56c6c"];
 
 export default {
+  setup() {
+    const { t } = useI18n();
+
+    return {
+      t
+    }
+  },
   data() {
     return {
       os: {
@@ -160,7 +166,7 @@ export default {
       const hours = Math.floor(seconds / 3600);
       const minutes = Math.floor((seconds % 3600) / 60);
       const remainingSeconds = Math.floor(seconds % 60);
-      return `${hours}小时${minutes}分${remainingSeconds}秒`;
+      return this.t("dashboard.server_info.text.format_time", { hours: hours, minutes: minutes, seconds: remainingSeconds });
     },
     formatTime(timestamp) {
       const date = new Date(timestamp * 1000);
@@ -191,7 +197,7 @@ export default {
         if (axios.isCancel(error)) {
           console.log("Request canceled");
         } else {
-          ElMessage.error("请求失败：" + error.message);
+          ElMessage.error(this.t("message.error.fetch") + error.message);
         }
       } finally {
         this.loading = false;

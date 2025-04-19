@@ -1,21 +1,30 @@
 <template>
     <el-dialog
-      title="建议设置密码"
+      :title="$t('suggest_set_password.title')"
       v-model="dialogVisible"
       width="400px"
       align-center
     >
-      <p>目前暂未设置密码。若你打算在公网访问此面板，为保证服务安全性，请务必前往“更多设置”界面设置一个密码。</p>
-      <el-checkbox v-model="noMorePrompt">不再提示</el-checkbox>
+      <p>{{ $t('suggest_set_password.text') }}</p>
+      <el-checkbox v-model="noMorePrompt">{{ $t('suggest_set_password.checkbox.no_more_prompt') }}</el-checkbox>
       <template #footer>
-        <el-button @click="handleClose">稍后再说</el-button>
-        <el-button type="primary" @click="goToSetting">去设置</el-button>
+        <el-button @click="handleClose">{{ $t('suggest_set_password.button.cancel') }}</el-button>
+        <el-button type="primary" @click="goToSetting">{{ $t('suggest_set_password.button.confirm') }}</el-button>
       </template>
     </el-dialog>
   </template>
   
-  <script>
+<script>
+  import { useI18n } from 'vue-i18n';
+
   export default {
+    setup() {
+      const { t } = useI18n();
+
+      return {
+        t
+      };
+    },
     props: {
       modelValue: Boolean,
     },
@@ -51,5 +60,5 @@
       },
     },
   };
-  </script>
+</script>
   

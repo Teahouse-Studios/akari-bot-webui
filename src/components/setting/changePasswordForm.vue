@@ -1,25 +1,25 @@
 <template>
-  <h3>界面密码</h3>
-  <el-form :model="form" :rules="rules" ref="formRef" label-width="100px">
-    <el-form-item v-if="!noPassword" label="旧密码" prop="old_password">
+  <h3>{{ $t('setting.change_password.title') }}</h3>
+  <el-form :model="form" :rules="rules" ref="formRef" label-width="150px">
+    <el-form-item v-if="!noPassword" :label="$t('setting.change_password.input.old_password')" prop="old_password">
       <el-input v-model="form.old_password" type="password"/>
     </el-form-item>
 
-    <el-form-item label="新密码" prop="new_password">
+    <el-form-item :label="$t('setting.change_password.input.new_password')" prop="new_password">
       <el-input v-model="form.new_password" type="password"/>
     </el-form-item>
 
-    <el-form-item label="确认密码" prop="confirm_password">
+    <el-form-item :label="$t('setting.change_password.input.confirm_password')" prop="confirm_password">
       <el-input v-model="form.confirm_password" type="password"/>
     </el-form-item>
 
     <el-form-item v-if="noPassword">
-      <el-button type="primary" @click="handleUpdatePassword">设置密码</el-button>
+      <el-button type="primary" @click="handleUpdatePassword">{{ $t('setting.change_password.button.set_password') }}</el-button>
     </el-form-item>
 
     <el-form-item v-if="!noPassword" class="password-buttons">
-      <el-button type="primary" @click="handleUpdatePassword">修改密码</el-button>
-      <el-button type="danger" @click="handleClearPassword">清除密码</el-button>
+      <el-button type="primary" @click="handleUpdatePassword">{{ $t('setting.change_password.button.update_password') }}</el-button>
+      <el-button type="danger" @click="handleClearPassword">{{ $t('setting.change_password.button.clear_password') }}</el-button>
     </el-form-item>
   </el-form>
 </template>
@@ -27,11 +27,13 @@
 <script>
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { ref, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import axios from 'axios';
 import Cookies from "js-cookie";
 
 export default {
   setup() {
+    const { t } = useI18n();
     const formRef = ref(null);
     const form = ref({
       old_password: '',
@@ -47,16 +49,16 @@ export default {
 
     const rules = {
       old_password: [
-        { required: true, message: '请输入旧密码', trigger: 'blur' },
+        { required: true, message: t('setting.change_password.validate.old_password'), trigger: 'blur' },
       ],
       new_password: [
-        { required: true, message: '请输入新密码', trigger: 'blur' },
+        { required: true, message: t('setting.change_password.validate.new_password'), trigger: 'blur' },
       ],
       confirm_password: [
-        { required: true, message: '请确认新密码', trigger: 'blur' },
+        { required: true, message: t('setting.change_password.validate.confirm_password'), trigger: 'blur' },
         { validator: (rule, value, callback) => {
           if (value !== form.value.new_password) {
-            callback(new Error('两次密码输入不一致'));
+            callback(new Error(t('setting.change_password.validate.inconsistent')));
           } else {
             callback();
           }
@@ -83,15 +85,15 @@ export default {
         const response = await axios.post('/api/change-password', requestData);
 
         if (response.status === 200) {
-          ElMessage.success('密码修改成功');
+          ElMessage.success(t('setting.change_password.message.success.update'));
           Cookies.remove('XSRF-TOKEN');
           location.reload();
         }
       } catch (error) {
         if (error.response?.status === 401) {
-          ElMessage.error('密码错误，请重新输入');
+          ElMessage.error(t('setting.change_password.message.failed'));
         } else {
-          ElMessage.error("请求失败：" + error.message);
+          ElMessage.error(t('message.error.fetch') + error.message);
         }
       }
     };
@@ -100,9 +102,9 @@ export default {
       try {
         await formRef.value.validateField('old_password');
         
-        ElMessageBox.confirm('你确定要清除密码吗？', '警告', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
+        ElMessageBox.confirm(t('setting.change_password.confirm.message'), t('confirm.title.warning'), {
+          confirmButtonText: t('button.confirm'),
+          cancelButtonText: t('button.cancel'),
           type: 'warning',
         })
         .then(async () => {
@@ -125,16 +127,16 @@ export default {
         const response = await axios.post('/api/clear-password', requestData);
 
         if (response.status === 200) {
-          ElMessage.success('密码已清除');
+          ElMessage.success(t('setting.change_password.message.success.clear'));
           Cookies.remove('XSRF-TOKEN');
           localStorage.removeItem("noPasswordPromptDisabled");
           location.reload();
         }
       } catch (error) {
         if (error.response?.status === 401) {
-          ElMessage.error("密码错误，请重新输入");
+          ElMessage.error(t('setting.change_password.message.failed'));
         } else {
-          ElMessage.error("请求失败：" + error.message);
+          ElMessage.error(t('message.error.fetch') + error.message);
         }
       }
     };
@@ -147,6 +149,7 @@ export default {
       noPassword,
       handleClearPassword,
       confirmClearPassword,
+      t
     };
   },
 };

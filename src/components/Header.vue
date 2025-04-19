@@ -19,8 +19,19 @@
         </div>
       </div>
     </div>
+
     <div class="header-right">
-      <el-button class="help-button" @click="goToHelp">帮助文档</el-button>
+      <el-select
+        v-model="currentLang"
+        @change="changeLanguage"
+        class="lang-select"
+        style="width: 100px; margin-right: 10px;"
+      >
+        <el-option label="简体中文" value="zh_cn" />
+        <el-option label="繁體中文" value="zh_tw" />
+        <el-option label="English" value="en_us" />
+      </el-select>
+      <el-button class="help-button" @click="goToHelp">{{ $t('header.button.doc') }}</el-button>
       <el-button class="theme-toggle-button" @click="toggleDarkMode">
         <i
           :class="
@@ -33,13 +44,23 @@
 </template>
 
 <script>
+import { useI18n } from 'vue-i18n';
+
 export default {
   name: "AppHeader",
   emits: ["toggle-sidebar"],
+  setup() {
+    const { t } = useI18n();
+
+    return {
+      t,
+    };
+  },
   data() {
     return {
       isDarkMode: false,
       screenWidth: window.innerWidth,
+      currentLang: localStorage.getItem("language") || "zh_cn",
     };
   },
   mounted() {
@@ -48,6 +69,7 @@ export default {
       this.isDarkMode = JSON.parse(savedTheme);
     }
 
+    this.changeLanguage(this.currentLang);
     window.addEventListener("resize", this.updateScreenWidth);
   },
   beforeUnmount() {
@@ -68,6 +90,11 @@ export default {
     },
     switchSidebar() {
       this.$emit("toggle-sidebar");
+    },
+    changeLanguage(lang) {
+      this.currentLang = lang;
+      this.$i18n.locale = lang;
+      localStorage.setItem("language", lang);
     },
   },
 };
@@ -198,5 +225,9 @@ export default {
 .dark .theme-toggle-button:hover {
   background-color: #c0c0c0;
   color: #333;
+}
+
+.lang-select {
+  min-width: 100px;
 }
 </style>

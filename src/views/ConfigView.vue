@@ -18,10 +18,10 @@
     <div class="editor-footer">
       <div class="editor-actions">
         <el-button type="warning" @click="resetConfig">
-          <i class="mdi mdi-restart"></i> 重置
+          <i class="mdi mdi-restart"></i> {{ $t("config.button.reset") }}
         </el-button>
         <el-button type="success" @click="applyConfig">
-          <i class="mdi mdi-content-save-outline"></i> 应用
+          <i class="mdi mdi-content-save-outline"></i> {{ $t("config.button.save") }}
         </el-button>
       </div>
     </div>
@@ -35,9 +35,17 @@ import { basicSetup } from "codemirror";
 import { EditorState } from "@codemirror/state";
 import { oneDark } from "@codemirror/theme-one-dark";
 import { ElMessage } from 'element-plus';
+import { useI18n } from 'vue-i18n';
 
 export default {
   name: "ConfigView",
+  setup() {
+    const { t } = useI18n();
+
+    return {
+      t
+    }
+  },
   data() {
     return {
       activeTab: "",
@@ -91,7 +99,7 @@ export default {
         if (axios.isCancel(error)) {
           console.log("Request canceled");
         } else {
-          ElMessage.error("请求失败：" + error.message);
+          ElMessage.error(this.t('message.error.fetch') + error.message);
         }
       } finally {
         this.loading = false;
@@ -115,22 +123,20 @@ export default {
         if (axios.isCancel(error)) {
           console.log("Request canceled");
         } else {
-          ElMessage("请求失败：" + error.message);
+          ElMessage.error(this.t('message.error.fetch') + error.message);
         }
       }
     },
     resetConfig() {
       this.fetchConfig(this.activeTab, true);
     },
-    applyConfig() {
-      axios
-        .post(`/api/config/${this.activeTab}`, { content: this.editorContent })
-        .then(() => {
-          ElMessage.success("配置更新成功");
-        })
-        .catch((error) => {
-          ElMessage.error("配置更新失败：" + error.message);
-        });
+    async applyConfig() {
+      try {
+        await axios.post(`/api/config/${this.activeTab}`, { content: this.editorContent });
+        ElMessage.success(this.t('config.message.save.success'));
+      } catch (error) {
+        ElMessage.error(this.t('message.error.fetch') + error.message);
+      }
     },
     updateEditorContent() {
       if (this.editorView) {
