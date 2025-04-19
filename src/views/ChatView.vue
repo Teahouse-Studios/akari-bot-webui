@@ -135,7 +135,6 @@ export default {
 
         websocket.value.onopen = () => {
           connectionStatus.value = "connected";
-          websocket.value.send(JSON.stringify({ type: "auth" }));
         };
 
         websocket.value.onmessage = (event) => {
