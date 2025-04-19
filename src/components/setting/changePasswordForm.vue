@@ -66,8 +66,12 @@ export default {
 
     const handleUpdatePassword = async () => {
       try {
-        await formRef.value.validate();
-        
+        try {
+          await formRef.value.validate();
+        } catch {
+          return;
+        }
+
         const requestData = {
           new_password: form.value.new_password,
         };
@@ -150,7 +154,7 @@ export default {
 
 <style scoped>
 .el-input {
-  width: 50%;
+  width: 300px;
 }
 
 .el-form-item {
