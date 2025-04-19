@@ -1,5 +1,5 @@
 <template>
-  <h3>密码</h3>
+  <h3>界面密码</h3>
   <el-form :model="form" :rules="rules" ref="formRef" label-width="100px">
     <el-form-item v-if="!noPassword" label="旧密码" prop="old_password">
       <el-input v-model="form.old_password" type="password"/>
