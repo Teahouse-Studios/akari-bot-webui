@@ -1,24 +1,24 @@
 <template>
   <div class="overlay">
     <div class="password-modal">
-      <span>登录以继续</span>
+      <span>{{ $t('login.title') }}</span>
       <el-input
         v-model="password"
-        placeholder="输入密码"
+        :placeholder="$t('login.input.password')"
         show-password
         @keyup.enter="checkPassword"
       ></el-input>
 
       <div class="remember-device-container">
-        <el-checkbox v-model="rememberDevice">记住登录状态</el-checkbox>
+        <el-checkbox v-model="rememberDevice">{{ $t('login.checkbox.remember') }}</el-checkbox>
         <span
           class="forgot-password"
           @mouseenter="showTooltip = true"
           @mouseleave="showTooltip = false"
-          >忘记密码
+          >{{ $t('login.forgot_password.text') }}
         </span>
         <div v-show="showTooltip" class="tooltip">
-          请前往服务端，进入“assets/private/api”目录，删除“.password”文件后重新设置密码。
+          {{ $t('login.forgot_password.tooltip') }}
         </div>
       </div>
 
@@ -28,7 +28,7 @@
         :loading="loading"
         :disabled="loading"
       >
-        登录
+        {{ $t('login.button.login') }}
       </el-button>
     </div>
   </div>
@@ -37,42 +37,51 @@
 <script>
 import axios from "@/axios";
 import { ElMessage } from 'element-plus';
+import { useI18n } from 'vue-i18n';
+import { ref } from 'vue';
 
 export default {
-  data() {
-    return {
-      password: "",
-      rememberDevice: false,
-      loading: false,
-      showTooltip: false,
-    };
-  },
-  methods: {
-    async checkPassword() {
-      this.loading = true;
+  setup() {
+    const { t } = useI18n();
+    const password = ref("");
+    const rememberDevice = ref(false);
+    const loading = ref(false);
+    const showTooltip = ref(false);
+
+    const checkPassword = async () => {
+      loading.value = true;
       try {
         const response = await axios.post("/api/auth", {
-          password: this.password,
-          remember: this.rememberDevice,
+          password: password.value,
+          remember: rememberDevice.value,
         });
 
         if (response.status === 200) {
-          ElMessage.success("登录成功");
+          ElMessage.success(t("login.message.success"));
           localStorage.setItem("noPassword", JSON.stringify(response.data.no_password));
           location.reload();
         }
       } catch (error) {
         if (error.response?.status === 401) {
-          ElMessage.error("密码错误，请重新输入");
+          ElMessage.error(t("login.message.failed"));
         } else if (error.response?.status === 403) {
-          ElMessage.error("登录失败次数过多，请稍后再试");
-        }else {
-          ElMessage.error("请求失败：" + error.message);
+          ElMessage.error(t("login.message.abuse"));
+        } else {
+          ElMessage.error(t("message.error.fetch") + error.message);
         }
       } finally {
-        this.loading = false;
+        loading.value = false;
       }
-    },
+    };
+
+    return {
+      t,
+      password,
+      rememberDevice,
+      loading,
+      showTooltip,
+      checkPassword,
+    };
   },
 };
 </script>

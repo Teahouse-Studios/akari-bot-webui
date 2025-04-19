@@ -5,7 +5,7 @@
     v-loading="userVerified === null"
     ></div>
     <AppHeader @toggle-sidebar="toggleSidebar" />
-    <PasswordModal v-if="userVerified == false" />
+    <LoginModal v-if="userVerified == false" />
     <SuggestSetPasswordModal v-model="showSuggestPasswordModal" />
     <div
       v-if="isSidebarVisible && windowWidth <= 1024"
@@ -42,7 +42,7 @@
 import axios from "@/axios";
 import AppSidebar from "./components/Sidebar.vue";
 import AppHeader from "./components/Header.vue";
-import PasswordModal from "./components/PasswordModal.vue";
+import LoginModal from "./components/LoginModal.vue";
 import SuggestSetPasswordModal from "./components/SuggestSetPasswordModal.vue";
 import { ElMessage } from 'element-plus';
 import Cookies from "js-cookie";
@@ -51,7 +51,7 @@ export default {
   components: {
     AppHeader,
     AppSidebar,
-    PasswordModal,
+    LoginModal,
     SuggestSetPasswordModal,
   },
   data() {

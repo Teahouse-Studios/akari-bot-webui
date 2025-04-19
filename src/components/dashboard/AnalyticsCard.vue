@@ -4,26 +4,26 @@
       <el-card :body-style="{ height: '400px' }" 
         v-loading="loading">
         <div class="card-header">
-          <h3><i class="mdi mdi-chart-line"></i> 命令统计</h3>
+          <h3><i class="mdi mdi-chart-line"></i> {{ $t("dashboard.analytics.command.title") }}</h3>
           <el-select v-model="selectedDays" @change="onTimeRangeChange" class="time-range-select">
-            <el-option label="过去 1 天" value="1"></el-option>
-            <el-option label="过去 3 天" value="3"></el-option>
-            <el-option label="过去 7 天" value="7"></el-option>
-            <el-option label="过去 30 天" value="30"></el-option>
-            <el-option label="过去 365 天" value="365"></el-option>
+            <el-option :label="$t('dashboard.analytics.command.select.1day')" value="1"></el-option>
+            <el-option :label="$t('dashboard.analytics.command.select.3days')" value="3"></el-option>
+            <el-option :label="$t('dashboard.analytics.command.select.7days')" value="7"></el-option>
+            <el-option :label="$t('dashboard.analytics.command.select.30days')" value="30"></el-option>
+            <el-option :label="$t('dashboard.analytics.command.select.365days')" value="365"></el-option>
           </el-select>
         </div>
         <div class="statistics-content">
   <div class="data-group">
-    <strong class="data-title">总命令数</strong>
+    <strong class="data-title">{{ $t("dashboard.analytics.command.label.total") }}</strong>
     <span class="data-text">{{ count || 0 }}</span>
   </div>
   <div class="data-group">
-    <strong class="data-title">平均命令数</strong>
+    <strong class="data-title">{{ $t("dashboard.analytics.command.label.average") }}</strong>
     <span class="data-text">{{ averageCount || 0 }}</span>
   </div>
   <div class="data-group">
-    <strong class="data-title">改变率</strong>
+    <strong class="data-title">{{ $t("dashboard.analytics.command.label.change_rate") }}</strong>
     <span
       :class="{
         positive: changeRate > 0,
@@ -43,7 +43,7 @@
       <el-card :body-style="{ height: '400px' }"
         v-loading="loading">
         <div class="card-header">
-          <h3><i class="mdi mdi-format-list-numbered"></i> 平台命令统计</h3>
+          <h3><i class="mdi mdi-format-list-numbered"></i> {{ $t("dashboard.analytics.platform.title") }}</h3>
         </div>
           <div class="proportion-bar">
             <div
@@ -58,8 +58,8 @@
             ></div>
         </div>
         <div class="ranking-total-label">
-          <strong>总命令数</strong>
-          <span>{{ count || 0 }} 条</span>
+          <strong>{{ $t("dashboard.analytics.command.label.total") }}</strong>
+          <span>{{ count || 0  }}</span>
         </div>
         <el-scrollbar height="260px">
           <div v-for="(item, index) in commandStats" :key="item.prefix" class="ranking-item">
@@ -74,7 +74,7 @@
               </span>
             <div class="ranking-label">
               <strong>{{ item.prefix }}</strong>
-              <span>{{ item.count }} 条</span>
+              <span>{{ item.count }}</span>
             </div>
           </div>
         </el-scrollbar>
@@ -84,11 +84,19 @@
 </template>
 
 <script>
+import { ElMessage } from 'element-plus';
+import { useI18n } from 'vue-i18n';
 import axios from "@/axios";
 import * as echarts from "echarts";
-import { ElMessage } from 'element-plus';
 
 export default {
+  setup() {
+    const { t } = useI18n();
+
+    return {
+      t
+    }
+  },
   data() {
     return {
       trendData: [],
@@ -136,7 +144,7 @@ export default {
         if (axios.isCancel(error)) {
           console.log("Request canceled");
         } else {
-          ElMessage.error("请求失败：" + error.message);
+          ElMessage.error(this.t('message.error.fetch') + error.message);
         }
       } finally {
         this.loading = false;
@@ -158,7 +166,7 @@ export default {
       this.changeRate = Math.floor(data.change_rate * 100);
       const prefixCountMap = {};
       data.data.forEach(item => {
-        const prefix = item.target_id?.split("|")[0] || "未知";
+        const prefix = item.target_id?.split("|")[0] || this.t("unknown");
         prefixCountMap[prefix] = (prefixCountMap[prefix] || 0) + 1;
       });
 
@@ -249,7 +257,7 @@ export default {
           },
           series: [
             {
-              name: '命令数量',
+              name: this.t('dashboard.analytics.command.chart.command'),
               data: this.trendData.map(item => item.count),
               type: 'line',
               smooth: true,

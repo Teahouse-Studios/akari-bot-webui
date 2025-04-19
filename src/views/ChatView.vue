@@ -8,14 +8,14 @@
             connectionStatus === 'connecting' ? 'orange' : 'red' 
         }" 
         class="connection-indicator"
-        :title="connectionStatus === 'connected' ? '已连接' : 
-                connectionStatus === 'connecting' ? '连接中' : '未连接'"
+        :title="connectionStatus === 'connected' ? $t('chat.status.tooltip.connected') : 
+                connectionStatus === 'connecting' ? $t('chat.status.tooltip.connecting') : $t('chat.status.tooltip.disconnected')"
       ></div>
-      <div class="chat-title"># 聊天</div>
+      <div class="chat-title"># {{ $t('chat.title') }}</div>
       <el-button
         class="reset-button"
         @click="resetChat"
-        title="清空会话"
+        :title="$t('chat.button.reset')"
         circle
       >
         <i class="mdi mdi-restart"></i>
@@ -24,10 +24,22 @@
 
     <div class="chat-box" ref="chatBox">
       <div v-if="messages.length === 0" class="chat-placeholder">
-        <div class="placeholder-title">我是 AkariBot，很高兴见到你！</div>
-        <div class="placeholder-sub">使用 <code>~help</code> 命令查看帮助</div>
-        <div class="placeholder-sub">按下 <code>Enter</code> 发送消息</div>
-        <div class="placeholder-sub">按下 <code>Shift + Enter</code> 换行</div>
+        <div class="placeholder-title">{{ $t('chat.chatbox.title') }}</div>
+        <div class="placeholder-sub">
+          {{ $t('chat.chatbox.text.prompt1.prefix') }}
+          <code>~help</code>
+          {{ $t('chat.chatbox.text.prompt1.suffix') }}
+        </div>
+        <div class="placeholder-sub">
+          {{ $t('chat.chatbox.text.prompt2.prefix') }}
+          <code>Enter</code>
+          {{ $t('chat.chatbox.text.prompt2.suffix') }}
+        </div>
+        <div class="placeholder-sub">
+          {{ $t('chat.chatbox.text.prompt3.prefix') }}
+          <code>Shift + Enter</code>
+          {{ $t('chat.chatbox.text.prompt3.suffix') }}
+        </div>
       </div>
 
       <div v-for="(msg, idx) in messages" :key="idx" class="chat-message" :class="msg.from">
@@ -57,6 +69,7 @@
             <a
                 :href="part.url"
                 target="_blank"
+                rel="noopener noreferrer"
                 @click.prevent="confirmExternalLink(part.url)"
             >
               {{ part.text }}
@@ -76,7 +89,7 @@
     <div class="send-box">
       <el-input
         v-model="inputText"
-        placeholder="发送消息..."
+        :placeholder="$t('chat.input.send')"
         @keydown.enter="handleEnterKey"
         class="chat-send-input"
         type="textarea"
@@ -91,7 +104,7 @@
       style="margin-left: 10px;"
       :disabled="connectionStatus != 'connected' || inputText.trim() === ''"
       >
-        发送
+        {{ $t('chat.button.send') }}
       </el-button>
     </div>
     <el-dialog
@@ -106,13 +119,15 @@
 </template>
 
 <script>
-import { ref, onMounted, onBeforeUnmount, nextTick } from "vue";
-import { ElMessage, ElMessageBox } from "element-plus";
 import axios from "axios";
+import { ElMessage, ElMessageBox } from "element-plus";
+import { ref, onMounted, onBeforeUnmount, nextTick } from "vue";
+import { useI18n } from 'vue-i18n';
 
 export default {
   name: "ChatView",
   setup() {
+    const { t } = useI18n();
     const inputText = ref("");
     const messages = ref([]);
     const chatBox = ref(null);
@@ -152,11 +167,11 @@ export default {
 
         websocket.value.onerror = () => {
           connectionStatus.value = "disconnected";
-          ElMessage.error("与服务端的连接中断");
+          ElMessage.error(t('message.error.connect.server'));
         };
       } catch (error) {
         connectionStatus.value = "disconnected";
-        ElMessage.error("连接失败: " + error.message);
+        ElMessage.error(t('message.error.connect') + error.message);
       }
     };
 
@@ -170,14 +185,14 @@ export default {
           connectWebSocket();
         } else {
           connectionStatus.value = "disconnected";
-          ElMessage.error("身份验证失败");
+          ElMessage.error(t('message.error.connect.auth'));
         }
       } catch (error) {
         if (axios.isCancel(error)) {
           console.log("Request canceled");
         } else {
           connectionStatus.value = "disconnected";
-          ElMessage.error("请求失败：" + error.message);
+          ElMessage.error(this.t('message.error.fetch') + error.message);
         }
       }
     };
@@ -325,11 +340,11 @@ export default {
 
     const confirmExternalLink = (url) => {
       ElMessageBox.confirm(
-        `你正在前往外部链接：${url}，你确定吗？`,
-        '外部链接警告',
+        t('chat.external_link.confirm.message', {url: url}),
+        t('chat.external_link.confirm.title'),
         {
-          confirmButtonText: '是',
-          cancelButtonText: '否',
+          confirmButtonText: t('yes'),
+          cancelButtonText: t('no'),
           type: 'warning',
         }
       )
@@ -392,7 +407,8 @@ export default {
       handleEnterKey,
       imageDialogVisible,
       previewImageSrc,
-      showImagePreview
+      showImagePreview,
+      t
     };
   },
 };

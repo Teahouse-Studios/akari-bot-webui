@@ -7,35 +7,44 @@
     >
       <el-menu-item index="dashboard">
         <i class="mdi mdi-view-dashboard"></i>
-        <span>面板</span>
+        <span>{{ $t('sidebar.item.dashboard') }}</span>
       </el-menu-item>
       <el-menu-item index="config">
         <i class="mdi mdi-cog"></i>
-        <span>配置</span>
+        <span>{{ $t('sidebar.item.config') }}</span>
       </el-menu-item>
       <el-menu-item index="logs">
         <i class="mdi mdi-console"></i>
-        <span>日志</span>
+        <span>{{ $t('sidebar.item.logs') }}</span>
       </el-menu-item>
       <el-menu-item index="chat">
         <i class="mdi mdi-chat"></i>
-        <span>聊天</span>
+        <span>{{ $t('sidebar.item.chat') }}</span>
       </el-menu-item>
       <el-menu-item index="setting">
         <i class="mdi mdi-tune"></i>
-        <span>更多设置</span>
+        <span>{{ $t('sidebar.item.setting') }}</span>
       </el-menu-item>
       <el-menu-item index="about">
         <i class="mdi mdi-information-outline"></i>
-        <span>关于</span>
+        <span>{{ $t('sidebar.item.about') }}</span>
       </el-menu-item>
     </el-menu>
   </el-aside>
 </template>
 
 <script>
+import { useI18n } from 'vue-i18n';
+
 export default {
   name: "AppSidebar",
+  setup() {
+    const { t } = useI18n();
+
+    return {
+      t,
+    };
+  },
   data() {
     return {
       activeMenu: this.getActiveMenuFromRoute(),
@@ -56,7 +65,7 @@ export default {
       if (validPaths.includes(path)) {
         return path;
       }
-      return ""; // 如果路径无效，则没有任何菜单项选中
+      return "";
     },
     handleSelect(index) {
       this.activeMenu = index;

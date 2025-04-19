@@ -3,7 +3,7 @@
     <div class="filter-container">
       <el-input
         v-model="searchText"
-        placeholder="搜索日志……"
+        :placeholder="$t('logs.input.search')"
         class="log-search-input"
         @input="handleSearch"
         clearable
@@ -12,12 +12,12 @@
       <el-button
         class="log-refresh-button"
         @click="refreshLog"
-        title="刷新"
+        :title="$t('logs.button.refresh')"
         circle
       >
         <i class="mdi mdi-refresh"></i>
       </el-button>
-      <span class="auto-scroll-label">自动滚动</span>
+      <span class="auto-scroll-label">{{ $t('logs.switch.auto_scroll') }}</span>
       <el-switch
         v-model="autoScroll"
       />
@@ -53,10 +53,11 @@
 </template>
 
 <script>
-import { ref, onMounted, onBeforeUnmount, watch } from "vue";
-import { debounce } from "lodash";
-import { ElButton, ElInput, ElMessage, ElSwitch } from "element-plus";
 import axios from "axios";
+import { ElButton, ElInput, ElMessage, ElSwitch } from "element-plus";
+import { debounce } from "lodash";
+import { ref, onMounted, onBeforeUnmount, watch } from "vue";
+import { useI18n } from 'vue-i18n';
 
 export default {
   name: "LogsView",
@@ -66,6 +67,7 @@ export default {
     ElSwitch,
   },
   setup() {
+    const { t } = useI18n();
     const logData = ref("");
     const visibleLogs = ref([]);
     const logViewer = ref(null);
@@ -98,13 +100,13 @@ export default {
         if (response.status === 200) {
           connectWebSocket();
         } else {
-          ElMessage.error("身份验证失败");
+          ElMessage.error(t('message.error.connect.auth'));
         }
       } catch (error) {
         if (axios.isCancel(error)) {
           console.log("Request canceled");
         } else {
-          ElMessage.error("请求失败：" + error.message);
+          ElMessage.error(t('message.error.fetch') + error.message);
         }
       }
     };
@@ -131,10 +133,10 @@ export default {
         };
 
         websocket.value.onerror = () => {
-          ElMessage.error("与服务端的连接中断");
+          ElMessage.error(t('message.error.connect.server'));
         };
       } catch (error) {
-        ElMessage.error("连接失败: " + error.message);
+        ElMessage.error(t('message.error.connect') + error.message);
       }
     };
 
@@ -291,6 +293,7 @@ export default {
       toggleLogLevel,
       handleSearch,
       autoScroll,
+      t,
     };
   },
 };
