@@ -126,10 +126,6 @@ export default {
 
         websocket.value = new WebSocket(wsUrl);
 
-        websocket.value.onopen = () => {
-          websocket.value.send(JSON.stringify({ type: "auth" }));
-        };
-
         websocket.value.onmessage = (event) => {
           logData.value += event.data + "\n";
         };
