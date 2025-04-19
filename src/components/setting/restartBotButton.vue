@@ -17,18 +17,17 @@ export default {
           cancelButtonText: '取消',
           type: 'warning',
         });
-        await restartBot();  // 直接调用 restartBot，而不需要 then() 和 catch()
+        await restartBot();
+
       } catch (error) {
-        // 处理用户取消或其他异常
         return;
       }
     };
 
     const restartBot = async () => {
       try {
-        await axios.post("/api/restart", {});
-      } catch (error) {
-        if (error.message === "Network Error") {
+        const response = await axios.post("/api/restart", {});
+        if (response.status === 200) {
           ElLoading.service({
             fullscreen: true,
             text: '正在重启...',
@@ -37,9 +36,9 @@ export default {
           setTimeout(() => {
             window.location.href = '/';
           }, 10000);
-        } else {
-          ElMessage.error("请求失败：" + error.message);
         }
+      } catch (error) {
+        ElMessage.error("请求失败：" + error.message);
       }
     };
 
