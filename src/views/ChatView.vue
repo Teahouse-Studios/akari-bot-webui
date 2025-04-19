@@ -57,6 +57,7 @@
             <a
                 :href="part.url"
                 target="_blank"
+                rel="noopener noreferrer"
                 @click.prevent="confirmExternalLink(part.url)"
             >
               {{ part.text }}
