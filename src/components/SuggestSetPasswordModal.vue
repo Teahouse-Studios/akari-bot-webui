@@ -1,5 +1,10 @@
 <template>
-    <el-dialog title="建议设置密码" v-model="dialogVisible" width="30%">
+    <el-dialog
+      title="建议设置密码"
+      v-model="dialogVisible"
+      width="400px"
+      align-center
+    >
       <p>目前暂未设置密码。若你打算在公网访问此面板，为保证服务安全性，请务必前往“更多设置”界面设置一个密码。</p>
       <el-checkbox v-model="noMorePrompt">不再提示</el-checkbox>
       <template #footer>

@@ -86,6 +86,14 @@ export default {
         const response = await axios.get("/api/verify-token");
         if (response.status === 200) {
           this.userVerified = true;
+
+          const noPassword = response.data.no_password;
+          
+          const promptDisabled = localStorage.getItem("noPasswordPromptDisabled") === "true";
+          if (noPassword && !promptDisabled) {
+            this.showSuggestPasswordModal = true;
+          }
+
           await this.checkCsrfToken();
           this.loadCurrentView(this.$route.name);
         } else {

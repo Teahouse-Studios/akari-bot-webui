@@ -58,7 +58,11 @@
             </a>
           </template>
           <template v-else-if="part.type === 'img'">
-            <img :src="part.src" style="max-width: 80%; max-height: 300px; margin: 8px 0; object-fit: contain;" />
+            <img
+              :src="part.src"
+              style="max-width: 80%; max-height: 300px; margin: 8px 0; object-fit: contain;"
+              @click="showImagePreview(part.src)"
+            />
           </template>
         </span>
       </div>
@@ -85,6 +89,14 @@
         发送
       </el-button>
     </div>
+    <el-dialog
+      v-model="imageDialogVisible"
+      class="image-preview-dialog"
+      :show-close="false"
+      :center="true"
+    >
+      <img :src="previewImageSrc" style="width: 100%; height: 100%;">
+    </el-dialog>
   </div>
 </template>
 
@@ -101,6 +113,8 @@ export default {
     const chatBox = ref(null);
     const websocket = ref(null);
     const connectionStatus = ref("disconnected");
+    const imageDialogVisible = ref(false);
+    const previewImageSrc = ref("");
     const cancelTokenSource = axios.CancelToken.source();
 
     const connectWebSocket = async () => {
@@ -343,6 +357,11 @@ export default {
       return data;
     };
 
+    const showImagePreview = (src) => {
+      previewImageSrc.value = src;
+      imageDialogVisible.value = true;
+    };
+
     onMounted(() => {
       authenticateToken();
     });
@@ -364,6 +383,9 @@ export default {
       processMessage,
       confirmExternalLink,
       handleEnterKey,
+      imageDialogVisible,
+      previewImageSrc,
+      showImagePreview
     };
   },
 };
