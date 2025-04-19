@@ -2,9 +2,14 @@
   <div class="chat-container">
     <div class="chat-header">
       <div 
-        :style="{ backgroundColor: connectionStatus === 'connected' ? 'limegreen' : 'red' }" 
+        :style="{ 
+          backgroundColor: 
+            connectionStatus === 'connected' ? 'limegreen' : 
+            connectionStatus === 'connecting' ? 'orange' : 'red' 
+        }" 
         class="connection-indicator"
-        :title="connectionStatus === 'connected' ? '已连接' : '未连接'"
+        :title="connectionStatus === 'connected' ? '已连接' : 
+                connectionStatus === 'connecting' ? '连接中' : '未连接'"
       ></div>
       <div class="chat-title"># 聊天</div>
       <el-button
@@ -78,13 +83,13 @@
         resize="none"
         clearable
         autosize
-        :disabled="connectionStatus === 'disconnected'"
+        :disabled="connectionStatus != 'connected'"
       />
       <el-button
       type="primary"
       @click="sendMessage"
       style="margin-left: 10px;"
-      :disabled="connectionStatus === 'disconnected' || inputText.trim() === ''"
+      :disabled="connectionStatus != 'connected' || inputText.trim() === ''"
       >
         发送
       </el-button>
@@ -112,12 +117,14 @@ export default {
     const messages = ref([]);
     const chatBox = ref(null);
     const websocket = ref(null);
-    const connectionStatus = ref("disconnected");
+    const connectionStatus = ref("connecting");
     const imageDialogVisible = ref(false);
     const previewImageSrc = ref("");
     const cancelTokenSource = axios.CancelToken.source();
 
     const connectWebSocket = async () => {
+      connectionStatus.value = "connecting";
+
       try {
         const response = await fetch("/config.json");
         const config = await response.json();
@@ -186,6 +193,7 @@ export default {
     };
 
     const resetChat = () => {
+      connectionStatus.value = "connecting";
       messages.value = [];
 
       if (websocket.value && websocket.value.readyState === WebSocket.OPEN) {
