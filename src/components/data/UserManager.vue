@@ -102,7 +102,7 @@
             </el-form-item>
           </el-col>
           <el-col :span="6">
-            <el-form-item :label="$t('data.user.table.trusted')">
+            <el-form-item :label="$t('data.user.table.trust')">
               <el-switch v-model="editForm.trusted" @change="handleTrustedChange" />
             </el-form-item>
           </el-col>
