@@ -1,7 +1,7 @@
-# webui
+# akari-bot-webui
+This project is a web UI panel for [AkariBot](https://github.com/Teahouse-Studios/akari-bot).
 
-## Project setup
-
+## Setup
 ```
 npm install
 ```
@@ -18,12 +18,9 @@ npm run serve
 npm run build
 ```
 
-### Lints and fixes files
+## Localization
+Unfortunately, the free account cannot create a second integration, and the premium account of Crowdin is too expensive for me to afford :(
 
-```
-npm run lint
-```
+If there is a localization problem with the WebUI, please raise an issue. 
 
-### Customize configuration
-
-See [Configuration Reference](https://cli.vuejs.org/config/).
+Do not raise localization issues of AkariBot here, you should go to [Crowdin](https://crowdin.com/project/akari-bot).
