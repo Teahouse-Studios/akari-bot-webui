@@ -49,15 +49,10 @@ import { useI18n } from 'vue-i18n';
 export default {
   name: "AppHeader",
   emits: ["toggle-sidebar"],
-  setup() {
+  data() {
     const { t } = useI18n();
-
     return {
       t,
-    };
-  },
-  data() {
-    return {
       isDarkMode: false,
       screenWidth: window.innerWidth,
       currentLang: localStorage.getItem("language") || "zh_cn",

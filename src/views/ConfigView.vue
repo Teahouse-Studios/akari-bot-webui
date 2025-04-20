@@ -39,14 +39,9 @@ import { useI18n } from 'vue-i18n';
 
 export default {
   name: "ConfigView",
-  setup() {
+  data() {
     const { t } = useI18n();
 
-    return {
-      t
-    }
-  },
-  data() {
     return {
       activeTab: "",
       configFiles: [],
@@ -61,6 +56,7 @@ export default {
       fileContents: {},
       cancelTokenSource: axios.CancelToken.source(),
       loading: false,
+      t
     };
   },
   mounted() {

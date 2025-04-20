@@ -96,6 +96,7 @@
     "sidebar.item.chat": "Chat",
     "sidebar.item.config": "Configuration",
     "sidebar.item.dashboard": "Dashboard",
+    "sidebar.item.data": "Data Management",
     "sidebar.item.logs": "Logs",
     "sidebar.item.setting": "More Settings",
     "suggest_set_password.button.cancel": "Maybe Later",

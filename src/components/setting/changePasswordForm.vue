@@ -26,89 +26,90 @@
 
 <script>
 import { ElMessage, ElMessageBox } from 'element-plus';
-import { ref, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import axios from 'axios';
 import Cookies from "js-cookie";
 
 export default {
-  setup() {
+  data() {
     const { t } = useI18n();
-    const formRef = ref(null);
-    const form = ref({
-      old_password: '',
-      new_password: '',
-      confirm_password: '',
-    });
 
-    const noPassword = ref(false);
-
-    onMounted(() => {
-      noPassword.value = localStorage.getItem('noPassword') === 'true';
-    });
-
-    const rules = {
-      old_password: [
-        { required: true, message: t('setting.change_password.validate.old_password'), trigger: 'blur' },
-      ],
-      new_password: [
-        { required: true, message: t('setting.change_password.validate.new_password'), trigger: 'blur' },
-      ],
-      confirm_password: [
-        { required: true, message: t('setting.change_password.validate.confirm_password'), trigger: 'blur' },
-        { validator: (rule, value, callback) => {
-          if (value !== form.value.new_password) {
-            callback(new Error(t('setting.change_password.validate.inconsistent')));
-          } else {
-            callback();
-          }
-        }, trigger: 'blur' },
-      ],
+    return {
+      formRef: null,
+      form: {
+        old_password: '',
+        new_password: '',
+        confirm_password: '',
+      },
+      noPassword: false,
+      rules: {
+        old_password: [
+          { required: true, message: this.$t('setting.change_password.validate.old_password'), trigger: 'blur' },
+        ],
+        new_password: [
+          { required: true, message: this.$t('setting.change_password.validate.new_password'), trigger: 'blur' },
+        ],
+        confirm_password: [
+          { required: true, message: this.$t('setting.change_password.validate.confirm_password'), trigger: 'blur' },
+          { validator: (rule, value, callback) => {
+            if (value !== this.form.new_password) {
+              callback(new Error(this.$t('setting.change_password.validate.inconsistent')));
+            } else {
+              callback();
+            }
+          }, trigger: 'blur' },
+        ],
+      },
+      t
     };
-
-    const handleUpdatePassword = async () => {
+  },
+  mounted() {
+    this.noPassword = localStorage.getItem('noPassword') === 'true';
+  },
+  methods: {
+    async handleUpdatePassword() {
       try {
         try {
-          await formRef.value.validate();
+          await this.formRef.validate();
         } catch {
           return;
         }
 
         const requestData = {
-          new_password: form.value.new_password,
+          new_password: this.form.new_password,
         };
 
-        if (!noPassword.value) {
-          requestData.password = form.value.old_password;
+        if (!this.noPassword) {
+          requestData.password = this.form.old_password;
         }
 
         const response = await axios.post('/api/change-password', requestData);
 
         if (response.status === 200) {
-          ElMessage.success(t('setting.change_password.message.success.update'));
+          ElMessage.success(this.$t('setting.change_password.message.success.update'));
           Cookies.remove('XSRF-TOKEN');
           location.reload();
         }
       } catch (error) {
         if (error.response?.status === 401) {
-          ElMessage.error(t('setting.change_password.message.failed'));
+          ElMessage.error(this.$t('setting.change_password.message.failed'));
         } else {
-          ElMessage.error(t('message.error.fetch') + error.message);
+          ElMessage.error(this.$t('message.error.fetch') + error.message);
         }
       }
-    };
+    },
 
-    const handleClearPassword = async () => {
+    async handleClearPassword() {
       try {
-        await formRef.value.validateField('old_password');
+        await this.formRef.validateField('old_password');
         
-        ElMessageBox.confirm(t('setting.change_password.confirm.message'), t('confirm.title.warning'), {
-          confirmButtonText: t('button.confirm'),
-          cancelButtonText: t('button.cancel'),
+        ElMessageBox.confirm(this.$t('setting.change_password.confirm.message'), this.$t('confirm.title.warning'), {
+          confirmButtonText: this.$t('button.confirm'),
+          cancelButtonText: this.$t('button.cancel'),
           type: 'warning',
         })
         .then(async () => {
-          await confirmClearPassword();
+          await this.confirmClearPassword();
         })
         .catch(() => {
           return;
@@ -116,44 +117,34 @@ export default {
       } catch {
         return;
       }
-    };
+    },
 
-    const confirmClearPassword = async () => {
+    async confirmClearPassword() {
       try {
         const requestData = {
-          password: form.value.old_password,
+          password: this.form.old_password,
         };
 
         const response = await axios.post('/api/clear-password', requestData);
 
         if (response.status === 200) {
-          ElMessage.success(t('setting.change_password.message.success.clear'));
+          ElMessage.success(this.$t('setting.change_password.message.success.clear'));
           Cookies.remove('XSRF-TOKEN');
           localStorage.removeItem("noPasswordPromptDisabled");
           location.reload();
         }
       } catch (error) {
         if (error.response?.status === 401) {
-          ElMessage.error(t('setting.change_password.message.failed'));
+          ElMessage.error(this.$t('setting.change_password.message.failed'));
         } else {
-          ElMessage.error(t('message.error.fetch') + error.message);
+          ElMessage.error(this.$t('message.error.fetch') + error.message);
         }
       }
-    };
-
-    return {
-      formRef,
-      form,
-      rules,
-      handleUpdatePassword,
-      noPassword,
-      handleClearPassword,
-      confirmClearPassword,
-      t
-    };
+    }
   },
 };
 </script>
+
 
 <style scoped>
 .el-input {

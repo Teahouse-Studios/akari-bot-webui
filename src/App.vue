@@ -179,7 +179,7 @@ export default {
         const viewMap = {
           dashboard: "Dashboard",
           config: "Config",
-          modules: "Modules",
+          data: "Data",
           logs: "Logs",
           chat: "Chat",
           setting: "Setting",

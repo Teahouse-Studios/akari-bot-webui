@@ -13,6 +13,10 @@
         <i class="mdi mdi-cog"></i>
         <span>{{ $t('sidebar.item.config') }}</span>
       </el-menu-item>
+      <el-menu-item index="data">
+        <i class="mdi mdi-database"></i>
+        <span>{{ $t('sidebar.item.data') }}</span>
+      </el-menu-item>
       <el-menu-item index="logs">
         <i class="mdi mdi-console"></i>
         <span>{{ $t('sidebar.item.logs') }}</span>
@@ -38,15 +42,11 @@ import { useI18n } from 'vue-i18n';
 
 export default {
   name: "AppSidebar",
-  setup() {
+  data() {
     const { t } = useI18n();
 
     return {
       t,
-    };
-  },
-  data() {
-    return {
       activeMenu: this.getActiveMenuFromRoute(),
     };
   },
@@ -55,7 +55,7 @@ export default {
       const validPaths = [
         "dashboard",
         "config",
-        "modules",
+        "data",
         "logs",
         "chat",
         "setting",

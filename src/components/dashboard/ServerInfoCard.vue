@@ -116,14 +116,9 @@ import { useI18n } from 'vue-i18n';
 const progress_colors = ["#1989fa", "#e6a23c", "#f56c6c"];
 
 export default {
-  setup() {
+  data() {
     const { t } = useI18n();
 
-    return {
-      t
-    }
-  },
-  data() {
     return {
       os: {
         system: "",
@@ -153,6 +148,7 @@ export default {
       },
       cancelTokenSource: axios.CancelToken.source(),
       loading: false,
+      t
     };
   },
   mounted() {

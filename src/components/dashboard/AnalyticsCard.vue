@@ -90,15 +90,11 @@ import axios from "@/axios";
 import * as echarts from "echarts";
 
 export default {
-  setup() {
+  data() {
     const { t } = useI18n();
 
     return {
-      t
-    }
-  },
-  data() {
-    return {
+      t,
       trendData: [],
       selectedDays: "1",
       count: 0,

@@ -38,53 +38,50 @@
 import axios from "@/axios";
 import { ElMessage } from 'element-plus';
 import { useI18n } from 'vue-i18n';
-import { ref } from 'vue';
 
 export default {
-  setup() {
+  data() {
     const { t } = useI18n();
-    const password = ref("");
-    const rememberDevice = ref(false);
-    const loading = ref(false);
-    const showTooltip = ref(false);
 
-    const checkPassword = async () => {
-      loading.value = true;
+    return {
+      password: "",
+      rememberDevice: false,
+      loading: false,
+      showTooltip: false,
+      t
+    };
+  },
+  methods: {
+    async checkPassword() {
+      this.loading = true;
+
       try {
         const response = await axios.post("/api/auth", {
-          password: password.value,
-          remember: rememberDevice.value,
+          password: this.password,
+          remember: this.rememberDevice,
         });
 
         if (response.status === 200) {
-          ElMessage.success(t("login.message.success"));
+          ElMessage.success(this.t("login.message.success"));
           localStorage.setItem("noPassword", JSON.stringify(response.data.no_password));
           location.reload();
         }
       } catch (error) {
         if (error.response?.status === 401) {
-          ElMessage.error(t("login.message.failed"));
+          ElMessage.error(this.t("login.message.failed"));
         } else if (error.response?.status === 403) {
-          ElMessage.error(t("login.message.abuse"));
+          ElMessage.error(this.t("login.message.abuse"));
         } else {
-          ElMessage.error(t("message.error.fetch") + error.message);
+          ElMessage.error(this.t("message.error.fetch") + error.message);
         }
       } finally {
-        loading.value = false;
+        this.loading = false;
       }
-    };
-
-    return {
-      t,
-      password,
-      rememberDevice,
-      loading,
-      showTooltip,
-      checkPassword,
-    };
+    },
   },
 };
 </script>
+
 
 <style scoped>
 .overlay {

@@ -54,64 +54,63 @@
 
 <script>
 import axios from "axios";
-import { ElButton, ElInput, ElMessage, ElSwitch } from "element-plus";
+import { ElMessage } from "element-plus";
 import { debounce } from "lodash";
-import { ref, onMounted, onBeforeUnmount, watch } from "vue";
 import { useI18n } from 'vue-i18n';
 
 export default {
   name: "LogsView",
-  components: {
-    ElButton,
-    ElInput,
-    ElSwitch,
-  },
-  setup() {
+  data() {
     const { t } = useI18n();
-    const logData = ref("");
-    const visibleLogs = ref([]);
-    const logViewer = ref(null);
-    const logLevels = ref([
-      "DEBUG",
-      "INFO",
-      "SUCCESS",
-      "WARNING",
-      "ERROR",
-      "CRITICAL",
-    ]);
-    const activeLogLevels = ref([
-      "INFO",
-      "SUCCESS",
-      "WARNING",
-      "ERROR",
-      "CRITICAL",
-    ]);
-    const searchText = ref("");
-    const websocket = ref(null);
-    const cancelTokenSource = axios.CancelToken.source();
-    const autoScroll = ref(true);
 
-    const authenticateToken = async () => {
+    return {
+      logData: "",
+      visibleLogs: [],
+      logViewer: null,
+      logLevels: [
+        "DEBUG",
+        "INFO",
+        "SUCCESS",
+        "WARNING",
+        "ERROR",
+        "CRITICAL",
+      ],
+      activeLogLevels: [
+        "INFO",
+        "SUCCESS",
+        "WARNING",
+        "ERROR",
+        "CRITICAL",
+      ],
+      searchText: "",
+      websocket: null,
+      cancelTokenSource: axios.CancelToken.source(),
+      autoScroll: true,
+      t
+    };
+  },
+  methods: {
+    async authenticateToken() {
       try {
         const response = await axios.get("/api/verify-token", {
-          cancelToken: cancelTokenSource.token,
+          cancelToken: this.cancelTokenSource.token,
         });
 
         if (response.status === 200) {
-          connectWebSocket();
+          this.connectWebSocket();
         } else {
-          ElMessage.error(t('message.error.connect.auth'));
+          ElMessage.error(this.t('message.error.connect.auth'));
         }
       } catch (error) {
         if (axios.isCancel(error)) {
           console.log("Request canceled");
         } else {
-          ElMessage.error(t('message.error.fetch') + error.message);
+          ElMessage.error(this.t('message.error.fetch') + error.message);
         }
       }
-    };
+    },
 
-    const connectWebSocket = async () => {
+    async connectWebSocket() {
       try {
         const response = await fetch("/config.json");
         const config = await response.json();
@@ -126,75 +125,75 @@ export default {
         const wsProtocol = url.protocol === "https:" ? "wss:" : "ws:";
         const wsUrl = `${wsProtocol}//${url.hostname}:${url.port}/ws/logs`;
 
-        websocket.value = new WebSocket(wsUrl);
+        this.websocket = new WebSocket(wsUrl);
 
-        websocket.value.onmessage = (event) => {
-          logData.value += event.data + "\n";
+        this.websocket.onmessage = (event) => {
+          this.logData += event.data + "\n";
         };
 
-        websocket.value.onerror = () => {
-          ElMessage.error(t('message.error.connect.server'));
+        this.websocket.onerror = () => {
+          ElMessage.error(this.t('message.error.connect.server'));
         };
       } catch (error) {
-        ElMessage.error(t('message.error.connect') + error.message);
+        ElMessage.error(this.t('message.error.connect') + error.message);
       }
-    };
+    },
 
-    const updateLogs = debounce(() => {
-      const rawLines = logData.value.split("\n");
+    updateLogs: debounce(function () {
+      const rawLines = this.logData.split("\n");
       let buffer = "";
       const formattedLines = [];
 
       rawLines.forEach((line) => {
         if (/^\[.*?\]\[.*?\]\[.*?\]\[.*?\]:/.test(line)) {
-          if (buffer) formattedLines.push(formatLogLine(buffer));
+          if (buffer) formattedLines.push(this.formatLogLine(buffer));
           buffer = line;
         } else {
           buffer += "\n" + line;
         }
       });
 
-      if (buffer) formattedLines.push(formatLogLine(buffer));
+      if (buffer) formattedLines.push(this.formatLogLine(buffer));
 
-      visibleLogs.value = formattedLines.filter((logLine) => {
-        const textMatch = searchText.value
-          ? logLine.some(part => part.text.toLowerCase().includes(searchText.value.toLowerCase()))
+      this.visibleLogs = formattedLines.filter((logLine) => {
+        const textMatch = this.searchText
+          ? logLine.some(part => part.text.toLowerCase().includes(this.searchText.toLowerCase()))
           : true;
 
         return (
           textMatch &&
-          activeLogLevels.value.some((level) =>
+          this.activeLogLevels.some((level) =>
             logLine.some(part => part.text.includes(level))
           )
         );
       });
 
-      if (visibleLogs.value.length > 16384) {
-        visibleLogs.value = visibleLogs.value.slice(-16384);
+      if (this.visibleLogs.length > 16384) {
+        this.visibleLogs = this.visibleLogs.slice(-16384);
       }
 
-      if (autoScroll.value && logViewer.value) {
+      if (this.autoScroll && this.logViewer) {
         setTimeout(() => {
-          logViewer.value.scrollTop = logViewer.value.scrollHeight;
+          this.logViewer.scrollTop = this.logViewer.scrollHeight;
         }, 200);
       }
-    }, 500);
-    
-    const refreshLog = () => {
-      logData.value = "";
-      visibleLogs.value = [];
-      if (logViewer.value) {
-        logViewer.value.scrollTop = 0;
+    }, 500),
+
+    refreshLog() {
+      this.logData = "";
+      this.visibleLogs = [];
+      if (this.logViewer) {
+        this.logViewer.scrollTop = 0;
       }
 
-      if (websocket.value && websocket.value.readyState === WebSocket.OPEN) {
-          websocket.value.close();
+      if (this.websocket && this.websocket.readyState === WebSocket.OPEN) {
+        this.websocket.close();
       }
 
-      authenticateToken();
-    };
+      this.authenticateToken();
+    },
 
-    const formatLogLine = (logLine) => {
+    formatLogLine(logLine) {
       const logPattern = /^\[([^\]]+)\]\[([^\]]+)\]\[([^\]]+)\]\[([^\]]+)\]:(.*)$/s;
       const match = logLine.match(logPattern);
 
@@ -251,53 +250,38 @@ export default {
           },
         },
       ];
-    };
+    },
 
-    const toggleLogLevel = (level) => {
-      if (activeLogLevels.value.includes(level)) {
-        activeLogLevels.value = activeLogLevels.value.filter(
+    toggleLogLevel(level) {
+      if (this.activeLogLevels.includes(level)) {
+        this.activeLogLevels = this.activeLogLevels.filter(
           (item) => item !== level,
         );
       } else {
-        activeLogLevels.value.push(level);
+        this.activeLogLevels.push(level);
       }
-      updateLogs();
-    };
+      this.updateLogs();
+    },
 
-    const handleSearch = () => {
-      updateLogs();
-    };
-
-    onMounted(() => {
-      authenticateToken();
-    });
-
-    watch(logData, updateLogs);
-
-    onBeforeUnmount(() => {
-      if (websocket.value) {
-        websocket.value.close();
-      }
-      cancelTokenSource.cancel("Component unmounted");
-    });
-
-    return {
-      logData,
-      visibleLogs,
-      refreshLog,
-      logViewer,
-      logLevels,
-      activeLogLevels,
-      searchText,
-      updateLogs,
-      toggleLogLevel,
-      handleSearch,
-      autoScroll,
-      t,
-    };
+    handleSearch() {
+      this.updateLogs();
+    },
+  },
+  watch: {
+    logData: "updateLogs",
+  },
+  mounted() {
+    this.authenticateToken();
+  },
+  beforeUnmount() {
+    if (this.websocket) {
+      this.websocket.close();
+    }
+    this.cancelTokenSource.cancel("Component unmounted");
   },
 };
 </script>
+
 
 <style scoped>
 .dark .log-search-input {

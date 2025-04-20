@@ -121,25 +121,28 @@
 <script>
 import axios from "axios";
 import { ElMessage, ElMessageBox } from "element-plus";
-import { ref, onMounted, onBeforeUnmount, nextTick } from "vue";
 import { useI18n } from 'vue-i18n';
 
 export default {
   name: "ChatView",
-  setup() {
+  data() {
     const { t } = useI18n();
-    const inputText = ref("");
-    const messages = ref([]);
-    const chatBox = ref(null);
-    const websocket = ref(null);
-    const connectionStatus = ref("connecting");
-    const imageDialogVisible = ref(false);
-    const previewImageSrc = ref("");
-    const cancelTokenSource = axios.CancelToken.source();
 
-    const connectWebSocket = async () => {
-      connectionStatus.value = "connecting";
-
+    return {
+      inputText: "",
+      messages: [],
+      chatBox: null,
+      websocket: null,
+      connectionStatus: "connecting",
+      imageDialogVisible: false,
+      previewImageSrc: "",
+      cancelTokenSource: axios.CancelToken.source(),
+      t
+    };
+  },
+  methods: {
+    async connectWebSocket() {
+      this.connectionStatus = "connecting";
       try {
         const response = await fetch("/config.json");
         const config = await response.json();
@@ -153,89 +156,89 @@ export default {
         const wsProtocol = url.protocol === "https:" ? "wss:" : "ws:";
         const wsUrl = `${wsProtocol}//${url.hostname}:${url.port}/ws/chat`;
 
-        websocket.value = new WebSocket(wsUrl);
+        this.websocket = new WebSocket(wsUrl);
 
-        websocket.value.onopen = () => {
-          connectionStatus.value = "connected";
+        this.websocket.onopen = () => {
+          this.connectionStatus = "connected";
         };
 
-        websocket.value.onmessage = (event) => {
+        this.websocket.onmessage = (event) => {
           const data = JSON.parse(event.data);
-          messages.value.push({ from: "bot", text: renderResponse(data) });
-          scrollToBottom();
+          this.messages.push({ from: "bot", text: this.renderResponse(data) });
+          this.scrollToBottom();
         };
 
-        websocket.value.onerror = () => {
-          connectionStatus.value = "disconnected";
-          ElMessage.error(t('message.error.connect.server'));
+        this.websocket.onerror = () => {
+          this.connectionStatus = "disconnected";
+          ElMessage.error(this.t('message.error.connect.server'));
         };
       } catch (error) {
-        connectionStatus.value = "disconnected";
-        ElMessage.error(t('message.error.connect') + error.message);
+        this.connectionStatus = "disconnected";
+        ElMessage.error(this.t('message.error.connect') + error.message);
       }
-    };
+    },
 
-    const authenticateToken = async () => {
+    async authenticateToken() {
       try {
         const response = await axios.get("/api/verify-token", {
-          cancelToken: cancelTokenSource.token,
+          cancelToken: this.cancelTokenSource.token,
         });
 
         if (response.status === 200) {
-          connectWebSocket();
+          this.connectWebSocket();
         } else {
-          connectionStatus.value = "disconnected";
-          ElMessage.error(t('message.error.connect.auth'));
+          this.connectionStatus = "disconnected";
+          ElMessage.error(this.t('message.error.connect.auth'));
         }
       } catch (error) {
         if (axios.isCancel(error)) {
           console.log("Request canceled");
         } else {
-          connectionStatus.value = "disconnected";
+          this.connectionStatus = "disconnected";
           ElMessage.error(this.t('message.error.fetch') + error.message);
         }
       }
-    };
+    },
 
-    const sendMessage = () => {
-      const text = inputText.value.trim();
+    sendMessage() {
+      const text = this.inputText.trim();
       if (!text) return;
 
-      messages.value.push({ from: "user", text: text });
-      websocket.value?.send(text);
-      inputText.value = "";
-      scrollToBottom();
-    };
+      this.messages.push({ from: "user", text: text });
+      this.websocket?.send(text);
+      this.inputText = "";
+      this.scrollToBottom();
+    },
 
-    const resetChat = () => {
-      connectionStatus.value = "connecting";
-      messages.value = [];
+    resetChat() {
+      this.connectionStatus = "connecting";
+      this.messages = [];
 
-      if (websocket.value && websocket.value.readyState === WebSocket.OPEN) {
-          websocket.value.close();
+      if (this.websocket && this.websocket.readyState === WebSocket.OPEN) {
+        this.websocket.close();
       }
 
-      authenticateToken();
-    };
+      this.authenticateToken();
+    },
 
-    const scrollToBottom = () => {
-      nextTick(() => {
-        if (chatBox.value) {
-          chatBox.value.scrollTop = chatBox.value.scrollHeight;
+    scrollToBottom() {
+      this.$nextTick(() => {
+        if (this.chatBox) {
+          this.chatBox.scrollTop = this.chatBox.scrollHeight;
         }
       });
-    };
+    },
 
-    const handleEnterKey = (event) => {
+    handleEnterKey(event) {
       if (event.shiftKey) {
         return;
       } else {
         event.preventDefault();
-        sendMessage();
+        this.sendMessage();
       }
-    };
+    },
 
-    const processMessage = (text) => {
+    processMessage(text) {
       const parts = [];
       const codeBlockRegex = /```\n*([\s\S]*?)\n*```/g;
       const imageRegex = /\[image:([^<]+)\]/g;
@@ -244,107 +247,107 @@ export default {
       let match;
 
       while ((match = codeBlockRegex.exec(text)) !== null) {
-          const index = match.index;
+        const index = match.index;
 
-          if (index > lastIndex) {
+        if (index > lastIndex) {
           const beforeCode = text.slice(lastIndex, index);
-          parts.push(...processInlineMessage(beforeCode));
-          }
+          parts.push(...this.processInlineMessage(beforeCode));
+        }
 
-          parts.push({
+        parts.push({
           type: 'pre',
           text: match[1],
-          });
+        });
 
-          lastIndex = codeBlockRegex.lastIndex;
+        lastIndex = codeBlockRegex.lastIndex;
       }
 
       while ((match = imageRegex.exec(text)) !== null) {
-          const index = match.index;
-          if (index > lastIndex) {
+        const index = match.index;
+        if (index > lastIndex) {
           const beforeImage = text.slice(lastIndex, index);
-          parts.push(...processInlineMessage(beforeImage));
-          }
+          parts.push(...this.processInlineMessage(beforeImage));
+        }
 
-          const base64Content = `${match[1]}`;
-          if (base64Content.startsWith("data:image/png;base64,") || base64Content.startsWith("data:image/jpeg;base64,") || base64Content.startsWith("data:image/gif;base64,")) {
-            parts.push({
-              type: 'img',
-              src: base64Content,
-            });
-          }
+        const base64Content = `${match[1]}`;
+        if (base64Content.startsWith("data:image/png;base64,") || base64Content.startsWith("data:image/jpeg;base64,") || base64Content.startsWith("data:image/gif;base64,")) {
+          parts.push({
+            type: 'img',
+            src: base64Content,
+          });
+        }
 
-          lastIndex = imageRegex.lastIndex;
+        lastIndex = imageRegex.lastIndex;
       }
 
       if (lastIndex < text.length) {
-          parts.push(...processInlineMessage(text.slice(lastIndex)));
+        parts.push(...this.processInlineMessage(text.slice(lastIndex)));
       }
 
       return parts;
-    };
+    },
 
-    const processInlineMessage = (text) => {
+    processInlineMessage(text) {
       const parts = [];
       let lastIndex = 0;
 
       const pattern =
-          /(?:\*\*(.+?)\*\*)|(?:_(.+?)_)|(?:~~(.+?)~~)|(?:`(.+?)`)|(?:\[([^\]]+)\]\((https?:\/\/[^\s)]+)\))|((?:https?:\/\/)[^\s]+)/g;
+        /(?:\*\*(.+?)\*\*)|(?:_(.+?)_)|(?:~~(.+?)~~)|(?:`(.+?)`)|(?:\[([^\]]+)\]\((https?:\/\/[^\s)]+)\))|((?:https?:\/\/)[^\s]+)/g;
 
       let match;
       while ((match = pattern.exec(text)) !== null) {
-          const index = match.index;
+        const index = match.index;
 
-          if (index > lastIndex) {
+        if (index > lastIndex) {
           const before = text.slice(lastIndex, index);
-          parts.push(...splitTextWithLineBreaks(before));
-          }
+          parts.push(...this.splitTextWithLineBreaks(before));
+        }
 
-          if (match[1]) {
+        if (match[1]) {
           parts.push({ type: 'bold', text: match[1] });
-          } else if (match[2]) {
+        } else if (match[2]) {
           parts.push({ type: 'italic', text: match[2] });
-          } else if (match[3]) {
+        } else if (match[3]) {
           parts.push({ type: 'del', text: match[3] });
-          } else if (match[4]) {
+        } else if (match[4]) {
           parts.push({ type: 'code', text: match[4] });
-          } else if (match[5] && match[6]) {
+        } else if (match[5] && match[6]) {
           parts.push({ type: 'link', text: match[5], url: match[6] });
-          } else if (match[7]) {
+        } else if (match[7]) {
           parts.push({ type: 'link', text: match[7], url: match[7] });
-          }
+        }
 
-          lastIndex = pattern.lastIndex;
+        lastIndex = pattern.lastIndex;
       }
 
       if (lastIndex < text.length) {
-          parts.push(...splitTextWithLineBreaks(text.slice(lastIndex)));
+        parts.push(...this.splitTextWithLineBreaks(text.slice(lastIndex)));
       }
 
       return parts;
-    };
+    },
 
-    const splitTextWithLineBreaks = (text) => {
+    splitTextWithLineBreaks(text) {
       const parts = [];
       const lines = text.split('\n');
 
       lines.forEach((line, i) => {
-          if (line) parts.push({ type: 'text', text: line });
-          if (i < lines.length - 1) {
+        if (line) parts.push({ type: 'text', text: line });
+        if (i < lines.length - 1) {
           parts.push({ type: 'newline' });
-          }
+        }
       });
 
       return parts;
-    };
+    },
 
-    const confirmExternalLink = (url) => {
+    confirmExternalLink(url) {
       ElMessageBox.confirm(
-        t('chat.external_link.confirm.message', {url: url}),
-        t('chat.external_link.confirm.title'),
+        this.$t('chat.external_link.confirm.message', {url: url}),
+        this.$t('chat.external_link.confirm.title'),
         {
-          confirmButtonText: t('yes'),
-          cancelButtonText: t('no'),
+          confirmButtonText: this.$t('yes'),
+          cancelButtonText: this.$t('no'),
           type: 'warning',
         }
       )
@@ -354,9 +357,9 @@ export default {
         .catch(() => {
           console.log('Link blocked');
         });
-    };
+    },
 
-    const renderResponse = (data) => {
+    renderResponse(data) {
       if (Array.isArray(data)) {
         return data
           .map((item) => {
@@ -377,42 +380,27 @@ export default {
           .join("\n");
       }
       return data;
-    };
+    },
 
-    const showImagePreview = (src) => {
-      previewImageSrc.value = src;
-      imageDialogVisible.value = true;
-    };
+    showImagePreview(src) {
+      this.previewImageSrc = src;
+      this.imageDialogVisible = true;
+    },
+  },
 
-    onMounted(() => {
-      authenticateToken();
-    });
+  mounted() {
+    this.authenticateToken();
+  },
 
-    onBeforeUnmount(() => {
-      if (websocket.value) {
-        websocket.value.close();
-      }
-      cancelTokenSource.cancel("Component unmounted");
-    });
-
-    return {
-      inputText,
-      messages,
-      chatBox,
-      connectionStatus,
-      sendMessage,
-      resetChat,
-      processMessage,
-      confirmExternalLink,
-      handleEnterKey,
-      imageDialogVisible,
-      previewImageSrc,
-      showImagePreview,
-      t
-    };
+  beforeUnmount() {
+    if (this.websocket) {
+      this.websocket.close();
+    }
+    this.cancelTokenSource.cancel("Component unmounted");
   },
 };
 </script>
+
 
 <style scoped>
   pre {

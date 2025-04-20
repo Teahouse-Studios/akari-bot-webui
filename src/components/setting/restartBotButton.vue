@@ -10,30 +10,34 @@ import { useI18n } from 'vue-i18n';
 
 export default {
   name: 'restartBotButton',
-  setup() {
+  data() {
     const { t } = useI18n();
 
-    const handleRestart = async () => {
+    return {
+      t
+    };
+  },
+  methods: {
+    async handleRestart() {
       try {
-        await ElMessageBox.confirm(t('confirm.message'), t('confirm.title.warning'), {
-          confirmButtonText: t('button.confirm'),
-          cancelButtonText: t('button.cancel'),
+        await ElMessageBox.confirm(this.t('confirm.message'), this.t('confirm.title.warning'), {
+          confirmButtonText: this.t('button.confirm'),
+          cancelButtonText: this.t('button.cancel'),
           type: 'warning',
         });
-        await restartBot();
-
+        await this.restartBot();
       } catch (error) {
         return;
       }
-    };
-
-    const restartBot = async () => {
+    },
+    
+    async restartBot() {
       try {
         const response = await axios.post("/api/restart", {});
         if (response.status === 200) {
           ElLoading.service({
             fullscreen: true,
-            text: t('setting.restart_bot.loading.text'),
+            text: this.t('setting.restart_bot.loading.text'),
           });
 
           setTimeout(() => {
@@ -41,14 +45,9 @@ export default {
           }, 10000);
         }
       } catch (error) {
-        ElMessage.error(t('message.error.fetch') + error.message);
+        ElMessage.error(this.t('message.error.fetch') + error.message);
       }
-    };
-
-    return {
-      handleRestart,
-      t
-    };
+    },
   },
 };
 </script>

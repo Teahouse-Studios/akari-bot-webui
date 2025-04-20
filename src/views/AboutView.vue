@@ -43,7 +43,7 @@
     
   export default {
     name: "AboutView",
-    setup() {
+    data() {
       const { t } = useI18n();
 
       return {

@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from "vue-router";
 import DashboardView from "./views/DashboardView.vue";
 import ConfigView from "./views/ConfigView.vue";
+import DataView from "./views/DataView.vue";
 import LogsView from "./views/LogsView.vue";
 import ChatView from "./views/ChatView.vue";
 import SettingView from "./views/SettingView.vue";
@@ -16,6 +17,11 @@ const routes = [
     path: "/webui/config",
     name: "config",
     component: ConfigView,
+  },
+  {
+    path: "/webui/data",
+    name: "data",
+    component: DataView,
   },
   {
     path: "/webui/logs",
