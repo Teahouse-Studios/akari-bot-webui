@@ -53,7 +53,7 @@
         <el-table-column prop="sender_id" :label="$t('data.user.table.sender_id')" sortable min-width="140" />
         <el-table-column prop="warns" :label="$t('data.user.table.warns')" sortable min-width="80" />
         <el-table-column prop="petal" :label="$t('data.user.table.petal')" sortable min-width="80" />
-        <el-table-column :label="$t('data.table.status')" min-width="220">
+        <el-table-column :label="$t('data.table.status')" min-width="180">
           <template #default="{ row }">
             <el-tag type="primary" v-if="row.superuser">{{ $t("data.user.tag.superuser") }}</el-tag>
             <el-tag type="success" v-if="row.trusted" style="margin-left: 5px;">{{ $t("data.user.tag.trusted") }}</el-tag>
