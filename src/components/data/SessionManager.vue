@@ -108,7 +108,7 @@
       v-if="totalItems > 0"
       background
       layout="prev, pager, next"
-      :current-page.sync="currentPage"
+      v-model:current-page="currentPage"
       :page-size="pageSize"
       :total="totalItems"
       style="margin-top: 20px;"
