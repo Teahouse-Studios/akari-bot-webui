@@ -34,7 +34,6 @@
           :placeholder="$t('data.select.status')"
           @change="debouncedRefresh"
         >
-          <el-option :label="$t('data.session.tag.unmuted')" value="unmuted" />
           <el-option :label="$t('data.session.tag.muted')" value="muted" />
           <el-option :label="$t('data.session.tag.blocked')" value="blocked" />
         </el-select>
@@ -78,8 +77,7 @@
       </el-table-column>
       <el-table-column :label="$t('data.table.status')" min-width="160">
         <template #default="{ row }">
-          <el-tag type="success" v-if="!row.muted">{{ $t("data.session.tag.unmuted") }}</el-tag>
-          <el-tag type="warning" v-else>{{ $t("data.session.tag.muted") }}</el-tag>
+          <el-tag type="warning" v-if="row.muted">{{ $t("data.session.tag.muted") }}</el-tag>
           <el-tag type="danger" v-if="row.blocked" style="margin-left: 5px;">{{ $t("data.session.tag.blocked") }}</el-tag>
         </template>
       </el-table-column>
