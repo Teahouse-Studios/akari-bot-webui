@@ -18,10 +18,10 @@
     <div class="editor-footer">
       <div class="editor-actions">
         <el-button type="warning" @click="resetConfig">
-          <i class="mdi mdi-restart"></i> {{ $t("config.button.reset") }}
+          <i class="mdi mdi-restart"></i> {{ $t("button.reset") }}
         </el-button>
         <el-button type="success" @click="applyConfig">
-          <i class="mdi mdi-content-save-outline"></i> {{ $t("config.button.save") }}
+          <i class="mdi mdi-content-save-outline"></i> {{ $t("button.apply") }}
         </el-button>
       </div>
     </div>

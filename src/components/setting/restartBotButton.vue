@@ -20,7 +20,7 @@ export default {
   methods: {
     async handleRestart() {
       try {
-        await ElMessageBox.confirm(this.t('confirm.message'), this.t('confirm.title.warning'), {
+        await ElMessageBox.confirm(this.t('confirm.message'), this.t('confirm.warning'), {
           confirmButtonText: this.t('button.confirm'),
           cancelButtonText: this.t('button.cancel'),
           type: 'warning',

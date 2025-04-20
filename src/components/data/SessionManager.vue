@@ -1,12 +1,12 @@
 <template>
   <el-card class="session-card">
     <div class="header-container">
-      <h3>会话管理</h3>
+      <h3>{{ $t("data.session.title") }}</h3>
       <el-button
         @click="refreshData"
         type="primary"
         style="float: right; margin-left: 10px;"
-      ><i class="mdi mdi-refresh"></i> 刷新</el-button>
+      ><i class="mdi mdi-refresh"></i> {{ $t("data.button.refresh") }}</el-button>
     </div>
 
     <div class="filter-container">
@@ -14,7 +14,7 @@
         <el-select
           v-model="selectedPrefix"
           clearable
-          placeholder="选择平台前缀"
+          :placeholder="$t('data.select.prefix')"
           @change="debouncedRefresh"
         >
         <el-option label="QQ" value="QQ" />
@@ -31,28 +31,28 @@
         <el-select
           v-model="selectedStatus"
           clearable
-          placeholder="选择状态"
+          :placeholder="$t('data.select.status')"
           @change="debouncedRefresh"
         >
-          <el-option label="未禁言" value="unmuted" />
-          <el-option label="已禁言" value="muted" />
-          <el-option label="已封禁" value="blocked" />
+          <el-option :label="$t('data.session.tag.unmuted')" value="unmuted" />
+          <el-option :label="$t('data.session.tag.muted')" value="muted" />
+          <el-option :label="$t('data.session.tag.blocked')" value="blocked" />
         </el-select>
       </div>
 
       <div class="filter-item">
         <el-input
           v-model="platformIdPart"
-          placeholder="搜索会话 ID"
+          :placeholder="$t('data.session.input.target_id')"
           @input="debouncedRefresh"
         />
       </div>
     </div>
 
     <el-table v-loading="loading" :data="targetList" style="width: 100%" stripe>
-      <el-table-column prop="target_id" label="会话 ID" sortable min-width="140" />
-      <el-table-column prop="locale" label="语言" min-width="100" />
-      <el-table-column prop="modules" label="模块" min-width="160">
+      <el-table-column prop="target_id" :label="$t('data.session.table.target_id')" sortable min-width="140" />
+      <el-table-column prop="locale" :label="$t('data.session.table.locale')" sortable min-width="100" />
+      <el-table-column prop="modules" :label="$t('data.session.table.modules')" min-width="160">
         <template #default="{ row }">
           {{ row.modules.length }}
           <el-button
@@ -61,10 +61,10 @@
             type="primary"
             style="margin-left: 5px;"
             @click="viewModules(row)"
-          >查看模块</el-button>
+          ><i class="mdi mdi-eye"></i> {{ $t("data.button.view") }}</el-button>
         </template>
       </el-table-column>
-      <el-table-column label="自定义管理员" min-width="160">
+      <el-table-column :label="$t('data.session.table.custom_admins')" min-width="160">
         <template #default="{ row }">
           {{ row.custom_admins.length }}
           <el-button
@@ -73,34 +73,34 @@
             type="primary"
             style="margin-left: 5px;"
             @click="viewAdmins(row)"
-          >查看管理员</el-button>
+          ><i class="mdi mdi-eye"></i> {{ $t("data.button.view") }}</el-button>
         </template>
       </el-table-column>
-      <el-table-column label="状态" min-width="160">
+      <el-table-column :label="$t('data.table.status')" min-width="160">
         <template #default="{ row }">
-          <el-tag type="success" v-if="!row.muted">未禁言</el-tag>
-          <el-tag type="warning" v-else>已禁言</el-tag>
-          <el-tag type="danger" v-if="row.blocked" style="margin-left: 5px;">已封禁</el-tag>
+          <el-tag type="success" v-if="!row.muted">{{ $t("data.session.tag.unmuted") }}</el-tag>
+          <el-tag type="warning" v-else>{{ $t("data.session.tag.muted") }}</el-tag>
+          <el-tag type="danger" v-if="row.blocked" style="margin-left: 5px;">{{ $t("data.session.tag.blocked") }}</el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="会话数据" min-width="100">
+      <el-table-column :label="$t('data.session.table.target_data')" min-width="100">
         <template #default="{ row }">
           <el-popover
             placement="top"
             width="300"
             trigger="hover"
           >
-            <pre style="white-space: pre-wrap; word-break: break-word;">{{ JSON.stringify(row.target_data, null, 2) }}</pre>
+            <pre>{{ JSON.stringify(row.target_data, null, 2) }}</pre>
             <template #reference>
-              <el-button size="mini" type="text">查看详情</el-button>
+              <el-button size="mini" type="text">{{ $t("data.table.text.detail") }}</el-button>
             </template>
           </el-popover>
         </template>
       </el-table-column>
-      <el-table-column label="操作" min-width="160">
+      <el-table-column :label="$t('data.session.table.operation')" min-width="180">
         <template #default="{ row }">
-          <el-button size="small" type="primary" @click="editTarget(row)"><i class="mdi mdi-pencil"></i> 编辑</el-button>
-          <el-button size="small" type="danger" @click="confirmDelete(row)"><i class="mdi mdi-delete"></i> 删除</el-button>
+          <el-button size="small" type="warning" @click="editTarget(row)"><i class="mdi mdi-pencil"></i> {{ $t("data.button.edit") }}</el-button>
+          <el-button size="small" type="danger" @click="confirmDelete(row)"><i class="mdi mdi-delete"></i> {{ $t("data.button.delete") }}</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -115,8 +115,7 @@
       @current-change="handlePageChange"
     />
 
-
-    <el-dialog v-model="moduleDialogVisible" title="模块列表">
+    <el-dialog v-model="moduleDialogVisible" :title="$t('data.session.table.modules')">
       <div class="tag-container">
         <el-tag
           v-for="module in selectedModules"
@@ -129,7 +128,7 @@
         </el-tag>
     </div>
     </el-dialog>
-    <el-dialog v-model="adminDialogVisible" title="自定义管理员">
+    <el-dialog v-model="adminDialogVisible" :title="$t('data.session.table.custom_admins')">
       <div class="tag-container">
         <el-tag
           v-for="admin in selectedAdmins"
@@ -144,34 +143,34 @@
     </el-dialog>
   </el-card>
 
-  <el-dialog v-model="editDialogVisible" title="编辑会话数据" width="600px">
-    <el-form :model="editForm" label-width="100px">
+  <el-dialog v-model="editDialogVisible" :title="$t('data.session.title.edit_target_data')" width="600px">
+    <el-form :model="editForm" label-width="125px">
         <el-col :span="12">
-          <el-form-item label="语言">
+          <el-form-item :label="$t('data.session.table.locale')">
             <el-input v-model="editForm.locale" />
           </el-form-item>
         </el-col>
-      <el-row :gutter="20">
+      <el-row :gutter="24">
         <el-col :span="6">
-          <el-form-item label="禁言状态">
+          <el-form-item :label="$t('data.session.table.mute')">
             <el-switch v-model="editForm.muted" />
           </el-form-item>
         </el-col>
 
         <el-col :span="6">
-          <el-form-item label="封禁状态">
+          <el-form-item :label="$t('data.session.table.block')">
             <el-switch v-model="editForm.blocked" />
           </el-form-item>
         </el-col>
 
         <el-col :span="24">
-          <el-form-item label="模块列表">
+          <el-form-item :label="$t('data.session.table.modules_list')">
             <el-select
               v-model="editForm.modules"
               multiple
               filterable
               allow-create
-              placeholder="请选择模块"
+              :placeholder="$t('data.session.input.modules')"
               style="width: 100%"
             >
               <el-option
@@ -185,14 +184,14 @@
         </el-col>
 
         <el-col :span="24">
-          <el-form-item label="管理员">
+          <el-form-item :label="$t('data.session.table.custom_admins')">
             <el-select
               v-model="editForm.custom_admins"
               multiple
               filterable
               allow-create
               default-first-option
-              placeholder="请输入管理员"
+              :placeholder="$t('data.session.input.custom_admins')"
               style="width: 100%"
             >
               <el-option
@@ -206,13 +205,13 @@
         </el-col>
 
         <el-col :span="24">
-          <el-form-item label="会话数据">
+          <el-form-item :label="$t('data.session.table.target_data')">
             <el-input
               type="textarea"
               resize="none"
               v-model="targetDataString"
               :rows="6"
-              placeholder='请输入 JSON 数据'
+              :placeholder="$t('data.input.json_data')"
             />
           </el-form-item>
         </el-col>
@@ -220,8 +219,8 @@
     </el-form>
 
     <template #footer>
-      <el-button @click="editDialogVisible = false">取消</el-button>
-      <el-button type="primary" @click="submitEdit">保存</el-button>
+      <el-button @click="editDialogVisible = false">{{ $t("button.cancel") }}</el-button>
+      <el-button type="primary" @click="submitEdit">{{ $t("button.save") }}</el-button>
     </template>
   </el-dialog>
 </template>
@@ -229,9 +228,11 @@
 <script>
 import axios from 'axios';
 import { ElMessage } from 'element-plus';
+import { useI18n } from 'vue-i18n';
 
 export default {
   data() {
+    const { t } = useI18n();
     return {
       editForm: {
         target_id: '',
@@ -258,7 +259,8 @@ export default {
       pageSize: 20,
       totalItems: 0,
       loading: false,
-      cancelTokenSource: axios.CancelToken.source()
+      cancelTokenSource: axios.CancelToken.source(),
+      t
     };
   },
   mounted() {
@@ -309,7 +311,7 @@ export default {
         if (axios.isCancel(error)) {
           console.log("Request canceled");
         } else {
-          ElMessage.error('Error fetching data:' + error);
+          ElMessage.error(this.t("message.error.fetch") + error);
         } 
       } finally {
           this.loading = false;
@@ -317,11 +319,7 @@ export default {
     },
     async fetchAllModules() {
       try {
-        const response = await axios.get('/api/modules', {
-          params: {
-            locale: localStorage.getItem("language")
-          }
-        });
+        const response = await axios.get('/api/modules_list');
         if (response.status === 200 && response.data.modules) {
           this.allModules = Object.keys(response.data.modules);
         }
@@ -329,7 +327,7 @@ export default {
         if (axios.isCancel(error)) {
           console.log("Request canceled");
         } else {
-          ElMessage.error('Error fetching modules:' + error);
+          ElMessage.error(this.t("message.error.fetch") + error);
         }
       }
     },
@@ -359,7 +357,7 @@ export default {
       try {
         parsedTargetData = JSON.parse(this.targetDataString);
       } catch (e) {
-        ElMessage.error('会话数据格式错误，请检查 JSON 格式');
+        ElMessage.error(this.t("data.message.invalid_json"));
       }
 
       const { target_id, ...payload } = this.editForm;
@@ -367,17 +365,17 @@ export default {
 
       try {
         await axios.post(`/api/target/${target_id}/edit`, payload);
-        ElMessage.success('编辑成功');
+        ElMessage.success(this.t("data.message.success.edit"));
         this.editDialogVisible = false;
         this.fetchData();
       } catch (error) {
-        ElMessage.error('编辑失败：' + error.message);
+        ElMessage.error(this.t("message.error.fetch") + error.message);
       }
     },
     confirmDelete(row) {
-      this.$confirm(`你确定要删除会话 ${row.target_id} 的所有数据吗？`, '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
+      this.$confirm(this.t("data.session.confirm.message", { target_id: row.target_id }), this.t("confirm.warning"), {
+        confirmButtonText: this.t("button.confirm"),
+        cancelButtonText: this.t("button.cancel"),
         type: 'warning',
       }).then(() => {
         this.deleteTarget(row);
@@ -388,10 +386,10 @@ export default {
     async deleteTarget(row) {
       try {
         await axios.post(`/api/target/${row.target_id}/delete`);
-        ElMessage.success('删除成功');
+        ElMessage.success(this.t("data.message.success.delete"));
         this.fetchData();
       } catch (error) {
-        ElMessage.error('删除失败：' + error.message);
+        ElMessage.error(this.t("message.error.fetch") + error.message);
       }
     }
   }
@@ -399,11 +397,21 @@ export default {
 </script>
 
 <style scoped>
+pre {
+  font-family: "Consolas", "Noto Sans Mono", "Courier New", Courier, monospace;
+  word-wrap: break-word;
+  white-space: pre-wrap;
+}
+
 .el-card {
   box-shadow: none !important;
   margin-bottom: 20px;
   line-height: 1;
   white-space: nowrap;
+}
+
+.el-button i {
+  margin-right: 8px;
 }
 
 .header-container {

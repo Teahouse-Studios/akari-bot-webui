@@ -103,7 +103,7 @@ export default {
       try {
         await this.formRef.validateField('old_password');
         
-        ElMessageBox.confirm(this.$t('setting.change_password.confirm.message'), this.$t('confirm.title.warning'), {
+        ElMessageBox.confirm(this.$t('setting.change_password.confirm.message'), this.$t('confirm.warning'), {
           confirmButtonText: this.$t('button.confirm'),
           cancelButtonText: this.$t('button.cancel'),
           type: 'warning',
