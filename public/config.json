@@ -1,3 +1,4 @@
 {
-  "api_url": "http://localhost:5000"
+  "api_url": "http://localhost:5000",
+  "locale": "zh_cn"
 }
