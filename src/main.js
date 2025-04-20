@@ -11,16 +11,22 @@ import zh_cn from './i18n/zh_cn.json';
 import zh_tw from './i18n/zh_tw.json';
 import en_us from './i18n/en_us.json';
 
-const app = createApp(App);
+fetch('/config.json')
+  .then(res => res.json())
+  .then(config => {
+    const locale = config.locale || 'zh_cn';
+    localStorage.setItem('language', locale);
 
-const i18n = createI18n({
-    locale: 'zh_cn',
-    messages: {
-      zh_cn,
-      zh_tw,
-      en_us
-    }
-  });
+    const i18n = createI18n({
+      locale: locale,
+      messages: {
+        zh_cn,
+        zh_tw,
+        en_us
+      }
+    });
+
+const app = createApp(App);
 
 app.use(ElementPlus);
 app.use(i18n);
