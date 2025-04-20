@@ -271,6 +271,7 @@ export default {
     logData: "updateLogs",
   },
   mounted() {
+    this.logViewer = this.$refs.logViewer;
     this.authenticateToken();
   },
   beforeUnmount() {
