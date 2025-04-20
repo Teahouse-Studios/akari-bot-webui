@@ -19,7 +19,7 @@ npm run build
 ```
 
 ## Localization
-Unfortunately, the free account cannot create a second integration, and the premium account of Crowdin is too expensive for me to afford :(
+Unfortunately, the free account of Crowdin cannot create a second integration, and the premium account is too expensive for me to afford :(
 
 If there is a localization problem with the WebUI, please raise an issue. 
 
