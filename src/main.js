@@ -26,13 +26,14 @@ fetch('/config.json')
       }
     });
 
-const app = createApp(App);
+    const app = createApp(App);
 
-app.use(ElementPlus);
-app.use(i18n);
-app.use(router);
+    app.use(ElementPlus);
+    app.use(i18n);
+    app.use(router);
 
-const isDark = localStorage.getItem('isDarkMode') === 'true';
-document.documentElement.classList.toggle('dark', isDark);
+    const isDark = localStorage.getItem('isDarkMode') === 'true';
+    document.documentElement.classList.toggle('dark', isDark);
 
-app.mount("#app");
+    app.mount("#app");
+  });
