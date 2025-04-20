@@ -19,7 +19,7 @@
           <i class="fab fa-github"></i>
           <span>{{ $t("about.button.repo.webui") }}</span>
         </el-button>
-        <img src="https://img.shields.io/github/stars/DoroWolf/akari-bot-webui?style=social" alt="Repo Stars" :title="$t('about.star.tooltip')">
+        <img src="https://img.shields.io/github/stars/Teahouse-Studios/akari-bot-webui?style=social" alt="Repo Stars" :title="$t('about.star.tooltip')">
       </div>
     </div>
 
@@ -58,7 +58,7 @@
         window.open("https://github.com/Teahouse-Studios/akari-bot", "_blank");
       },
       goToWebUIRepo() {
-        window.open("https://github.com/DoroWolf/akari-bot-webui", "_blank");
+        window.open("https://github.com/Teahouse-Studios/akari-bot-webui", "_blank");
       },
       goToI18N() {
         window.open("https://crowdin.com/project/akari-bot", "_blank");
