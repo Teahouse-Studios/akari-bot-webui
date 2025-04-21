@@ -22,6 +22,7 @@
         <el-option label="Discord" value="Discord" />
         <el-option label="Telegram" value="Telegram" />
         <el-option label="KOOK" value="KOOK" />
+        <el-option label="Matrix" value="Matrix" />
         <el-option label="Web" value="Web" />
         <el-option label="TEST" value="TEST" />
         </el-select>
