@@ -1,16 +1,19 @@
 <template>
-  <ChangePasswordForm />
-  <RestartBotButton />
+  <ChangePassword />
+  <SelectLanguage />
+  <RestartBot />
 </template>
 
 <script>
-import ChangePasswordForm from "@/components/setting/ChangePasswordForm.vue";
-import RestartBotButton from "@/components/setting/RestartBotButton.vue";
+import ChangePassword from "@/components/setting/ChangePassword.vue";
+import SelectLanguage from '@/components/setting/SelectLanguage.vue';
+import RestartBot from "@/components/setting/RestartBot.vue";
 
 export default {
   components: {
-    ChangePasswordForm,
-    RestartBotButton,
+    ChangePassword,
+    SelectLanguage,
+    RestartBot,
   }
 }
 </script>

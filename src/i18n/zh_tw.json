@@ -136,6 +136,7 @@
   "setting.restart_bot.confirm.title": "重新啟動確認",
   "setting.restart_bot.loading.text": "正在重新啟動……",
   "setting.restart_bot.title": "重新啟動機器人",
+  "setting.select_language.title": "語言",
   "sidebar.item.about": "關於",
   "sidebar.item.chat": "聊天",
   "sidebar.item.config": "設定",

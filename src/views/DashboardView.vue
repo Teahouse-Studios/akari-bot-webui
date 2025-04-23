@@ -36,7 +36,7 @@ methods: {
 }
 </script>
 
-<style>
+<style scoped>
 .refresh-button {
   position: fixed;
   bottom: 20px;

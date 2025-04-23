@@ -136,6 +136,7 @@
     "setting.restart_bot.confirm.title": "重启确认",
     "setting.restart_bot.loading.text": "正在重启……",
     "setting.restart_bot.title": "重启机器人",
+    "setting.select_language.title": "语言",
     "sidebar.item.about": "关于",
     "sidebar.item.chat": "聊天",
     "sidebar.item.config": "配置",
