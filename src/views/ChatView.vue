@@ -83,6 +83,7 @@
             />
           </template>
         </span>
+        <div v-if="debug" class="debug-uuid">{{ msg.id }}</div>
       </div>
     </div>
 
@@ -138,6 +139,7 @@ export default {
       imageDialogVisible: false,
       previewImageSrc: "",
       cancelTokenSource: axios.CancelToken.source(),
+      debug: process.env.VUE_APP_DEBUG === "true",
       t
     };
   },
@@ -420,7 +422,6 @@ export default {
 };
 </script>
 
-
 <style scoped>
   pre {
     color : black;
@@ -599,6 +600,12 @@ export default {
   .dark .chat-message.bot {
     background-color: #333;
     color: white;
+  }
+
+  .debug-uuid {
+    margin-top: 4px;
+    font-size: 10px;
+    color: #666;
   }
 
   .send-box {
