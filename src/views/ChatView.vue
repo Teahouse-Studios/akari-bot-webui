@@ -42,7 +42,7 @@
         </div>
       </div>
 
-      <div v-for="(msg, idx) in messages" :key="idx" class="chat-message" :class="msg.from">
+      <div v-for="(msg, idx) in messages" :key="msg.id || idx" class="chat-message" :class="msg.from" :data-id="msg.id">
         <span v-for="(part, pidx) in processMessage(msg.text)" :key="pidx">
           <template v-if="part.type === 'text'">
             {{ part.text }}
@@ -121,6 +121,7 @@
 <script>
 import axios from "axios";
 import { ElMessage, ElMessageBox } from "element-plus";
+import { v4 as uuidv4 } from 'uuid';
 import { useI18n } from 'vue-i18n';
 
 export default {
@@ -164,8 +165,21 @@ export default {
 
         this.websocket.onmessage = (event) => {
           const data = JSON.parse(event.data);
-          this.messages.push({ from: "bot", text: this.renderResponse(data) });
-          this.scrollToBottom();
+
+          if (data.action === "delete" && Array.isArray(data.id)) {
+            this.messages = this.messages.filter(msg => !data.id.includes(msg.id));
+            return;
+          }
+
+          if (data.action === "send") {
+            this.messages.push({
+              from: "bot",
+              text: this.renderResponse(data.message),
+              id: data.id || uuidv4()
+            });
+            
+            this.scrollToBottom();
+          }
         };
 
         this.websocket.onerror = () => {
@@ -204,8 +218,13 @@ export default {
       const text = this.inputText.trim();
       if (!text) return;
 
-      this.messages.push({ from: "user", text: text });
-      this.websocket?.send(text);
+      const uuid = uuidv4();
+      this.messages.push({ from: "user", text: text, id: uuid });
+      this.websocket?.send(JSON.stringify({
+        action: "send",
+        message: [{ type: "text", content: text }],
+        id: uuid
+      }));
       this.inputText = "";
       this.scrollToBottom();
     },
@@ -516,6 +535,7 @@ export default {
 
   .chat-placeholder {
     flex: 1;
+    gap: 5px;
     display: flex;
     flex-direction: column;
     justify-content: center;
