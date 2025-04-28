@@ -1,6 +1,6 @@
 <template>
   <div class="container">
-    <img width="380" src="@/assets/character_marked.png" alt="Akaribot">
+    <img width="300" src="@/assets/akaribot_logo.png" alt="Akaribot">
     <h1 class="title">小可 · AkariBot</h1>
     <span class="quote">{{ $t("about.quote") }}</span>
     <span class="text">By <a href="https://github.com/OasisAkari">OasisAkari</a> via <a href="https://teahouse.team">Teahouse Studios</a></span>

@@ -9,14 +9,8 @@
         <i class="mdi mdi-menu"></i>
       </el-button>
       <div class="logo">
-        <img src="@/assets/logo.png" alt="Logo" class="logo-image" />
-        <div class="logo-text">
-          <span class="akari-bot-text">AkariBot</span>
-          <div class="webui-container">
-            <span class="web-ui-text">WebUI </span>
-            <span class="beta-tag">Beta</span>
-          </div>
-        </div>
+        <img src="@/assets/akaribot_logo.png" alt="Logo" class="logo-image" />
+        <span class="web-ui-text">WebUI </span>
       </div>
     </div>
 
@@ -105,6 +99,7 @@ export default {
   font-size: 24px;
   color: inherit;
   transition: color 0.3s ease;
+  margin-right: 12px;
 }
 
 .menu-button:hover {
@@ -141,44 +136,26 @@ export default {
 }
 
 .logo-image {
-  height: 46px;
+  height: 42px;
   width: auto;
-  margin-right: 2px;
+  margin-right: 6px;
 }
 
-.logo-text {
-  flex-direction: column;
-  justify-content: flex-start;
+.web-ui-text {
+  display: flex;
+  align-items: center;
+  font-size: 16px;
+  color: #666;
   font-family:
           "Roboto",
+          "Noto Sans SC",
           system-ui,
           -apple-system,
           sans-serif;
 }
 
-.akari-bot-text {
-  font-size: 18px;
-}
-
-.webui-container {
-  display: flex;
-  align-items: center;
-  gap: 3px;
-}
-
-.web-ui-text {
-  font-size: 12px;
-  color: #888;
-}
-
-.beta-tag {
-  display: inline-block;
-  background-color: #0091ff;
-  color: white;
-  font-size: 8px;
-  padding: 1px 5px;
-  border-radius: 12px;
-  text-transform: uppercase;
+.dark .web-ui-text {
+  color: #aaa;
 }
 
 .theme-toggle-button {
