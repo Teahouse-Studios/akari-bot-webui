@@ -27,62 +27,23 @@
         <div class="placeholder-title">{{ $t('chat.chatbox.title') }}</div>
         <div class="placeholder-sub">
           {{ $t('chat.chatbox.text.prompt1.prefix') }}
-          <code>~help</code>
+          <code class="chat-code">~help</code>
           {{ $t('chat.chatbox.text.prompt1.suffix') }}
         </div>
         <div class="placeholder-sub">
           {{ $t('chat.chatbox.text.prompt2.prefix') }}
-          <code>Enter</code>
+          <code class="chat-code">Enter</code>
           {{ $t('chat.chatbox.text.prompt2.suffix') }}
         </div>
         <div class="placeholder-sub">
           {{ $t('chat.chatbox.text.prompt3.prefix') }}
-          <code>Shift + Enter</code>
+          <code class="chat-code">Shift + Enter</code>
           {{ $t('chat.chatbox.text.prompt3.suffix') }}
         </div>
       </div>
 
       <div v-for="(msg, idx) in messages" :key="msg.id || idx" class="chat-message" :class="msg.from" :data-id="msg.id">
-        <span v-for="(part, pidx) in processMessage(msg.text)" :key="pidx">
-          <template v-if="part.type === 'text'">
-            {{ part.text }}
-          </template>
-          <template v-else-if="part.type === 'newline'">
-            <br />
-          </template>
-          <template v-else-if="part.type === 'bold'">
-            <strong>{{ part.text }}</strong>
-          </template>
-          <template v-else-if="part.type === 'italic'">
-            <em>{{ part.text }}</em>
-          </template>
-          <template v-else-if="part.type === 'del'">
-            <del>{{ part.text }}</del>
-          </template>
-          <template v-else-if="part.type === 'code'">
-            <code>{{ part.text }}</code>
-          </template>
-          <template v-else-if="part.type === 'pre'">
-            <pre>{{ part.text }}</pre>
-          </template>
-          <template v-else-if="part.type === 'link'">
-            <a
-                :href="part.url"
-                target="_blank"
-                rel="noopener noreferrer"
-                @click.prevent="confirmExternalLink(part.url)"
-            >
-              {{ part.text }}
-            </a>
-          </template>
-          <template v-else-if="part.type === 'img'">
-            <img
-              :src="part.src"
-              style="max-width: 80%; max-height: 300px; margin: 8px 0; object-fit: contain;"
-              @click="showImagePreview(part.src)"
-            />
-          </template>
-        </span>
+        <div v-html="msg.html" @click="handleMarkdownClick"></div>
         <div v-if="debug" class="debug-uuid">{{ msg.id }}</div>
       </div>
     </div>
@@ -122,6 +83,8 @@
 <script>
 import axios from "axios";
 import { ElMessage, ElMessageBox } from "element-plus";
+import MarkdownIt from "markdown-it";
+import linkAttributes from "markdown-it-link-attributes";
 import { v4 as uuidv4 } from 'uuid';
 import { useI18n } from 'vue-i18n';
 
@@ -129,8 +92,37 @@ export default {
   name: "ChatView",
   data() {
     const { t } = useI18n();
+    const md = new MarkdownIt('zero')
+      .set({ html: false, linkify: true, breaks: true })
+      .use(linkAttributes, {
+        pattern: /^(https?:)?\/\//,
+        attrs: {
+          target: "_blank",
+          rel: "noopener noreferrer"
+        }
+      })
+      .use((md) => {
+        md.enable(['blockquote', 'fence', 'heading', 'list']);
+        md.enable(['autolink', 'backticks', 'emphasis', 'escape', 'link', 'linkify', 'newline', 'strikethrough', 'text']);
 
-    return {
+        md.renderer.rules.paragraph_open = () => '';
+        md.renderer.rules.paragraph_close = () => '<br />';
+
+        md.renderer.rules.fence = (tokens, idx) => {
+          const content = tokens[idx].content;
+          return `<pre class="chat-pre">${md.utils.escapeHtml(content)}</pre>`;
+        };
+
+        md.renderer.rules.code_inline = (tokens, idx) => {
+          const content = tokens[idx].content;
+          return `<code class="chat-code">${md.utils.escapeHtml(content)}</code>`;
+        };
+
+        md.renderer.rules.blockquote_open = () => {
+          return '<blockquote class="chat-blockquote">';
+        };
+      })
+      return {
       inputText: "",
       messages: [],
       chatBox: null,
@@ -140,6 +132,7 @@ export default {
       previewImageSrc: "",
       cancelTokenSource: axios.CancelToken.source(),
       debug: process.env.VUE_APP_DEBUG === "true",
+      md,
       t
     };
   },
@@ -177,6 +170,7 @@ export default {
             this.messages.push({
               from: "bot",
               text: this.renderResponse(data.message),
+              html: this.renderMarkdown(this.renderResponse(data.message)),
               id: data.id || uuidv4()
             });
             
@@ -221,7 +215,12 @@ export default {
       if (!text) return;
 
       const uuid = uuidv4();
-      this.messages.push({ from: "user", text: text, id: uuid });
+      this.messages.push({
+        from: "user",
+        text: text,
+        html: this.renderMarkdown(text),
+        id: uuid
+      });
       this.websocket?.send(JSON.stringify({
         action: "send",
         message: [{ type: "text", content: text }],
@@ -243,11 +242,11 @@ export default {
     },
 
     scrollToBottom() {
-      this.$nextTick(() => {
+      setTimeout(() => {
         if (this.chatBox) {
           this.chatBox.scrollTop = this.chatBox.scrollHeight;
         }
-      });
+      }, 0);
     },
 
     handleEnterKey(event) {
@@ -259,107 +258,21 @@ export default {
       }
     },
 
-    processMessage(text) {
-      const parts = [];
-      const codeBlockRegex = /```\n*([\s\S]*?)\n*```/g;
-      const imageRegex = /\[image:([^<]+)\]/g;
-
-      let lastIndex = 0;
-      let match;
-
-      while ((match = codeBlockRegex.exec(text)) !== null) {
-        const index = match.index;
-
-        if (index > lastIndex) {
-          const beforeCode = text.slice(lastIndex, index);
-          parts.push(...this.processInlineMessage(beforeCode));
-        }
-
-        parts.push({
-          type: 'pre',
-          text: match[1],
-        });
-
-        lastIndex = codeBlockRegex.lastIndex;
-      }
-
-      while ((match = imageRegex.exec(text)) !== null) {
-        const index = match.index;
-        if (index > lastIndex) {
-          const beforeImage = text.slice(lastIndex, index);
-          parts.push(...this.processInlineMessage(beforeImage));
-        }
-
-        const base64Content = `${match[1]}`;
-        if (base64Content.startsWith("data:image/png;base64,") || base64Content.startsWith("data:image/jpeg;base64,") || base64Content.startsWith("data:image/gif;base64,")) {
-          parts.push({
-            type: 'img',
-            src: base64Content,
-          });
-        }
-
-        lastIndex = imageRegex.lastIndex;
-      }
-
-      if (lastIndex < text.length) {
-        parts.push(...this.processInlineMessage(text.slice(lastIndex)));
-      }
-
-      return parts;
+    renderMarkdown(text) {
+      return this.md.render(text)
+      .replace(/\[image:([^\]]+)\]/g, (match, src) => {
+        return `<img src="${src}" class="chat-img" />`
+      })
     },
 
-    processInlineMessage(text) {
-      const parts = [];
-      let lastIndex = 0;
-
-      const pattern =
-        /(?:\*\*(.+?)\*\*)|(?:_(.+?)_)|(?:~~(.+?)~~)|(?:`(.+?)`)|(?:\[([^\]]+)\]\((https?:\/\/[^\s)]+)\))|((?:https?:\/\/)[^\s]+)/g;
-
-      let match;
-      while ((match = pattern.exec(text)) !== null) {
-        const index = match.index;
-
-        if (index > lastIndex) {
-          const before = text.slice(lastIndex, index);
-          parts.push(...this.splitTextWithLineBreaks(before));
-        }
-
-        if (match[1]) {
-          parts.push({ type: 'bold', text: match[1] });
-        } else if (match[2]) {
-          parts.push({ type: 'italic', text: match[2] });
-        } else if (match[3]) {
-          parts.push({ type: 'del', text: match[3] });
-        } else if (match[4]) {
-          parts.push({ type: 'code', text: match[4] });
-        } else if (match[5] && match[6]) {
-          parts.push({ type: 'link', text: match[5], url: match[6] });
-        } else if (match[7]) {
-          parts.push({ type: 'link', text: match[7], url: match[7] });
-        }
-
-        lastIndex = pattern.lastIndex;
+    handleMarkdownClick(event) {
+      const target = event.target
+      if (target.tagName === "A") {
+        event.preventDefault()
+        this.confirmExternalLink(target.href)
+      } else if (target.tagName === "IMG") {
+        this.showImagePreview(target.src)
       }
-
-      if (lastIndex < text.length) {
-        parts.push(...this.splitTextWithLineBreaks(text.slice(lastIndex)));
-      }
-
-      return parts;
-    },
-
-    splitTextWithLineBreaks(text) {
-      const parts = [];
-      const lines = text.split('\n');
-
-      lines.forEach((line, i) => {
-        if (line) parts.push({ type: 'text', text: line });
-        if (i < lines.length - 1) {
-          parts.push({ type: 'newline' });
-        }
-      });
-
-      return parts;
     },
 
     confirmExternalLink(url) {
@@ -410,6 +323,7 @@ export default {
   },
 
   mounted() {
+    this.chatBox = this.$refs.chatBox;
     this.authenticateToken();
   },
 
@@ -422,213 +336,229 @@ export default {
 };
 </script>
 
+<style>
+.chat-img {
+  max-width: 80%;
+  max-height: 300px;
+  margin: 8px 0;
+  object-fit: contain;
+  cursor: pointer;
+}
+
+.chat-blockquote {
+  border-left: 4px solid gray;
+  padding-left: 10px;
+  margin: 10px 0;
+}
+
+.chat-pre {
+  color : black;
+  background-color: #f7f7f7;
+  border: 1px solid #dcdcdc;
+  padding: 15px;
+  border-radius: 8px;
+  font-family: "Consolas", "Noto Sans Mono", "Courier New", Courier, monospace;
+  word-wrap: break-word;
+  white-space: pre-wrap;
+}
+
+.chat-code {
+  color : black;
+  background-color: #f0f0f0;
+  border: 1px solid #ccc;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: "Consolas", "Noto Sans Mono", "Courier New", Courier, monospace;
+}
+
+.dark .chat-pre {
+  color : white;
+  background-color: #2a2a2a;
+  border: 1px solid #444;
+}
+
+.dark .chat-code {
+  color : white;
+  background-color: #3a3a3a;
+  border: 1px solid #555;
+}
+</style>
+
 <style scoped>
-  pre {
-    color : black;
-    background-color: #f7f7f7;
-    border: 1px solid #dcdcdc;
-    padding: 15px;
-    border-radius: 8px;
-    font-family: "Consolas", "Noto Sans Mono", "Courier New", Courier, monospace;
-    word-wrap: break-word;
-    white-space: pre-wrap;
-  }
+.chat-container {
+  border-radius: 10px;
+  overflow-y: auto;
+}
 
-  code {
-    color : black;
-    background-color: #f0f0f0;
-    border: 1px solid #ccc;
-    padding: 2px 6px;
-    border-radius: 4px;
-    font-family: "Consolas", "Noto Sans Mono", "Courier New", Courier, monospace;
-  }
+.chat-header {
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 0 20px;
+  background: #f3f3f3;
+  border-bottom: 1px solid #e0e0e0;
+}
 
-  .dark pre {
-    color : white;
-    background-color: #2a2a2a;
-    border: 1px solid #444;
-  }
+.dark .chat-header {
+  background: #333;
+  border-bottom: 1px solid #1f1f1f;
+}
 
-  .dark code {
-    color : white;
-    background-color: #3a3a3a;
-    border: 1px solid #555;
-  }
+.connection-indicator {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-right: 10px;
+}
 
-  .chat-container {
-    border-radius: 10px;
-    overflow-y: auto;
-  }
+.connection-indicator:hover::after {
+  content: attr(title);
+  display: block;
+  position: absolute;
+  top: 20px;
+  left: 0;
+  background-color: #000;
+  color: #fff;
+  padding: 5px;
+  border-radius: 4px;
+  font-size: 12px;
+  white-space: nowrap;
+  z-index: 10;
+}
 
-  .chat-header {
-    height: 50px;
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    padding: 0 20px;
-    background: #f3f3f3;
-    border-bottom: 1px solid #e0e0e0;
-  }
+.chat-title {
+  flex: 1;
+  font-size: 18px;
+  font-weight: bold;
+}
 
-  .dark .chat-header {
-    background: #333;
-    border-bottom: 1px solid #1f1f1f;
-  }
+.reset-button {
+background: transparent;
+border: none;
+padding: 0;
+font-size: 22px !important;
+color: inherit;
+transition: color 0.3s ease;
+}
 
-  .connection-indicator {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    margin-right: 10px;
-  }
+.reset-button:hover {
+  background-color: #f3f3f3;
+  color: #888;
+}
 
-  .connection-indicator:hover::after {
-    content: attr(title);
-    display: block;
-    position: absolute;
-    top: 20px;
-    left: 0;
-    background-color: #000;
-    color: #fff;
-    padding: 5px;
-    border-radius: 4px;
-    font-size: 12px;
-    white-space: nowrap;
-    z-index: 10;
-  }
+.dark .reset-button:hover {
+  background-color: #333;
+  color: #aaa;
+}
 
-  .chat-title {
-    flex: 1;
-    font-size: 18px;
-    font-weight: bold;
-  }
+.chat-box {
+  height: calc(80vh - 100px);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  background-color: #e8e8e8;
+}
 
-  .reset-button {
-  background: transparent;
-  border: none;
-  padding: 0;
-  font-size: 22px !important;
-  color: inherit;
-  transition: color 0.3s ease;
-  }
+.dark .chat-box {
+  background-color: #242424;
+}
 
-  .reset-button:hover {
-    background-color: #f3f3f3;
-    color: #888;
-  }
+.chat-placeholder {
+  flex: 1;
+  gap: 5px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 40px;
+  color: #999;
+  font-size: 28px;
+}
 
-  .dark .reset-button:hover {
-    background-color: #333;
-    color: #aaa;
-  }
+.placeholder-title {
+  font-size: 24px;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 20px;
+}
 
-  .chat-box {
-    height: calc(80vh - 100px);
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    background-color: #e8e8e8;
-  }
+.placeholder-sub {
+  color: #777;
+  font-size: 14px;
+  margin-top: 4px;
+}
 
-  .dark .chat-box {
-    background-color: #242424;
-  }
+.dark .chat-placeholder {
+  color: #aaa;
+}
 
-  .chat-placeholder {
-    flex: 1;
-    gap: 5px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-    padding: 40px;
-    color: #999;
-    font-size: 28px;
-  }
+.dark .placeholder-title {
+  color: #eee;
+}
 
-  .placeholder-title {
-    font-size: 24px;
-    font-weight: bold;
-    color: #333;
-    margin-bottom: 20px;
-  }
+.dark .placeholder-sub {
+  color: #888;
+}
 
-  .placeholder-sub {
-    color: #777;
-    font-size: 14px;
-    margin-top: 4px;
-  }
+.chat-message {
+  margin: 12px 20px;
+  line-height: 1.6;
+  display: inline-block;
+  max-width: 70%;
+  border-radius: 10px;
+  padding: 10px;
+  word-wrap: break-word;
+  word-break: break-word;
+}
 
-  .dark .chat-placeholder {
-    color: #aaa;
-  }
+.chat-message.user {
+  background-color: #0091ff;
+  color: white;
+  align-self: flex-end;
+  border-top-right-radius: 0;
+}
 
-  .dark .placeholder-title {
-    color: #eee;
-  }
+.chat-message.bot {
+  background-color: white;
+  color: black;
+  align-self: flex-start;
+  border-top-left-radius: 0;
+}
 
-  .dark .placeholder-sub {
-    color: #888;
-  }
+.dark .chat-message.bot {
+  background-color: #333;
+  color: white;
+}
 
-  .chat-message {
-    margin: 12px 20px;
-    line-height: 1.6;
-    display: inline-block;
-    max-width: 70%;
-    border-radius: 10px;
-    padding: 10px;
-    word-wrap: break-word;
-    word-break: break-word;
-  }
+.debug-uuid {
+  margin-top: 4px;
+  font-size: 10px;
+  color: #666;
+}
 
-  .chat-message.user {
-    background-color: #0091ff;
-    color: white;
-    align-self: flex-end;
-    border-top-right-radius: 0;
-  }
+.send-box {
+  height: auto;
+  min-height: 50px;
+  display: flex;
+  align-items: center;
+  padding: 10px 20px;
+  background: #f3f3f3;
+  border-top: 1px solid #e0e0e0;
+}
 
-  .chat-message.bot {
-    background-color: white;
-    color: black;
-    align-self: flex-start;
-    border-top-left-radius: 0;
-  }
+.dark .send-box {
+  border-top: 1px solid #1f1f1f;
+  background: #333;
+}
 
-  .dark .chat-message.bot {
-    background-color: #333;
-    color: white;
-  }
+.dark .chat-send-input {
+  background-color: #181818;
+  border-radius: 5px;
+}
 
-  .debug-uuid {
-    margin-top: 4px;
-    font-size: 10px;
-    color: #666;
-  }
-
-  .send-box {
-    height: auto;
-    min-height: 50px;
-    display: flex;
-    align-items: center;
-    padding: 10px 20px;
-    background: #f3f3f3;
-    border-top: 1px solid #e0e0e0;
-  }
-
-  .dark .send-box {
-    border-top: 1px solid #1f1f1f;
-    background: #333;
-  }
-
-  .dark .chat-send-input {
-    background-color: #181818;
-    border-radius: 5px;
-  }
-
-  .el-button:disabled {
-    cursor: default !important;
-  }
+.el-button:disabled {
+  cursor: default !important;
+}
 </style>

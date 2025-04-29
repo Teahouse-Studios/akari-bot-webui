@@ -61,7 +61,6 @@ export default {
     toggleDarkMode() {
       this.isDarkMode = !this.isDarkMode;
       document.documentElement.classList.toggle("dark", this.isDarkMode);
-      document.body.classList.toggle("dark-mode", this.isDarkMode);
       localStorage.setItem("isDarkMode", JSON.stringify(this.isDarkMode));
     },
     switchSidebar() {
