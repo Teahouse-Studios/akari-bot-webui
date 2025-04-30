@@ -35,7 +35,6 @@ export default {
     const { t } = useI18n();
 
     return {
-      formRef: null,
       form: {
         old_password: '',
         new_password: '',
@@ -70,7 +69,7 @@ export default {
     async handleUpdatePassword() {
       try {
         try {
-          await this.formRef.validate();
+          await this.$refs.formRef.validate();
         } catch {
           return;
         }
@@ -101,7 +100,7 @@ export default {
 
     async handleClearPassword() {
       try {
-        await this.formRef.validateField('old_password');
+        await this.$refs.formRef.validateField('old_password');
         
         ElMessageBox.confirm(this.$t('setting.change_password.confirm.message'), this.$t('confirm.warning'), {
           confirmButtonText: this.$t('button.confirm'),
