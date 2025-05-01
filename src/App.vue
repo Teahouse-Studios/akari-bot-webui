@@ -108,6 +108,13 @@ export default {
         const response = await axios.post("/api/auth", {});
         if (response.status === 200) {
           this.userVerified = true;
+
+          const config = await (await fetch("/config.json")).json();
+          const enableHTTPS = config.enable_https;
+
+          if (!enableHTTPS && response.data.device_token) {
+            axios.defaults.headers.common["Authorization"] = "Bearer " + response.data.device_token;
+          }
           
           const noPassword = response.data.no_password;
           localStorage.setItem("noPassword", JSON.stringify(response.data.no_password));
@@ -147,7 +154,7 @@ export default {
           if (csrfTokenFromResponse) {
             Cookies.set("XSRF-TOKEN", csrfTokenFromResponse, {
               expires: 60 / (24 * 60),
-              sameSite: enableHTTPS ? "Strict" : "Lax",
+              sameSite: "Strict",
               secure: enableHTTPS,
             });
 

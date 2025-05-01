@@ -63,6 +63,14 @@ export default {
 
         if (response.status === 200) {
           ElMessage.success(this.t("login.message.success"));
+
+          const config = await (await fetch("/config.json")).json();
+          const enableHTTPS = config.enable_https;
+
+          if (!enableHTTPS && response.data.device_token) {
+            axios.defaults.headers.common["Authorization"] = "Bearer " + response.data.device_token;
+          }
+          
           localStorage.setItem("noPassword", JSON.stringify(response.data.no_password));
           location.reload();
         }
