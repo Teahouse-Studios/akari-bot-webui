@@ -112,13 +112,12 @@ export default {
 
     async connectWebSocket() {
       try {
-        const response = await fetch("/config.json");
-        const config = await response.json();
-        const apiUrl = config.api_url;
-        let baseUrl = apiUrl;
+        const config = await (await fetch("/config.json")).json();
+        const enableHTTPS = config.enable_https;
+        let baseUrl = config.api_url;
 
         if (!/^https?:\/\//i.test(baseUrl)) {
-          baseUrl = "http://" + baseUrl;
+          baseUrl = (enableHTTPS ? "https://" : "http://") + baseUrl;
         }
 
         const url = new URL(baseUrl);

@@ -132,6 +132,8 @@ export default {
       }
     },
     async checkCsrfToken() {
+      const config = await (await fetch("/config.json")).json();
+      const enableHTTPS = config.enable_https;
       let csrfToken = Cookies.get("XSRF-TOKEN");
 
       if (csrfToken) {
@@ -145,8 +147,8 @@ export default {
           if (csrfTokenFromResponse) {
             Cookies.set("XSRF-TOKEN", csrfTokenFromResponse, {
               expires: 60 / (24 * 60),
-              sameSite: "Strict",
-              secure: true,
+              sameSite: enableHTTPS ? "Strict" : "Lax",
+              secure: enableHTTPS,
             });
 
             let csrfToken = Cookies.get("XSRF-TOKEN");

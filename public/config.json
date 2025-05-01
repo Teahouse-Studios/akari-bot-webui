@@ -1,4 +1,5 @@
 {
   "api_url": "http://localhost:5000",
-  "locale": "zh_cn"
+  "locale": "zh_cn",
+  "enable_https": true
 }
