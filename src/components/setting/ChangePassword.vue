@@ -91,6 +91,7 @@ export default {
           ElMessage.success(this.$t('setting.change_password.message.success.update'));
           if (!enableHTTPS) {
             delete axios.defaults.headers.common["Authorization"];
+            Cookies.remove('deviceToken');
           }
           Cookies.remove('XSRF-TOKEN');
           location.reload();
@@ -139,6 +140,7 @@ export default {
           ElMessage.success(this.$t('setting.change_password.message.success.clear'));
           if (!enableHTTPS) {
             delete axios.defaults.headers.common["Authorization"];
+            Cookies.remove('deviceToken');
           }
           Cookies.remove('XSRF-TOKEN');
           localStorage.removeItem("noPasswordPromptDisabled");

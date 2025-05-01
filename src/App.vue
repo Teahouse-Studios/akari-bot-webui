@@ -83,6 +83,14 @@ export default {
   methods: {
     async initializeUserVerification() {
       try {
+          const config = await (await fetch("/config.json")).json();
+          const enableHTTPS = config.enable_https;
+
+          if (!enableHTTPS) {
+            let deviceToken = Cookies.get("deviceToken");
+            axios.defaults.headers.common["Authorization"] = "Bearer " + deviceToken;
+          }
+
         const response = await axios.get("/api/verify-token");
         if (response.status === 200) {
           this.userVerified = true;
@@ -113,6 +121,11 @@ export default {
           const enableHTTPS = config.enable_https;
 
           if (!enableHTTPS && response.data.device_token) {
+            Cookies.set("deviceToken", response.data.device_token, {
+              expires: 60 / (24 * 60),
+              sameSite: "Strict",
+              secure: false,
+            });
             axios.defaults.headers.common["Authorization"] = "Bearer " + response.data.device_token;
           }
           
@@ -141,6 +154,7 @@ export default {
     async checkCsrfToken() {
       const config = await (await fetch("/config.json")).json();
       const enableHTTPS = config.enable_https;
+      
       let csrfToken = Cookies.get("XSRF-TOKEN");
 
       if (csrfToken) {

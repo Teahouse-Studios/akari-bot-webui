@@ -37,6 +37,7 @@
 <script>
 import axios from "@/axios";
 import { ElMessage } from 'element-plus';
+import Cookies from "js-cookie";
 import { useI18n } from 'vue-i18n';
 
 export default {
@@ -67,11 +68,15 @@ export default {
           const config = await (await fetch("/config.json")).json();
           const enableHTTPS = config.enable_https;
 
-          if (!enableHTTPS && response.data.device_token) {
-            axios.defaults.headers.common["Authorization"] = "Bearer " + response.data.device_token;
+          if (!enableHTTPS && response.data.device_token && response.data.expires) {
+            Cookies.set("deviceToken", response.data.device_token, {
+              expires: response.data.expires,
+              sameSite: "Strict",
+              secure: false,
+            });
           }
           
-          localStorage.setItem("noPassword", JSON.stringify(response.data.no_password));
+          localStorage.setItem("noPassword", "false");
           location.reload();
         }
       } catch (error) {
