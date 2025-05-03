@@ -18,7 +18,7 @@ fetch('/config.json')
     localStorage.setItem('language', locale);
 
     const i18n = createI18n({
-      locale: locale,
+      locale: localStorage.getItem('language'),
       messages: {
         zh_cn,
         zh_tw,
