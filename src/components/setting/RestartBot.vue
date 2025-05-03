@@ -42,7 +42,7 @@ export default {
 
           setTimeout(() => {
             window.location.href = '/';
-          }, 10000);
+          }, 30000);
         }
       } catch (error) {
         ElMessage.error(this.t('message.error.fetch') + error.message);
