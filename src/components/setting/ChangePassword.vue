@@ -85,14 +85,6 @@ export default {
         const response = await axios.post('/api/change-password', requestData);
 
         if (response.status === 200) {
-          const config = await (await fetch("/config.json")).json();
-          const enableHTTPS = config.enable_https;
-
-          ElMessage.success(this.$t('setting.change_password.message.success.update'));
-          if (!enableHTTPS) {
-            delete axios.defaults.headers.common["Authorization"];
-            Cookies.remove('deviceToken');
-          }
           Cookies.remove('XSRF-TOKEN');
           location.reload();
         }
@@ -134,15 +126,7 @@ export default {
         const response = await axios.post('/api/clear-password', requestData);
 
         if (response.status === 200) {
-          const config = await (await fetch("/config.json")).json();
-          const enableHTTPS = config.enable_https;
-
           ElMessage.success(this.$t('setting.change_password.message.success.clear'));
-          if (!enableHTTPS) {
-            delete axios.defaults.headers.common["Authorization"];
-            Cookies.remove('deviceToken');
-          }
-          Cookies.remove('XSRF-TOKEN');
           localStorage.removeItem("noPasswordPromptDisabled");
           location.reload();
         }
