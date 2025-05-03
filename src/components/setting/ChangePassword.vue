@@ -156,5 +156,7 @@ export default {
   display: flex;
   gap: 10px;
   justify-content: flex-start;
+  white-space: nowrap;
+  overflow-x: auto;
 }
 </style>
