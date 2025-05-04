@@ -15,7 +15,9 @@ fetch('/config.json')
   .then(res => res.json())
   .then(config => {
     const locale = config.locale || 'zh_cn';
-    localStorage.setItem('language', locale);
+    if (!localStorage.getItem('language')) {
+      localStorage.setItem('language', locale);
+    }
 
     const i18n = createI18n({
       locale: localStorage.getItem('language'),
