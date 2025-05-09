@@ -25,21 +25,35 @@
     <div class="chat-box" ref="chatBox">
       <div v-if="messages.length === 0" class="chat-placeholder">
         <div class="placeholder-title">{{ $t('chat.chatbox.title') }}</div>
-        <div class="placeholder-sub">
-          {{ $t('chat.chatbox.text.prompt1.prefix') }}
-          <code class="chat-code">~help</code>
-          {{ $t('chat.chatbox.text.prompt1.suffix') }}
-        </div>
-        <div class="placeholder-sub">
-          {{ $t('chat.chatbox.text.prompt2.prefix') }}
-          <code class="chat-code">Enter</code>
-          {{ $t('chat.chatbox.text.prompt2.suffix') }}
-        </div>
-        <div class="placeholder-sub">
-          {{ $t('chat.chatbox.text.prompt3.prefix') }}
-          <code class="chat-code">Shift + Enter</code>
-          {{ $t('chat.chatbox.text.prompt3.suffix') }}
-        </div>
+        <template v-if="!isMobileView">
+          <div class="placeholder-sub">
+            {{ $t('chat.chatbox.text.prompt1.prefix') }}
+            <code class="chat-code">~help</code>
+            {{ $t('chat.chatbox.text.prompt1.suffix') }}
+          </div>
+          <div class="placeholder-sub">
+            {{ $t('chat.chatbox.text.prompt2.prefix') }}
+            <code class="chat-code">Enter</code>
+            {{ $t('chat.chatbox.text.prompt2.suffix') }}
+          </div>
+          <div class="placeholder-sub">
+            {{ $t('chat.chatbox.text.prompt3.prefix') }}
+            <code class="chat-code">Shift + Enter</code>
+            {{ $t('chat.chatbox.text.prompt3.suffix') }}
+          </div>
+        </template>
+        <template v-else>
+          <div class="placeholder-sub">
+            {{ $t('chat.chatbox.text.prompt1.prefix') }}
+            <code class="chat-code">~help</code>
+            {{ $t('chat.chatbox.text.prompt1.suffix') }}
+          </div>
+          <div class="placeholder-sub">
+            {{ $t('chat.chatbox.text.prompt3.prefix') }}
+            <code class="chat-code">Enter</code>
+            {{ $t('chat.chatbox.text.prompt3.suffix') }}
+          </div>
+        </template>
       </div>
 
       <div v-for="(msg, idx) in messages" :key="msg.id || idx" class="chat-message" :class="msg.from" :data-id="msg.id">
@@ -129,6 +143,7 @@ export default {
       websocket: null,
       connectionStatus: "connecting",
       imageDialogVisible: false,
+      isMobileView: window.innerWidth < 1024,
       previewImageSrc: "",
       cancelTokenSource: axios.CancelToken.source(),
       debug: process.env.VUE_APP_DEBUG === "true",
@@ -249,7 +264,14 @@ export default {
       }, 0);
     },
 
+    handleResize() {
+      this.isMobileView = window.innerWidth < 1024;
+    },
+
     handleEnterKey(event) {
+      if (this.isMobileView) {
+        return;
+      }
       if (event.shiftKey) {
         return;
       } else {
@@ -325,6 +347,7 @@ export default {
   mounted() {
     this.chatBox = this.$refs.chatBox;
     this.authenticateToken();
+    window.addEventListener('resize', this.handleResize);
   },
 
   beforeUnmount() {
@@ -332,6 +355,7 @@ export default {
       this.websocket.close();
     }
     this.cancelTokenSource.cancel("Component unmounted");
+    window.removeEventListener('resize', this.handleResize);
   },
 };
 </script>
