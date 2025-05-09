@@ -17,10 +17,10 @@
       >
         <i class="mdi mdi-refresh"></i>
       </el-button>
-      <span class="auto-scroll-label">{{ $t('logs.switch.auto_scroll') }}</span>
       <el-switch
         v-model="autoScroll"
       />
+      <span class="auto-scroll-label">{{ $t('logs.switch.auto_scroll') }}</span>
 
       <el-button
         v-for="(level, index) in logLevels"
@@ -328,6 +328,8 @@ export default {
 
 .auto-scroll-label {
   margin: 5px;
+  white-space: nowrap;
+  overflow: hidden;
 }
 
 .log-level-button {
