@@ -37,6 +37,7 @@
 <script>
 import axios from "@/axios";
 import { ElMessage } from 'element-plus';
+import Cookies from "js-cookie";
 import { useI18n } from 'vue-i18n';
 
 export default {
@@ -64,6 +65,7 @@ export default {
         if (response.status === 200) {
           ElMessage.success(this.t("login.message.success"));
           localStorage.setItem("noPassword", "false");
+          Cookies.remove('XSRF-TOKEN');
           location.reload();
         }
       } catch (error) {
