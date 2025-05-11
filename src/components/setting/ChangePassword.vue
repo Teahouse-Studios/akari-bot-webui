@@ -128,6 +128,7 @@ export default {
         if (response.status === 200) {
           ElMessage.success(this.$t('setting.change_password.message.success.clear'));
           localStorage.removeItem("noPasswordPromptDisabled");
+          Cookies.remove('XSRF-TOKEN');
           location.reload();
         }
       } catch (error) {
