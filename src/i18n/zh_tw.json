@@ -134,7 +134,7 @@
   "setting.change_password.validate.old_password": "請輸入舊密碼",
   "setting.restart_bot.button.restart": "重新啟動",
   "setting.restart_bot.confirm.title": "重新啟動確認",
-  "setting.restart_bot.loading.text": "正在重新啟動……",
+  "setting.restart_bot.loading.text": "正在重新啟動……請勿重新整理此頁面。",
   "setting.restart_bot.title": "重新啟動機器人",
   "setting.select_language.title": "語言",
   "sidebar.item.about": "關於",

@@ -1,39 +1,46 @@
 <template>
   <div class="log-viewer-container">
     <div class="filter-container">
-      <el-input
-        v-model="searchText"
-        :placeholder="$t('logs.input.search')"
-        class="log-search-input"
-        @input="handleSearch"
-        clearable
-        :style="{ width: 'calc(100% - 175px)' }"
-      />
-      <el-button
-        class="log-refresh-button"
-        @click="refreshLog"
-        :title="$t('logs.button.refresh')"
-        circle
-      >
-        <i class="mdi mdi-refresh"></i>
-      </el-button>
-      <el-switch
-        v-model="autoScroll"
-      />
-      <span class="auto-scroll-label">{{ $t('logs.switch.auto_scroll') }}</span>
-
-      <el-button
-        v-for="(level, index) in logLevels"
-        :key="index"
-        :class="[
-          'log-level-button',
-          level.toLowerCase(),
-          { active: activeLogLevels.includes(level) },
-        ]"
-        @click="toggleLogLevel(level)"
-      >
-        {{ level }}
-      </el-button>
+      <div class="filter-top-row">
+        <div class="left-controls">
+          <el-input
+            v-model="searchText"
+            :placeholder="$t('logs.input.search')"
+            class="log-search-input"
+            @input="handleSearch"
+            clearable
+          />
+          <el-button
+            class="log-refresh-button"
+            @click="refreshLog"
+            :title="$t('logs.button.refresh')"
+            circle
+          >
+            <i class="mdi mdi-refresh"></i>
+          </el-button>
+        </div>
+        <div class="right-controls">
+          <el-switch
+            v-model="autoScroll"
+          />
+          <span class="auto-scroll-label">{{ $t('logs.switch.auto_scroll') }}</span>
+        </div>
+      </div>
+      
+      <div class="filter-bottom-row">
+        <el-button
+          v-for="(level, index) in logLevels"
+          :key="index"
+          :class="[
+            'log-level-button',
+            level.toLowerCase(),
+            { active: activeLogLevels.includes(level) },
+          ]"
+          @click="toggleLogLevel(level)"
+        >
+          {{ level }}
+        </el-button>
+      </div>
     </div>
 
     <div class="log-viewer" ref="logViewer">
@@ -284,11 +291,6 @@ export default {
 
 
 <style scoped>
-.dark .log-search-input {
-  background-color: #181818;
-  border-radius: 5px;
-}
-
 .log-viewer-container {
   display: flex;
   flex-direction: column;
@@ -296,13 +298,42 @@ export default {
 }
 
 .filter-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
   padding: 10px;
   background-color: #ddd;
   border-radius: 8px;
   margin-bottom: 10px;
 }
+
 .dark .filter-container {
   background-color: #555;
+}
+
+.filter-top-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 10px;
+}
+
+.left-controls {
+  display: flex;
+  align-items: center;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.log-search-input {
+  flex-grow: 1;
+  min-width: 100px;
+}
+
+.dark .log-search-input {
+  background-color: #181818;
+  border-radius: 5px;
 }
 
 .log-refresh-button {
@@ -326,10 +357,22 @@ export default {
   color: #aaa;
 }
 
-.auto-scroll-label {
-  margin: 5px;
+.right-controls {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
   white-space: nowrap;
-  overflow: hidden;
+  margin-right: 10px;
+}
+
+.auto-scroll-label {
+  margin-left: 5px;
+}
+
+.filter-bottom-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
 }
 
 .log-level-button {

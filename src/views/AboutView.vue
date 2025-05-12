@@ -122,7 +122,7 @@
 .other-links {
   display: flex;
   justify-content: center;
-  gap: 12px;
+  gap: 6px;
 }
 
 .repo-button i, .locale-button i, .sponsor-button i {

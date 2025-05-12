@@ -135,7 +135,7 @@
     "setting.change_password.validate.old_password": "Please enter the old password",
     "setting.restart_bot.button.restart": "Restart",
     "setting.restart_bot.confirm.title": "Restart Confirmation",
-    "setting.restart_bot.loading.text": "Restarting...",
+    "setting.restart_bot.loading.text": "Restarting... Please do not refresh this page.",
     "setting.restart_bot.title": "Restart Bot",
     "sidebar.item.about": "About",
     "sidebar.item.chat": "Chat",

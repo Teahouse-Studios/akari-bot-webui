@@ -17,9 +17,11 @@
       <el-button type="primary" @click="handleUpdatePassword">{{ $t('setting.change_password.button.set_password') }}</el-button>
     </el-form-item>
 
-    <el-form-item v-if="!noPassword" class="password-buttons">
-      <el-button type="primary" @click="handleUpdatePassword">{{ $t('setting.change_password.button.update_password') }}</el-button>
-      <el-button type="danger" @click="handleClearPassword">{{ $t('setting.change_password.button.clear_password') }}</el-button>
+    <el-form-item v-if="!noPassword">
+      <div class="password-buttons">
+        <el-button type="primary" @click="handleUpdatePassword">{{ $t('setting.change_password.button.update_password') }}</el-button>
+        <el-button type="danger" @click="handleClearPassword">{{ $t('setting.change_password.button.clear_password') }}</el-button>
+      </div>
     </el-form-item>
   </el-form>
 </template>
@@ -158,6 +160,10 @@ export default {
   gap: 10px;
   justify-content: flex-start;
   white-space: nowrap;
-  overflow-x: auto;
+  overflow-x: hidden;
+}
+
+.el-button + .el-button {
+  margin-left: 5px;
 }
 </style>
