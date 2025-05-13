@@ -75,7 +75,7 @@
             </el-popover>
           </template>
         </el-table-column>
-        <el-table-column :label="$t('data.session.table.operation')" min-width="180">
+        <el-table-column :label="$t('data.session.table.operation')" min-width="240">
           <template #default="{ row }">
             <el-button size="small" type="warning" @click="editSender(row)"><i class="mdi mdi-pencil"></i> {{ $t("data.button.edit") }}</el-button>
             <el-button size="small" type="danger" @click="confirmDelete(row)"><i class="mdi mdi-delete"></i> {{ $t("data.button.delete") }}</el-button>
