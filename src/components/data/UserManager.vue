@@ -1,5 +1,5 @@
 <template>
-    <el-card class="session-card">
+    <el-card class="user-card">
       <div class="header-container">
         <h3>{{ $t("data.user.title") }}</h3>
         <el-button
@@ -95,7 +95,7 @@
     </el-card>
   
     <el-dialog v-model="editDialogVisible" :title="$t('data.user.title.edit_sender_data')" width="600px">
-      <el-form :model="editForm" label-width="125px">
+      <el-form :model="editForm" label-width="auto">
         <el-row :gutter="24">
           <el-col :span="6">
             <el-form-item :label="$t('data.user.table.superuser')">
