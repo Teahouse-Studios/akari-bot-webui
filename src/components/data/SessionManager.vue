@@ -143,7 +143,7 @@
   </el-card>
 
   <el-dialog v-model="editDialogVisible" :title="$t('data.session.title.edit_target_data')" width="600px">
-    <el-form :model="editForm" label-width="125px">
+    <el-form :model="editForm" label-width="auto">
         <el-col :span="12">
           <el-form-item :label="$t('data.session.table.locale')">
             <el-input v-model="editForm.locale" />
