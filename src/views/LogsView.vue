@@ -371,8 +371,9 @@ export default {
 
 .filter-bottom-row {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: 5px;
+  overflow-x: auto;
 }
 
 .log-level-button {
