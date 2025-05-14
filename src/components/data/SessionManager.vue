@@ -82,7 +82,7 @@
           <el-tag type="danger" v-if="row.blocked" style="margin-left: 5px;">{{ $t("data.session.tag.blocked") }}</el-tag>
         </template>
       </el-table-column>
-      <el-table-column :label="$t('data.session.table.target_data')" min-width="100">
+      <el-table-column :label="$t('data.session.table.target_data')" min-width="140">
         <template #default="{ row }">
           <el-popover
             placement="top"

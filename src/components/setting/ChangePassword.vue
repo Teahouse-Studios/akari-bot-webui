@@ -1,11 +1,15 @@
 <template>
   <h3>{{ $t('setting.change_password.title') }}</h3>
-  <el-form :model="form" :rules="rules" ref="formRef" label-position="top">
+  <el-form :model="form" :rules="rules" ref="formRef" label-width="auto">
     <el-form-item v-if="!noPassword" :label="$t('setting.change_password.input.old_password')" prop="old_password">
       <el-input v-model="form.old_password" type="password"/>
     </el-form-item>
 
-    <el-form-item :label="$t('setting.change_password.input.new_password')" prop="new_password">
+    <el-form-item v-if="!noPassword" :label="$t('setting.change_password.input.new_password')" prop="new_password">
+      <el-input v-model="form.new_password" type="password"/>
+    </el-form-item>
+
+    <el-form-item v-if="noPassword" :label="$t('setting.change_password.input.password')" prop="new_password">
       <el-input v-model="form.new_password" type="password"/>
     </el-form-item>
 

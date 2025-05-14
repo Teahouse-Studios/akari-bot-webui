@@ -52,8 +52,8 @@
   
       <el-table v-loading="loading" :data="senderList" style="width: 100%" stripe>
         <el-table-column prop="sender_id" :label="$t('data.user.table.sender_id')" sortable min-width="140" />
-        <el-table-column prop="warns" :label="$t('data.user.table.warns')" sortable min-width="100" />
-        <el-table-column prop="petal" :label="$t('data.user.table.petal')" sortable min-width="100" />
+        <el-table-column prop="warns" :label="$t('data.user.table.warns')" sortable min-width="140" />
+        <el-table-column prop="petal" :label="$t('data.user.table.petal')" sortable min-width="140" />
         <el-table-column :label="$t('data.table.status')" min-width="180">
           <template #default="{ row }">
             <el-tag type="primary" v-if="row.superuser">{{ $t("data.user.tag.superuser") }}</el-tag>
@@ -61,7 +61,7 @@
             <el-tag type="danger" v-if="row.blocked" style="margin-left: 5px;">{{ $t("data.user.tag.blocked") }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column :label="$t('data.user.table.sender_data')" min-width="100">
+        <el-table-column :label="$t('data.user.table.sender_data')" min-width="140">
           <template #default="{ row }">
             <el-popover
               placement="top"
