@@ -67,7 +67,7 @@
     "data.session.confirm.message": "你确定要删除会话 {target_id} 的所有数据吗？",
     "data.session.input.banned_users": "请输入受限用户 ID……",
     "data.session.input.custom_admins": "请输入管理员用户 ID……",
-    "data.session.input.modules": "请选择模块",
+    "data.session.input.modules": "请选择模块……",
     "data.session.input.target_id": "搜索会话 ID……",
     "data.session.table.block": "封禁",
     "data.session.table.banned_users": "受限用户",
