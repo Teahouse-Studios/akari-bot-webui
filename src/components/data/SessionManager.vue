@@ -76,6 +76,18 @@
           ><i class="mdi mdi-eye"></i> {{ $t("data.button.view") }}</el-button>
         </template>
       </el-table-column>
+      <el-table-column :label="$t('data.session.table.banned_users')" min-width="160">
+        <template #default="{ row }">
+          {{ row.banned_users.length }}
+          <el-button
+            v-if="row.banned_users.length > 0"
+            size="small"
+            type="primary"
+            style="margin-left: 5px;"
+            @click="viewBanned(row)"
+          ><i class="mdi mdi-eye"></i> {{ $t("data.button.view") }}</el-button>
+        </template>
+      </el-table-column>
       <el-table-column :label="$t('data.table.status')" min-width="180">
         <template #default="{ row }">
           <el-tag type="warning" v-if="row.muted">{{ $t("data.session.tag.muted") }}</el-tag>
@@ -204,6 +216,27 @@
         </el-col>
 
         <el-col :span="24">
+          <el-form-item :label="$t('data.session.table.banned_users')">
+            <el-select
+              v-model="editForm.banned_users"
+              multiple
+              filterable
+              allow-create
+              default-first-option
+              :placeholder="$t('data.session.input.banned_users')"
+              style="width: 100%"
+            >
+              <el-option
+                v-for="banned in editForm.banned_users"
+                :key="banned"
+                :label="banned"
+                :value="banned"
+              />
+            </el-select>
+          </el-form-item>
+        </el-col>
+
+        <el-col :span="24">
           <el-form-item :label="$t('data.session.table.target_data')">
             <el-input
               type="textarea"
@@ -240,13 +273,16 @@ export default {
         blocked: false,
         modules: [],
         custom_admins: [],
+        banned_users: [],
         target_data: {},
       },
       targetList: [],
       moduleDialogVisible: false,
       adminDialogVisible: false,
+      bannedDialogVisible: false,
       editDialogVisible: false,
       selectedAdmins: [],
+      selectedBanned: [],
       allModules: [],
       selectedModules: [],
       selectedPrefix: '',
@@ -338,6 +374,10 @@ export default {
       this.selectedAdmins = row.custom_admins || [];
       this.adminDialogVisible = true;
     },
+    viewBanned(row) {
+      this.selectedBanned = row.banned_users || [];
+      this.bannedDialogVisible = true;
+    },
     editTarget(row) {
       Object.assign(this.editForm, {
         target_id: row.target_id,
@@ -346,6 +386,7 @@ export default {
         blocked: row.blocked,
         modules: row.modules ? [...row.modules] : [],
         custom_admins: row.custom_admins ? [...row.custom_admins] : [],
+        banned_users: row.banned_users ? [...row.banned_users] : [],
         target_data: row.target_data ? { ...row.target_data } : {},
       });
       this.targetDataString = JSON.stringify(this.editForm.target_data, null, 2);
