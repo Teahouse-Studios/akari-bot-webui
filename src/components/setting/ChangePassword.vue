@@ -9,7 +9,7 @@
       <el-input v-model="form.new_password" type="password"/>
     </el-form-item>
 
-    <el-form-item v-if="noPassword" :label="$t('setting.change_password.input.password')" prop="new_password">
+    <el-form-item v-if="noPassword" :label="$t('setting.change_password.input.set_password')" prop="new_password">
       <el-input v-model="form.new_password" type="password"/>
     </el-form-item>
 
