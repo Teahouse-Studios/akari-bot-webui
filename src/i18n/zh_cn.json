@@ -126,6 +126,7 @@
     "setting.change_password.input.confirm_password": "确认密码",
     "setting.change_password.input.new_password": "新密码",
     "setting.change_password.input.old_password": "旧密码",
+    "setting.change_password.input.set_password": "设置密码",
     "setting.change_password.message.failed": "密码错误，请重新输入",
     "setting.change_password.message.success.clear": "密码已清除",
     "setting.change_password.message.success.update": "密码修改成功",
