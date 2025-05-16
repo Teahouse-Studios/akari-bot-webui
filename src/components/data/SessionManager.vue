@@ -152,6 +152,19 @@
         </el-tag>
       </div>
     </el-dialog>
+    <el-dialog v-model="bannedDialogVisible" :title="$t('data.session.table.banned_users')">
+      <div class="tag-container">
+        <el-tag
+          v-for="banned in selectedBanned"
+          :key="banned"
+          style="margin: 4px"
+          type="info"
+          round
+        >
+          {{ banned }}
+        </el-tag>
+      </div>
+    </el-dialog>
   </el-card>
 
   <el-dialog v-model="editDialogVisible" :title="$t('data.session.title.edit_target_data')" width="600px">
