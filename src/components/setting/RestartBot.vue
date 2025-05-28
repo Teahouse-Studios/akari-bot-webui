@@ -64,7 +64,6 @@ export default {
                   duration: 0,
                   showClose: true,
                 });
-                return;
               }
               setTimeout(poll, this.pollingInterval);
             }
