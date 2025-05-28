@@ -71,7 +71,7 @@ export default {
           };
 
           this.hasShownTimeoutError = false;
-          poll();
+          setTimeout(poll, this.pollingInterval);
         }
       } catch (error) {
         ElMessage.error(this.t('message.error.fetch') + error.message);
