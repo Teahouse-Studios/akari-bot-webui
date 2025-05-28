@@ -138,6 +138,7 @@
     "setting.restart_bot.button.restart": "重启",
     "setting.restart_bot.confirm.title": "重启确认",
     "setting.restart_bot.loading.text": "正在重启……请不要刷新此页面。",
+    "setting.restart_bot.message.failed": "等待超时，请检查机器人是否正常运行。",
     "setting.restart_bot.title": "重启机器人",
     "setting.select_language.title": "语言",
     "sidebar.item.about": "关于",
