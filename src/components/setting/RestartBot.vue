@@ -52,7 +52,7 @@ export default {
             try {
               const res = await axios.get("/api");
               if (res.status === 200) {
-                window.location.reload();
+                window.location.href = '/';
               } else {
                 throw new Error("Not ready");
               }
