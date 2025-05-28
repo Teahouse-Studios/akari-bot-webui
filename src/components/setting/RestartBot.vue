@@ -1,6 +1,8 @@
 <template>
   <h3>{{ $t('setting.restart_bot.title') }}</h3>
-  <el-button type="danger" @click="handleRestart">{{ $t('setting.restart_bot.button.restart') }}</el-button>
+  <el-button type="danger" @click="handleRestart">
+    {{ $t('setting.restart_bot.button.restart') }}
+  </el-button>
 </template>
 
 <script>
@@ -12,11 +14,11 @@ export default {
   name: 'restartBotButton',
   data() {
     const { t } = useI18n();
-
     return {
       t,
       pollingTimeout: 60000,
       pollingInterval: 2000,
+      hasShownTimeoutError: false,
     };
   },
   methods: {
@@ -36,7 +38,6 @@ export default {
         return;
       }
     },
-
     async restartBot() {
       try {
         const response = await axios.post("/api/restart", {});
@@ -49,25 +50,27 @@ export default {
           const startTime = Date.now();
           const poll = async () => {
             try {
-              const res = await axios.get("/api/");
+              const res = await axios.get("/api");
               if (res.status === 200) {
                 window.location.reload();
               } else {
                 throw new Error("Not ready");
               }
             } catch (err) {
-              if (Date.now() - startTime >= this.pollingTimeout) {
+              const elapsed = Date.now() - startTime;
+              if (elapsed >= this.pollingTimeout && !this.hasShownTimeoutError) {
+                this.hasShownTimeoutError = true;
                 ElMessage({
                   message: this.t('setting.restart_bot.message.failed'),
                   type: 'error',
-                  duration: 0,
-                  showClose: true,
+                  duration: 0
                 });
               }
               setTimeout(poll, this.pollingInterval);
             }
           };
 
+          this.hasShownTimeoutError = false;
           poll();
         }
       } catch (error) {
