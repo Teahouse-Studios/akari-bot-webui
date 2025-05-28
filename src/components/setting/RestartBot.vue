@@ -41,7 +41,7 @@ export default {
       try {
         const response = await axios.post("/api/restart", {});
         if (response.status === 200) {
-          const loading = ElLoading.service({
+          ElLoading.service({
             fullscreen: true,
             text: this.t('setting.restart_bot.loading.text'),
           });
@@ -51,10 +51,9 @@ export default {
             try {
               const res = await axios.get("/api/");
               if (res.status === 200) {
-                loading.close();
                 window.location.reload();
               } else {
-                throw new Error("Not ready yet");
+                throw new Error("Not ready");
               }
             } catch (err) {
               if (Date.now() - startTime >= this.pollingTimeout) {
