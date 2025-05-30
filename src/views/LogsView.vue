@@ -123,13 +123,15 @@ export default {
         const enableHTTPS = config.enable_https;
         let baseUrl = config.api_url;
 
-        if (!/^https?:\/\//i.test(baseUrl)) {
+        if (!baseUrl) {
+          baseUrl = window.location.origin;
+        } else if (!/^https?:\/\//i.test(baseUrl)) {
           baseUrl = (enableHTTPS ? "https://" : "http://") + baseUrl;
         }
 
         const url = new URL(baseUrl);
         const wsProtocol = url.protocol === "https:" ? "wss:" : "ws:";
-        const wsUrl = `${wsProtocol}//${url.hostname}:${url.port}/ws/logs`;
+        const wsUrl = `${wsProtocol}//${url.hostname}${url.port ? `:${url.port}` : ""}/ws/logs`;
 
         this.websocket = new WebSocket(wsUrl);
 
