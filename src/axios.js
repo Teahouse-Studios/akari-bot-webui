@@ -5,7 +5,7 @@ const initAxios = async () => {
     const response = await fetch("/config.json");
     const config = await response.json();
 
-    const apiUrl = config.api_url || window.location.origin;
+    const apiUrl = config.api_url || window.location.hostname;
 
     axios.defaults.baseURL = apiUrl;
     axios.defaults.timeout = 50000;

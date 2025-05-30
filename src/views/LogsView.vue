@@ -124,7 +124,7 @@ export default {
         let baseUrl = config.api_url;
 
         if (!baseUrl) {
-          baseUrl = window.location.origin;
+          baseUrl = window.location.hostname;
         } else if (!/^https?:\/\//i.test(baseUrl)) {
           baseUrl = (enableHTTPS ? "https://" : "http://") + baseUrl;
         }
