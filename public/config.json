@@ -1,4 +1,5 @@
 {
+  "api_url": "http://127.0.0.1:6485",
   "locale": "zh_cn",
   "enable_https": false
 }

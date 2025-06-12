@@ -127,6 +127,7 @@ export default {
           this.userVerified = false;
           ElMessage.error("登录失败次数过多，请稍后再试");
         } else {
+          this.userVerified = null;
           ElMessage.error("请求失败：" + error.message);
         }
       }
