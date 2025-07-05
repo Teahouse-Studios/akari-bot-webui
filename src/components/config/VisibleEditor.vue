@@ -132,7 +132,8 @@ export default {
       addForm: { key: '', comment: '' },
       addFormRules: {
         key: [
-          { required: true, message: this.$t('config.input.key'), trigger: 'blur' }
+          { required: true, message: this.$t('config.validate.key'), trigger: 'blur' },
+          { pattern: /^[A-Za-z0-9_-]+$/, message: this.$t('config.validate.key_ascii'), trigger: 'blur' }
         ]
       },
       addSectionKey: '',
