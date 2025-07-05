@@ -10,6 +10,8 @@
             @input="handleSearch"
             clearable
           />
+        </div>
+        <div class="right-controls">
           <el-button
             class="log-refresh-button"
             @click="refreshLog"
@@ -18,8 +20,6 @@
           >
             <i class="mdi mdi-refresh"></i>
           </el-button>
-        </div>
-        <div class="right-controls">
           <el-switch
             v-model="autoScroll"
           />
@@ -343,8 +343,7 @@ export default {
   border: none;
   padding: 0;
   font-size: 24px !important;
-  margin-left: 10px;
-  margin-right: 5px;
+  margin-right: 10px;
   color: inherit;
   transition: color 0.3s ease;
   }

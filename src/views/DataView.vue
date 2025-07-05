@@ -4,13 +4,13 @@
       <el-button :type="activeCard === 'session' ? 'primary' : 'default'" @click="activeCard = 'session'"><i class="mdi mdi-forum"></i></el-button>
       <el-button :type="activeCard === 'user' ? 'primary' : 'default'" @click="activeCard = 'user'"><i class="mdi mdi-account"></i></el-button>
     </el-button-group>
+      <SessionManager
+        v-if="activeCard === 'session'"
+      />
 
-    <div v-if="activeCard === 'session'">
-      <SessionManager />
-    </div>
-    <div v-else>
-      <UserManager />
-    </div>
+      <UserManager
+        v-else 
+      />
   </div>
 </template>
 

@@ -1,7 +1,9 @@
 <template>
   <el-row :gutter="20">
     <el-col :span="10" :xs="24">
-      <el-card :body-style="{ height: '200px' }"
+      <el-card
+       :body-style="{ height: '200px' }"
+        shadow="never"
         v-loading="loading">
         <h3><i class="mdi mdi-robot-outline"></i> {{ $t("dashboard.server_info.bot.title") }}</h3>
         <p>
@@ -27,7 +29,9 @@
           }}</span>
         </p>
       </el-card>
-      <el-card :body-style="{ height: '160px' }"
+      <el-card
+       :body-style="{ height: '160px' }"
+        shadow="never"
         v-loading="loading">
         <h3><i class="mdi mdi-laptop"></i> {{ $t("dashboard.server_info.system.title") }}</h3>
         <p>
@@ -49,7 +53,9 @@
     </el-col>
 
     <el-col :span="14" :xs="24">
-      <el-card :body-style="{ height: '420px' }"
+      <el-card
+       :body-style="{ height: '420px' }"
+        shadow="never"
         v-loading="loading">
         <h3><i class="mdi mdi-memory"></i> {{ $t("dashboard.server_info.cpu.title") }}</h3>
         <p><strong class="data-title">{{ $t("dashboard.server_info.cpu.label.brand") }}</strong></p>
@@ -71,7 +77,7 @@
           >
         </p>
         <br />
-        <div class="memory-dashboards">
+        <div :class="['memory-dashboards', { leftAlign: dashboardOverflow, centerAlign: !dashboardOverflow }]">
           <el-progress
             type="dashboard"
             :percentage="cpu.cpu_percent ? cpu.cpu_percent.toFixed(1) : 0"
@@ -148,13 +154,17 @@ export default {
       },
       cancelTokenSource: axios.CancelToken.source(),
       loading: false,
+      dashboardOverflow: false,
       t
     };
   },
   mounted() {
-    this.fetchServerInfoData(this.selectedDays);
+    this.checkOverflow();
+    window.addEventListener('resize', this.checkOverflow);
+    this.fetchServerInfoData();
   },
   beforeUnmount() {
+    window.removeEventListener('resize', this.checkOverflow);
     this.cancelTokenSource.cancel("Component unmounted");
   },
   methods: {
@@ -210,13 +220,20 @@ export default {
         }
       }
     },
+    checkOverflow() {
+      this.$nextTick(() => {
+        const el = this.$el.querySelector('.memory-dashboards');
+        if (el) {
+          this.dashboardOverflow = el.scrollWidth > el.clientWidth;
+        }
+      });
+    },
   },
 };
 </script>
 
 <style scoped>
 .el-card {
-  box-shadow: none !important;
   margin-bottom: 20px;
   line-height: 1;
   white-space: nowrap;
@@ -255,6 +272,15 @@ export default {
 .memory-dashboards {
   display: flex;
   justify-content: center;
+  overflow-x: auto;
+}
+
+.memory-dashboards.centerAlign {
+  justify-content: center;
+}
+
+.memory-dashboards.leftAlign {
+  justify-content: flex-start;
 }
 
 .el-progress--dashboard {

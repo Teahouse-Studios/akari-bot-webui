@@ -1,5 +1,10 @@
 <template>
   <div class="editor-container" v-loading="loading">
+    <el-button-group class="mb-4">
+      <el-button :type="activeCard === 'visible' ? 'primary' : 'default'" @click="activeCard = 'visible'"><i class="mdi mdi-text-box-edit-outline"></i></el-button>
+      <el-button :type="activeCard === 'source' ? 'primary' : 'default'" @click="activeCard = 'source'"><i class="mdi mdi-code-brackets"></i></el-button>
+    </el-button-group>
+
     <el-tabs v-model="activeTab" @tab-click="handleTabClick">
       <el-tab-pane
         v-for="file in configFiles"
@@ -8,13 +13,17 @@
         :name="file"
       ></el-tab-pane>
     </el-tabs>
-    <div class="editor-body">
-      <codemirror
-        ref="editor"
-        v-model="editorContent"
-        :options="editorOptions"
-      ></codemirror>
-    </div>
+    <VisibleEditor
+      v-if="activeCard === 'visible'"
+      ref="visibleEditor"
+      v-model="editorContent"
+    />
+
+    <SourceEditor
+      v-else
+      ref="sourceEditor"
+      v-model="editorContent"
+    />
     <div class="editor-footer">
       <div class="editor-actions">
         <el-button type="warning" @click="resetConfig">
@@ -23,36 +32,44 @@
         <el-button type="success" @click="applyConfig">
           <i class="mdi mdi-content-save-outline"></i> {{ $t("button.apply") }}
         </el-button>
+        <div v-if="unsavedChanges" class="unsaved-warning">
+        <el-alert
+          :title="$t('config.alert.warning.unsaved')"
+          type="warning"
+          show-icon
+          :closable="false"
+        />
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <script>
+import { ref } from "vue";
 import axios from "@/axios";
-import { EditorView } from "@codemirror/view";
-import { basicSetup } from "codemirror";
-import { EditorState } from "@codemirror/state";
-import { oneDark } from "@codemirror/theme-one-dark";
+import VisibleEditor from "@/components/config/VisibleEditor.vue";
+import SourceEditor from "@/components/config/SourceEditor.vue";
 import { ElMessage } from 'element-plus';
 import { useI18n } from 'vue-i18n';
 
 export default {
   name: "ConfigView",
+  components: { 
+    VisibleEditor,
+    SourceEditor
+  },
   data() {
     const { t } = useI18n();
+    const activeCard = ref('visible');
 
     return {
+      activeCard,
       activeTab: "",
       configFiles: [],
+      unsavedChanges: false,
+      initialContent: "",
       editorContent: "",
-      editorView: null,
-      editorOptions: {
-        lineWrapping: true,
-        theme: oneDark,
-        lineNumbers: true,
-        scrollbarStyle: "native",
-      },
       fileContents: {},
       cancelTokenSource: axios.CancelToken.source(),
       loading: false,
@@ -61,23 +78,14 @@ export default {
   },
   mounted() {
     this.fetchConfigFiles();
-
-    const state = EditorState.create({
-      doc: this.editorContent,
-      extensions: [
-        basicSetup,
-        oneDark,
-        EditorView.updateListener.of(this.handleEditorChange),
-      ],
-    });
-
-    this.editorView = new EditorView({
-      state,
-      parent: this.$refs.editor,
-    });
   },
   beforeUnmount() {
     this.cancelTokenSource.cancel("Component unmounted");
+  },
+  watch: {
+    editorContent(newVal) {
+      this.unsavedChanges = newVal !== this.initialContent;
+    }
   },
   methods: {
     async fetchConfigFiles() {
@@ -114,24 +122,14 @@ export default {
         });
         this.fileContents[fileName] = response.data.content;
         this.editorContent = response.data.content;
-        this.updateEditorContent();
+        this.initialContent = response.data.content;
+        this.unsavedChanges = false;
       } catch (error) {
         if (axios.isCancel(error)) {
           console.log("Request canceled");
         } else {
           ElMessage.error(this.t('message.error.fetch') + error.message);
         }
-      }
-    },
-    resetConfig() {
-      this.fetchConfig(this.activeTab, true);
-    },
-    async applyConfig() {
-      try {
-        await axios.post(`/api/config/${this.activeTab}`, { content: this.editorContent });
-        ElMessage.success(this.t('config.message.save.success'));
-      } catch (error) {
-        ElMessage.error(this.t('message.error.fetch') + error.message);
       }
     },
     updateEditorContent() {
@@ -155,40 +153,31 @@ export default {
         this.fileContents[this.activeTab] = newContent;
       }
     },
+    resetConfig() {
+      this.fetchConfig(this.activeTab, true);
+      this.unsavedChanges = false;
+    },
+    async applyConfig() {
+      try {
+        await axios.post(`/api/config/${this.activeTab}`, { content: this.editorContent });
+        ElMessage.success(this.t('config.message.save.success'));
+        this.unsavedChanges = false;
+      } catch (error) {
+        ElMessage.error(this.t('message.error.fetch') + error.message);
+      }
+    }
   },
 };
 </script>
 
 <style scoped>
+.mb-4 {
+  margin-bottom: 1rem;
+}
+
 .editor-container {
   display: flex;
   flex-direction: column;
-}
-
-.editor-actions {
-  display: flex;
-  justify-content: flex-end;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.editor-body {
-  flex-grow: 1;
-  height: 60vh;
-  overflow: auto;
-  border-radius: 8px;
-}
-
-::v-deep(.cm-editor) {
-  height: 100%;
-}
-
-::v-deep(.cm-gutters) {
-  font-family: "Consolas", "Noto Sans Mono", "Courier New", Courier, monospace;
-}
-
-::v-deep(.cm-content) {
-  font-family: "Consolas", "Noto Sans Mono", "Courier New", Courier, monospace;
 }
 
 .editor-footer {
@@ -197,4 +186,13 @@ export default {
   padding-top: 16px;
   flex-wrap: nowrap;
 }
+
+.unsaved-warning {
+  margin-top: 12px;
+}
+
+.editor-actions .el-button i {
+margin-right: 8px;
+}
+
 </style>

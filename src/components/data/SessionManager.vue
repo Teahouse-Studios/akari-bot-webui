@@ -1,10 +1,11 @@
 <template>
-  <el-card class="session-card">
+  <el-card class="session-card" shadow="never">
     <div class="header-container">
       <h3>{{ $t("data.session.title") }}</h3>
       <el-button
         @click="refreshData"
         type="primary"
+        size="small"
         style="float: right; margin-left: 10px;"
       ><i class="mdi mdi-refresh"></i> {{ $t("data.button.refresh") }}</el-button>
     </div>
@@ -110,8 +111,8 @@
       </el-table-column>
       <el-table-column :label="$t('data.session.table.operation')" min-width="240">
         <template #default="{ row }">
-          <el-button size="small" type="warning" @click="editTarget(row)"><i class="mdi mdi-pencil"></i> {{ $t("data.button.edit") }}</el-button>
-          <el-button size="small" type="danger" @click="confirmDelete(row)"><i class="mdi mdi-delete"></i> {{ $t("data.button.delete") }}</el-button>
+          <el-button size="small" type="warning" @click="editTarget(row)"><i class="mdi mdi-pencil"></i> {{ $t("button.edit") }}</el-button>
+          <el-button size="small" type="danger" @click="confirmDelete(row)"><i class="mdi mdi-delete"></i> {{ $t("button.delete") }}</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -457,7 +458,6 @@ pre {
 }
 
 .el-card {
-  box-shadow: none !important;
   margin-bottom: 20px;
   line-height: 1;
   white-space: nowrap;

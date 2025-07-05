@@ -46,6 +46,7 @@ import LoginModal from "./components/LoginModal.vue";
 import SuggestSetPasswordModal from "./components/SuggestSetPasswordModal.vue";
 import { ElMessage } from 'element-plus';
 import Cookies from "js-cookie";
+import { useI18n } from 'vue-i18n';
 
 export default {
   components: {
@@ -55,6 +56,8 @@ export default {
     SuggestSetPasswordModal,
   },
   data() {
+    const { t } = useI18n();
+
     return {
       currentView: null,
       userVerified: null,
@@ -62,6 +65,7 @@ export default {
       showSuggestPasswordModal: false,
       windowWidth: window.innerWidth,
       cancelTokenSource: axios.CancelToken.source(),
+      t
     };
   },
   computed: {
@@ -125,10 +129,10 @@ export default {
           this.userVerified = false;
         } else if (error.response?.status === 403) {
           this.userVerified = false;
-          ElMessage.error("登录失败次数过多，请稍后再试");
+          ElMessage.error(this.t("login.message.abuse"));
         } else {
           this.userVerified = null;
-          ElMessage.error("请求失败：" + error.message);
+          ElMessage.error(this.t("message.error.fetch") + error.message);
         }
       }
     },
