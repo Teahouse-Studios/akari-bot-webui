@@ -1,6 +1,6 @@
 <template>
   <div class="editor-container" v-loading="loading">
-    <el-button-group class="mb-4">
+    <el-button-group class="active-button-group">
       <el-button :type="activeCard === 'visible' ? 'primary' : 'default'" @click="activeCard = 'visible'"><i class="mdi mdi-text-box-edit-outline"></i></el-button>
       <el-button :type="activeCard === 'source' ? 'primary' : 'default'" @click="activeCard = 'source'"><i class="mdi mdi-code-brackets"></i></el-button>
     </el-button-group>
@@ -26,10 +26,16 @@
     />
     <div class="editor-footer">
       <div class="editor-actions">
-        <el-button type="warning" @click="resetConfig">
+        <el-button
+          type="warning"
+          :disabled="!unsavedChanges"
+          @click="resetConfig">
           <i class="mdi mdi-restart"></i> {{ $t("button.reset") }}
         </el-button>
-        <el-button type="success" @click="applyConfig">
+        <el-button
+          type="success"
+          :disabled="!unsavedChanges"
+          @click="applyConfig">
           <i class="mdi mdi-content-save-outline"></i> {{ $t("button.apply") }}
         </el-button>
         <div v-if="unsavedChanges" class="unsaved-warning">
@@ -112,6 +118,8 @@ export default {
     async fetchConfig(fileName, force = false) {
       if (!force && this.fileContents[fileName]) {
         this.editorContent = this.fileContents[fileName];
+        this.initialContent = this.fileContents[fileName];
+        this.unsavedChanges = false;
         this.updateEditorContent();
         return;
       }
@@ -146,13 +154,6 @@ export default {
     handleTabClick(pane) {
       this.fetchConfig(pane.paneName);
     },
-    handleEditorChange(viewUpdate) {
-      const newContent = viewUpdate.state.doc.toString();
-      if (this.editorContent !== newContent) {
-        this.editorContent = newContent;
-        this.fileContents[this.activeTab] = newContent;
-      }
-    },
     resetConfig() {
       this.fetchConfig(this.activeTab, true);
       this.unsavedChanges = false;
@@ -171,8 +172,12 @@ export default {
 </script>
 
 <style scoped>
-.mb-4 {
+.active-button-group {
   margin-bottom: 1rem;
+}
+
+.active-button-group .el-button {
+  font-size: 18px;
 }
 
 .editor-container {

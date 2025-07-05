@@ -1,6 +1,6 @@
 <template>
   <div>
-    <el-button-group class="mb-4">
+    <el-button-group class="active-button-group">
       <el-button :type="activeCard === 'session' ? 'primary' : 'default'" @click="activeCard = 'session'"><i class="mdi mdi-forum"></i></el-button>
       <el-button :type="activeCard === 'user' ? 'primary' : 'default'" @click="activeCard = 'user'"><i class="mdi mdi-account"></i></el-button>
     </el-button-group>
@@ -34,7 +34,11 @@ export default {
 </script>
 
 <style scoped>
-.mb-4 {
+.active-button-group {
   margin-bottom: 1rem;
+}
+
+.active-button-group .el-button {
+  font-size: 18px;
 }
 </style>

@@ -21,6 +21,26 @@
                 @change="updateTomlFromParsed"
               />
               <div class="type-selector">
+              <span>
+                <el-tooltip
+                  v-if="item.comment"
+                  effect="dark"
+                  :content="item.comment"
+                  placement="top"
+                >
+                  <i
+                    class="mdi mdi-help-circle-outline help-icon"
+                    style="cursor:pointer"
+                    @click="openEditCommentDialog(sectionKey, key, item)"
+                  />
+                </el-tooltip>
+                <i
+                  v-else
+                  class="mdi mdi-plus-circle-outline help-icon"
+                  style="cursor:pointer"
+                  @click="openEditCommentDialog(sectionKey, key, item)"
+                />
+              </span>
                 <span>{{ $t("config.select.type") }}</span>
                 <el-select
                   v-model="item.type"
@@ -34,26 +54,6 @@
                   <el-option value="num" label="num" />
                   <el-option value="array" label="array" />
                 </el-select>
-                <span>
-                  <el-tooltip
-                    v-if="item.comment"
-                    effect="dark"
-                    :content="item.comment"
-                    placement="top"
-                  >
-                    <i
-                      class="mdi mdi-help-circle-outline help-icon"
-                      style="cursor:pointer"
-                      @click="openEditCommentDialog(sectionKey, key, item)"
-                    />
-                  </el-tooltip>
-                  <i
-                    v-else
-                    class="mdi mdi-plus-circle-outline help-icon"
-                    style="cursor:pointer"
-                    @click="openEditCommentDialog(sectionKey, key, item)"
-                  />
-                </span>
                 <el-button
                   type="danger"
                   size="small"
@@ -274,10 +274,14 @@ confirmAddConfig() {
               value = valueStr === 'true';
               type = 'bool';
             } else if (valueStr[0] === '[' && valueStr[valueStr.length - 1] === ']') {
-              const arr = valueStr.slice(1, -1).split(',').map(s => s.trim().replace(/^"|"$/g, '').replace(/^'|'$/g, ''));
+              const arr = valueStr
+                .slice(1, -1)
+                .split(',')
+                .map(s => s.trim().replace(/^"|"$/g, '').replace(/^'|'$/g, ''))
+                .filter(s => s.trim() !== '');
               value = valueStr.length > 2 ? arr : [];
               type = 'array';
-            } else if (/^-?\d+(\.\d+)?$/.test(valueStr)) {
+            } else if (/^[+-]?\d+(\.\d+)?$/.test(valueStr) && !/^[+-]?\d*\.$/.test(valueStr) && !/^\.[0-9]+$/.test(valueStr)) {
               value = parseFloat(valueStr);
               type = 'num';
             } else if ((valueStr[0] === '"' && valueStr[valueStr.length - 1] === '"') ||
@@ -356,8 +360,14 @@ confirmAddConfig() {
             case 'array':
               valueStr = `[${item.value.map(v => `"${v}"`).join(', ')}]`;
               break;
-            default:
+            case 'str':
               valueStr = `"${String(item.value)}"`;
+              break;
+            case null:
+              valueStr = item.value === null ? '"<Replace me>"' : `"${String(item.value)}"`;
+              break;
+            default:
+              valueStr = '"<Replace me>"';
               break;
           }
 
@@ -396,8 +406,14 @@ confirmAddConfig() {
             case 'array':
               valueStr = `[${item.value.map(v => `"${v}"`).join(', ')}]`;
               break;
-            default:
+            case 'str':
               valueStr = `"${String(item.value)}"`;
+              break;
+            case null:
+              valueStr = item.value === null ? '"<Replace me>"' : `"${String(item.value)}"`;
+              break;
+            default:
+              valueStr = '"<Replace me>"';
               break;
           }
           const commentStr = item.comment ? ` # ${item.comment}` : '';
