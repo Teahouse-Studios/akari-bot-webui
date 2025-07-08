@@ -1,71 +1,74 @@
 <template>
   <el-card class="editor-body" shadow="never">
-    <el-form label-width="auto">
-      <div v-for="(section, sectionKey) in parsedSections" :key="sectionKey">
-        <div style="display: flex; align-items: center; gap: 8px;">
-          <h2>{{ sectionKey }}</h2>
-          <el-button
-            type="primary"
-            size="small"
-            @click="openAddDialog(sectionKey)"
-            style="margin-bottom: 4px;"
-          ><i class="mdi mdi-plus-box-outline"></i> {{ $t("button.add") }}</el-button>
-        </div>
-        <div v-for="(item, key) in section.items" :key="key">
-          <el-form-item :label="key">
-            <div class="form-item-content">
-              <component
-                :is="getComponent(item.type)"
-                v-model="item.value"
-                v-bind="getComponentProps(item.type)"
-                @change="updateTomlFromParsed"
-              />
-              <div class="type-selector">
-              <span>
-                <el-tooltip
-                  v-if="item.comment"
-                  effect="dark"
-                  :content="item.comment"
-                  placement="top"
-                >
+    <div v-if="Object.keys(parsedSections).length">
+      <el-form label-width="auto">
+        <div v-for="(section, sectionKey) in parsedSections" :key="sectionKey">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <h2>{{ sectionKey }}</h2>
+            <el-button
+              type="primary"
+              size="small"
+              @click="openAddDialog(sectionKey)"
+              style="margin-bottom: 4px;"
+            ><i class="mdi mdi-plus-box-outline"></i> {{ $t("button.add") }}</el-button>
+          </div>
+          <div v-for="(item, key) in section.items" :key="key">
+            <el-form-item :label="key">
+              <div class="form-item-content">
+                <component
+                  :is="getComponent(item.type)"
+                  v-model="item.value"
+                  v-bind="getComponentProps(item.type)"
+                  @change="updateTomlFromParsed"
+                />
+                <div class="type-selector">
+                <span>
+                  <el-tooltip
+                    v-if="item.comment"
+                    effect="dark"
+                    :content="item.comment"
+                    placement="top"
+                  >
+                    <i
+                      class="mdi mdi-help-circle-outline help-icon"
+                      style="cursor:pointer"
+                      @click="openEditCommentDialog(sectionKey, key, item)"
+                    />
+                  </el-tooltip>
                   <i
-                    class="mdi mdi-help-circle-outline help-icon"
+                    v-else
+                    class="mdi mdi-plus-circle-outline help-icon"
                     style="cursor:pointer"
                     @click="openEditCommentDialog(sectionKey, key, item)"
                   />
-                </el-tooltip>
-                <i
-                  v-else
-                  class="mdi mdi-plus-circle-outline help-icon"
-                  style="cursor:pointer"
-                  @click="openEditCommentDialog(sectionKey, key, item)"
-                />
-              </span>
-                <span>{{ $t("config.select.type") }}</span>
-                <el-select
-                  v-model="item.type"
-                  size="small"
-                  style="width: 80px"
-                  placeholder="null"
-                  @change="onTypeChange(item)"
-                >
-                  <el-option value="str" label="str" />
-                  <el-option value="bool" label="bool" />
-                  <el-option value="num" label="num" />
-                  <el-option value="array" label="array" />
-                </el-select>
-                <el-button
-                  type="danger"
-                  size="small"
-                  style="margin-left: 8px;"
-                  @click="deleteConfig(sectionKey, key)"
-                ><i class="mdi mdi-delete-outline"></i> {{ $t("button.delete") }}</el-button>
+                </span>
+                  <span>{{ $t("config.select.type") }}</span>
+                  <el-select
+                    v-model="item.type"
+                    size="small"
+                    style="width: 80px"
+                    placeholder="null"
+                    @change="onTypeChange(item)"
+                  >
+                    <el-option value="str" label="str" />
+                    <el-option value="bool" label="bool" />
+                    <el-option value="num" label="num" />
+                    <el-option value="array" label="array" />
+                  </el-select>
+                  <el-button
+                    type="danger"
+                    size="small"
+                    style="margin-left: 8px;"
+                    @click="deleteConfig(sectionKey, key)"
+                  ><i class="mdi mdi-delete-outline"></i> {{ $t("button.delete") }}</el-button>
+                </div>
               </div>
-            </div>
-          </el-form-item>
+            </el-form-item>
+          </div>
         </div>
-      </div>
-    </el-form>
+      </el-form>
+    </div>
+      <el-empty v-else />
     <el-dialog
       :title="$t('config.session.title.add_config')"
       v-model="addDialogVisible"
@@ -459,7 +462,6 @@ confirmAddConfig() {
 
 <style scoped>
 .editor-body {
-  min-height: 60vh;
   max-width: 100%;
   overflow-x: auto;
   white-space: nowrap;

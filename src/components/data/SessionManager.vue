@@ -461,7 +461,6 @@ pre {
   margin-bottom: 20px;
   line-height: 1;
   white-space: nowrap;
-  min-height: 60vh;
 }
 
 .el-button i {
