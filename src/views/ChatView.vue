@@ -540,7 +540,7 @@ transition: color 0.3s ease;
 }
 
 .chat-message.user {
-  background-color: #0091ff;
+  background-color: var(--el-color-primary);
   color: white;
   align-self: flex-end;
   border-top-right-radius: 0;
