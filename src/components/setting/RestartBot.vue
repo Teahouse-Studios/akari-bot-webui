@@ -1,5 +1,5 @@
 <template>
-  <h3>{{ $t('setting.restart_bot.title') }}</h3>
+  <h3><i class="mdi mdi-restart"></i> {{ $t('setting.restart_bot.title') }}</h3>
   <el-button type="danger" @click="handleRestart">
     {{ $t('setting.restart_bot.button.restart') }}
   </el-button>

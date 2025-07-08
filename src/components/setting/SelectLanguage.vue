@@ -1,5 +1,5 @@
 <template>
-  <h3>{{ $t('setting.select_language.title') }}</h3>
+  <h3><i class="mdi mdi-translate"></i> {{ $t('setting.select_language.title') }}</h3>
     <el-select
       v-model="currentLang"
       @change="changeLanguage"
@@ -20,8 +20,8 @@
     data() {
       const { t } = useI18n();
       return {
-        t,
         currentLang: localStorage.getItem("language") || "zh_cn",
+        t
       };
     },
     methods: {

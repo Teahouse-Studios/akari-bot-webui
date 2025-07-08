@@ -1,7 +1,7 @@
 <template>
   <el-card class="session-card" shadow="never">
     <div class="header-container">
-      <h3>{{ $t("data.session.title") }}</h3>
+      <h3><i class="mdi mdi-forum"></i> {{ $t("data.session.title") }}</h3>
       <el-button
         @click="refreshData"
         type="primary"
@@ -457,10 +457,11 @@ pre {
   white-space: pre-wrap;
 }
 
-.el-card {
+.session-card {
   margin-bottom: 20px;
   line-height: 1;
   white-space: nowrap;
+  min-height: 60vh;
 }
 
 .el-button i {

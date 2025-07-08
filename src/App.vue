@@ -77,6 +77,7 @@ export default {
     this.updateSidebarVisibility();
     window.addEventListener("resize", this.updateSidebarVisibility);
     this.initializeUserVerification();
+    this.observeThemeChange();
   },
   watch: {
     "$route.name": "loadCurrentView",
@@ -198,6 +199,64 @@ export default {
           this.currentView = module.default;
         });
       }
+    },
+      applyThemeColor(color) {
+      if (!color) return;
+      const isDark = document.documentElement.classList.contains('dark');
+      const white = isDark ? '#000000' : '#ffffff';
+      const black = isDark ? '#ffffff' : '#000000';
+
+      const mix = (color, weight, mixWith = '#ffffff') => {
+        const d2h = (d) => d.toString(16).padStart(2, '0');
+        const h2d = (h) => parseInt(h, 16);
+
+        const col1 = color.slice(1);
+        const col2 = mixWith.slice(1);
+
+        const r = Math.round(h2d(col1.slice(0, 2)) * (1 - weight) + h2d(col2.slice(0, 2)) * weight);
+        const g = Math.round(h2d(col1.slice(2, 4)) * (1 - weight) + h2d(col2.slice(2, 4)) * weight);
+        const b = Math.round(h2d(col1.slice(4, 6)) * (1 - weight) + h2d(col2.slice(4, 6)) * weight);
+
+        return `#${d2h(r)}${d2h(g)}${d2h(b)}`;
+      };
+
+      const root = document.documentElement;
+      root.style.setProperty('--el-color-primary', color);
+      root.style.setProperty('--el-color-primary-light-3', mix(color, 0.3, white));
+      root.style.setProperty('--el-color-primary-light-5', mix(color, 0.5, white));
+      root.style.setProperty('--el-color-primary-light-7', mix(color, 0.7, white));
+      root.style.setProperty('--el-color-primary-light-8', mix(color, 0.8, white));
+      root.style.setProperty('--el-color-primary-light-9', mix(color, 0.9, white));
+      root.style.setProperty('--el-color-primary-dark-2', mix(color, 0.2, black));
+    },
+
+    observeThemeChange() {
+      const savedColor = localStorage.getItem('themeColor');
+      if (savedColor) {
+        this.applyThemeColor(savedColor);
+      }
+
+      window.addEventListener('storage', (event) => {
+        if (event.key === 'themeColor') {
+          const color = event.newValue || '#edaab3'; // fallback
+          this.applyThemeColor(color);
+        }
+      });
+
+      window.addEventListener('theme-change', () => {
+        const color = localStorage.getItem('themeColor') || '#edaab3';
+        this.applyThemeColor(color);
+      });
+
+      const observer = new MutationObserver(() => {
+        const color = localStorage.getItem('themeColor') || '#edaab3';
+        this.applyThemeColor(color);
+      });
+
+      observer.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ['class'],
+      });
     },
   },
 };

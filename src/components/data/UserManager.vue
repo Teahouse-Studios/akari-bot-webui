@@ -1,7 +1,7 @@
 <template>
-    <el-card class="session-card" shadow="never">
+    <el-card class="user-card" shadow="never">
       <div class="header-container">
-        <h3>{{ $t("data.user.title") }}</h3>
+        <h3><i class="mdi mdi-account"></i> {{ $t("data.user.title") }}</h3>
         <el-button
           @click="refreshData"
           type="primary"
@@ -308,10 +308,11 @@ pre {
   white-space: pre-wrap;
 }
 
-.el-card {
+.user-card {
   margin-bottom: 20px;
   line-height: 1;
   white-space: nowrap;
+  min-height: 60vh;
 }
 
 .el-button i {

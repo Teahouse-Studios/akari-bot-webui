@@ -382,6 +382,10 @@ export default {
   background-color: transparent;
 }
 
+.log-level-button:hover {
+  background-color: transparent;
+}
+
 .log-level-button + .log-level-button {
   margin-left: 5px;
 }
@@ -400,6 +404,7 @@ export default {
 .log-level-button.debug.active {
   color: white;
   background-color: #3b8ec9;
+  border-color: #3b8ec9;
 }
 
 .log-level-button.info {
@@ -410,6 +415,7 @@ export default {
 .log-level-button.info.active {
   color: #333;
   background-color: #fff;
+  border-color: #fff;
 }
 
 .log-level-button.success {
@@ -420,6 +426,7 @@ export default {
 .log-level-button.success.active {
   color: #333;
   background-color: #23d18b;
+  border-color: #23d18b;
 }
 .log-level-button.warning {
   color: #f5f543;
@@ -429,6 +436,7 @@ export default {
 .log-level-button.warning.active {
   color: #333;
   background-color: #f5f543;
+  border-color: #f5f543;
 }
 
 .log-level-button.error {
@@ -439,10 +447,12 @@ export default {
 .log-level-button.error.active {
   color: #fff;
   background-color: #f14c4c;
+  border-color: #f14c4c;
 }
 
-.log-level-button {
+.log-level-button.critical {
   color: #cd3131;
+  background-color: #fff;
   border: 2px solid #cd3131;
 }
 

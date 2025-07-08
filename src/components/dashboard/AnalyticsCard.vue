@@ -232,6 +232,10 @@ export default {
       }).replace(',', '');
     },
 
+    getPrimaryColor() {
+      return getComputedStyle(document.documentElement).getPropertyValue('--el-color-primary').trim();
+    },
+
     renderChart() {
       this.$nextTick(() => {
         if (this.chartInstance) {
@@ -241,8 +245,10 @@ export default {
         const chartDom = this.$refs.chartContainer;
         if (!chartDom || chartDom.offsetWidth === 0) return;
 
+        const primaryColor = this.getPrimaryColor();
         const chart = echarts.init(this.$refs.chartContainer);
         const option = {
+          color: [primaryColor],
           tooltip: { trigger: 'axis' },
           dataZoom: [
             { type: 'slider', start: 0, end: 100 },
