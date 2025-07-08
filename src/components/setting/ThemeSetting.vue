@@ -59,7 +59,8 @@ export default {
     },
     applyCustomColor(color) {
       if (!color) {
-        localStorage.setItem('isCustomTheme', 'false');
+        localStorage.removeItem('isCustomTheme', 'false');
+        localStorage.removeItem('themeColor', '#edaab3');
       } else {
         localStorage.setItem('isCustomTheme', 'true');
         localStorage.setItem('themeColor', color);
