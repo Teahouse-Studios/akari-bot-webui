@@ -126,6 +126,11 @@ export default {
   align-items: center;
 }
 
+.header-right {
+  display: flex;
+  align-items: center;
+}
+
 .logo {
   font-size: 22px;
   font-weight: bold;

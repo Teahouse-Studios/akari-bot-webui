@@ -331,9 +331,7 @@ export default {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 60px;
-  margin: 20px 0;
-  margin-bottom: 0;
+  gap: 20px;
 }
 
 .data-group {
