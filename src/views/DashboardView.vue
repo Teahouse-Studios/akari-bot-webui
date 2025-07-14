@@ -21,7 +21,19 @@ export default {
     AnalyticsCard,
     ServerInfoCard
   },
-methods: {
+  data() {
+    return {
+      loading: false,
+      refreshInterval: null
+    }
+  },
+  mounted() {
+    this.startAutoRefresh();
+  },
+  beforeUnmount() {
+    this.clearAutoRefresh();
+  },
+  methods: {
     refreshData() {
       this.loading = true;
       this.$refs.serverInfoCard.fetchServerInfoData().finally(() => {
@@ -30,6 +42,22 @@ methods: {
       if (this.$refs.analyticsCard) {
         const selectedDays = this.$refs.analyticsCard.selectedDays;
         this.$refs.analyticsCard.fetchAnalyticsData(selectedDays);
+      }
+      this.resetAutoRefresh();
+    },
+    startAutoRefresh() {
+      this.refreshInterval = setInterval(() => {
+        this.refreshData();
+      }, 3600000);
+    },
+    resetAutoRefresh() {
+      this.clearAutoRefresh();
+      this.startAutoRefresh();
+    },
+    clearAutoRefresh() {
+      if (this.refreshInterval) {
+        clearInterval(this.refreshInterval);
+        this.refreshInterval = null;
       }
     }
   }
