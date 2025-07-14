@@ -36,7 +36,6 @@
     "config.key": "Key",
     "config.message.error.duplicated": "Configuration already exists",
     "config.message.save.success": "Configuration updated successfully",
-    "config.select.type": "Type: ",
     "config.session.title.add_config": "Add Configuration",
     "config.session.title.edit_comment": "Edit comment",
     "config.validate.key": "Please enter the config key",

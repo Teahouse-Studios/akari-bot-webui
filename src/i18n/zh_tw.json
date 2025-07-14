@@ -36,7 +36,6 @@
     "config.key": "鍵值",
     "config.message.error.duplicated": "配置已存在",
     "config.message.save.success": "設定更新成功",
-    "config.select.type": "類型：",
     "config.session.title.add_config": "添加設定",
     "config.session.title.edit_comment": "編輯註解",
     "config.validate.key": "請输入鍵值",

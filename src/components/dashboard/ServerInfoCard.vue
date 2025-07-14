@@ -236,12 +236,10 @@ export default {
 .el-card {
   margin-bottom: 20px;
   line-height: 1;
-  white-space: nowrap;
 }
 
 .data-text {
   color: #666;
-  text-overflow: ellipsis;
 }
 
 .dark .data-text {

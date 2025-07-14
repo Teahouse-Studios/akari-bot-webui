@@ -42,7 +42,6 @@
                     @click="openEditCommentDialog(sectionKey, key, item)"
                   />
                 </span>
-                  <span>{{ $t("config.select.type") }}</span>
                   <el-select
                     v-model="item.type"
                     size="small"

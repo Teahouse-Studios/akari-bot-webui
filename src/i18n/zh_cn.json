@@ -36,7 +36,6 @@
     "config.key": "键名",
     "config.message.error.duplicated": "配置项已存在",
     "config.message.save.success": "配置更新成功",
-    "config.select.type": "类型：",
     "config.session.title.add_config": "添加配置项",
     "config.session.title.edit_comment": "编辑注释",
     "config.validate.key": "请输入键名",
