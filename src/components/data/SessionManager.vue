@@ -89,7 +89,7 @@
           ><i class="mdi mdi-eye"></i> {{ $t("data.button.view") }}</el-button>
         </template>
       </el-table-column>
-      <el-table-column :label="$t('data.table.status')" min-width="180">
+      <el-table-column :label="$t('data.table.status')" min-width="220">
         <template #default="{ row }">
           <el-tag type="warning" v-if="row.muted">{{ $t("data.session.tag.muted") }}</el-tag>
           <el-tag type="danger" v-if="row.blocked" style="margin-left: 5px;">{{ $t("data.session.tag.blocked") }}</el-tag>
