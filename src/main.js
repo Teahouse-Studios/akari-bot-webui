@@ -8,6 +8,7 @@ import "@mdi/font/css/materialdesignicons.css";
 import zh_cn from './i18n/zh_cn.json';
 import zh_tw from './i18n/zh_tw.json';
 import en_us from './i18n/en_us.json';
+import ja_jp from './i18n/ja_jp.json';
 import './styles/theme-akari/var.scss'
 import './styles/theme-akari/dark/var.css'
 
@@ -24,7 +25,8 @@ fetch('/config.json')
       messages: {
         zh_cn,
         zh_tw,
-        en_us
+        en_us,
+        ja_jp
       }
     });
 

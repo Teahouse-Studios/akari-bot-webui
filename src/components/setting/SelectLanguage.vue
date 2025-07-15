@@ -9,6 +9,7 @@
       <el-option label="简体中文" value="zh_cn" />
       <el-option label="繁體中文" value="zh_tw" />
       <el-option label="English" value="en_us" />
+      <el-option label="日本語" value="ja_jp" />
     </el-select>
   </template>
   
