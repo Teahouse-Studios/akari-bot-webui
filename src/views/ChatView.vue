@@ -58,7 +58,6 @@
 
       <div v-for="(msg, idx) in messages" :key="msg.id || idx" class="chat-message" :class="msg.from" :data-id="msg.id">
         <div v-html="msg.html" @click="handleMarkdownClick"></div>
-        <div v-if="debug" class="debug-uuid">{{ msg.id }}</div>
       </div>
     </div>
 
@@ -99,7 +98,6 @@ import axios from "axios";
 import { ElMessage, ElMessageBox } from "element-plus";
 import MarkdownIt from "markdown-it";
 import linkAttributes from "markdown-it-link-attributes";
-import { v4 as uuidv4 } from 'uuid';
 import { useI18n } from 'vue-i18n';
 
 export default {
@@ -146,7 +144,6 @@ export default {
       isMobileView: window.innerWidth < 1024,
       previewImageSrc: "",
       cancelTokenSource: axios.CancelToken.source(),
-      debug: process.env.VUE_APP_DEBUG === "true",
       md,
       t
     };
@@ -188,7 +185,6 @@ export default {
               from: "bot",
               text: this.renderResponse(data.message),
               html: this.renderMarkdown(this.renderResponse(data.message)),
-              id: data.id || uuidv4()
             });
             
             this.scrollToBottom();
@@ -231,17 +227,14 @@ export default {
       const text = this.inputText.trim();
       if (!text) return;
 
-      const uuid = uuidv4();
       this.messages.push({
         from: "user",
         text: text,
-        html: this.renderMarkdown(text),
-        id: uuid
+        html: this.renderMarkdown(text)
       });
       this.websocket?.send(JSON.stringify({
         action: "send",
-        message: [{ type: "text", content: text }],
-        id: uuid
+        message: [{ type: "text", content: text }]
       }));
       this.inputText = "";
       this.scrollToBottom();
@@ -556,12 +549,6 @@ transition: color 0.3s ease;
 .dark .chat-message.bot {
   background-color: #333;
   color: white;
-}
-
-.debug-uuid {
-  margin-top: 4px;
-  font-size: 10px;
-  color: #666;
 }
 
 .send-box {
