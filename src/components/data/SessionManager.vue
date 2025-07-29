@@ -370,7 +370,7 @@ export default {
       try {
         const response = await axios.get('/api/modules_list');
         if (response.status === 200 && response.data.modules) {
-          this.allModules = Object.keys(response.data.modules);
+          this.allModules = Object.values(response.data.modules);
         }
       } catch (error) {
         if (axios.isCancel(error)) {
