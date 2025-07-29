@@ -160,7 +160,7 @@ export default {
     },
     async applyConfig() {
       try {
-        await axios.post(`/api/config/${this.activeTab}`, { content: this.editorContent });
+        await axios.post(`/api/config/${this.activeTab}/edit`, { content: this.editorContent });
         ElMessage.success(this.t('config.message.save.success'));
         this.unsavedChanges = false;
       } catch (error) {
