@@ -110,15 +110,12 @@ export default {
     },
     async checkPassword() {
       try {
-        const response = await axios.post("/api/auth", {});
+        const response = await axios.get("/api/check-password", {});
         if (response.status === 200) {
           this.userVerified = true;
-
-          const noPassword = response.data.no_password;
-          localStorage.setItem("noPassword", JSON.stringify(response.data.no_password));
-          
+          localStorage.setItem("noPassword", "true");
           const promptDisabled = localStorage.getItem("noPasswordPromptDisabled") === "true";
-          if (noPassword && !promptDisabled) {
+          if (!promptDisabled) {
             this.showSuggestPasswordModal = true;
           }
 
