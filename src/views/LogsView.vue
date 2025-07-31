@@ -317,7 +317,7 @@ export default {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
   gap: 10px;
 }
 
@@ -353,6 +353,10 @@ export default {
   color: #888;
 }
 
+.auto-scroll-label {
+  margin-left: 5px;
+}
+
 .dark .log-refresh-button:hover {
   background-color: #555;
   color: #aaa;
@@ -366,8 +370,11 @@ export default {
   margin-right: 10px;
 }
 
-.auto-scroll-label {
-  margin-left: 5px;
+@media (max-width: 384px) {
+  .right-controls {
+    width: 100%;
+    justify-content: flex-start;
+  }
 }
 
 .filter-bottom-row {

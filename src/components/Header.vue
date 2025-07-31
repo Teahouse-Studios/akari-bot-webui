@@ -10,7 +10,7 @@
       </el-button>
       <div class="logo">
         <img src="@/assets/akaribot_logo.png" alt="Logo" class="logo-image" />
-        <span class="web-ui-text">WebUI </span>
+        <span class="web-ui-text" v-if="screenWidth >= 384">WebUI</span>
       </div>
     </div>
 

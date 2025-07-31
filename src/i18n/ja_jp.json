@@ -124,7 +124,7 @@
     "login.message.success": "ログインに成功しました",
     "login.title": "続行するにはログインしてください",
     "logs.button.refresh": "ログ更新",
-    "logs.input.search": "ログを検索……",
+    "logs.input.search": "ログを検索してください……",
     "logs.switch.auto_scroll": "自動スクロール",
     "message.error.connect": "接続に失敗しました：",
     "message.error.connect.auth": "認証に失敗しました",
