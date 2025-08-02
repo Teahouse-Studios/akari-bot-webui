@@ -1,44 +1,47 @@
 <template>
-  <div id="app">
-    <div class="loading-overlay"
-    v-if="userVerified === null"
-    v-loading="userVerified === null"
-    ></div>
-    <AppHeader @toggle-sidebar="toggleSidebar" />
-    <LoginModal v-if="userVerified == false" />
-    <SuggestSetPasswordModal v-model="showSuggestPasswordModal" />
-    <div
-      v-if="isSidebarVisible && windowWidth <= 1024"
-      class="sidebar-overlay"
-      @click="closeSidebar"
-    ></div>
-    <AppSidebar
-      :class="['sidebar', { show: isSidebarVisible }]"
-      @menuSelect="handleMenuSelect"
-    />
-    <el-container :style="{ marginTop: '60px' }">
-      <el-main
-        :class="[
-          'content',
-          {
-            'content-with-sidebar': isSidebarVisible,
-            'show-sidebar': isSidebarVisible && windowWidth <= 1024,
-          },
-        ]"
-        :style="{ marginLeft: sidebarMarginLeft }"
-      >
-        <component
-          :is="currentView"
-          v-if="userVerified"
-          :userVerified="userVerified"
-        ></component>
-      </el-main>
-      <div class="content-footer"></div>
-    </el-container>
-  </div>
+  <el-config-provider :locale="elementLocale.lang">
+    <div id="app">
+      <div class="loading-overlay"
+      v-if="userVerified === null"
+      v-loading="userVerified === null"
+      ></div>
+      <AppHeader @toggle-sidebar="toggleSidebar" />
+      <LoginModal v-if="userVerified == false" />
+      <SuggestSetPasswordModal v-model="showSuggestPasswordModal" />
+      <div
+        v-if="isSidebarVisible && windowWidth <= 1024"
+        class="sidebar-overlay"
+        @click="closeSidebar"
+      ></div>
+      <AppSidebar
+        :class="['sidebar', { show: isSidebarVisible }]"
+        @menuSelect="handleMenuSelect"
+      />
+      <el-container :style="{ marginTop: '60px' }">
+        <el-main
+          :class="[
+            'content',
+            {
+              'content-with-sidebar': isSidebarVisible,
+              'show-sidebar': isSidebarVisible && windowWidth <= 1024,
+            },
+          ]"
+          :style="{ marginLeft: sidebarMarginLeft }"
+        >
+          <component
+            :is="currentView"
+            v-if="userVerified"
+            :userVerified="userVerified"
+          ></component>
+        </el-main>
+        <div class="content-footer"></div>
+      </el-container>
+    </div>
+  </el-config-provider>
 </template>
 
 <script>
+import { inject } from 'vue';
 import axios from "@/axios";
 import AppSidebar from "./components/Sidebar.vue";
 import AppHeader from "./components/Header.vue";
@@ -56,6 +59,7 @@ export default {
     SuggestSetPasswordModal,
   },
   data() {
+    const elementLocale = inject('elementLocale');
     const { t } = useI18n();
 
     return {
@@ -65,6 +69,7 @@ export default {
       showSuggestPasswordModal: false,
       windowWidth: window.innerWidth,
       cancelTokenSource: axios.CancelToken.source(),
+      elementLocale,
       t
     };
   },

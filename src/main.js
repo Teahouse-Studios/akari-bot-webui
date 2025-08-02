@@ -1,8 +1,9 @@
-import { createApp } from "vue";
+import { createApp, reactive } from "vue";
 import { createI18n } from 'vue-i18n';
 import App from "./App.vue";
 import router from "@/router";
 import ElementPlus from "element-plus";
+import { elementPlusLangMap } from "./element-plus-langmap";
 import "@fortawesome/fontawesome-free/css/all.css";
 import "@mdi/font/css/materialdesignicons.css";
 import zh_cn from './i18n/zh_cn.json';
@@ -21,7 +22,8 @@ fetch('/config.json')
     }
 
     const i18n = createI18n({
-      locale: localStorage.getItem('language'),
+      legacy: false,
+      locale,
       messages: {
         zh_cn,
         zh_tw,
@@ -32,7 +34,12 @@ fetch('/config.json')
 
     const app = createApp(App);
 
-    app.use(ElementPlus);
+    const elementPlusLocale = reactive({
+      lang: elementPlusLangMap[locale] || elementPlusLangMap.zh_cn
+    });
+
+    app.provide('elementLocale', elementPlusLocale);
+    app.use(ElementPlus, { locale: elementPlusLocale.lang });
     app.use(i18n);
     app.use(router);
 

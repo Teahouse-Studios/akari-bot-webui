@@ -14,6 +14,7 @@
   </template>
   
   <script>
+  import { elementPlusLangMap } from "@/element-plus-langmap";
   import { useI18n } from 'vue-i18n';
   
   export default {
@@ -25,11 +26,13 @@
         t
       };
     },
+    inject: ['elementLocale'],
     methods: {
       changeLanguage(lang) {
         this.currentLang = lang;
         this.$i18n.locale = lang;
         localStorage.setItem("language", lang);
+        this.elementLocale.lang = elementPlusLangMap[lang];
       },
     },
   };
