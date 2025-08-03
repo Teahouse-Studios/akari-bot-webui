@@ -1,4 +1,4 @@
-# akari-bot-webui
+# AkariBot WebUI
 This project is a web UI panel for [AkariBot](https://github.com/Teahouse-Studios/akari-bot).
 
 ## Setup
