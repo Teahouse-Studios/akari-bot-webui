@@ -1,11 +1,7 @@
 <template>
   <el-header class="header">
     <div class="header-left">
-      <el-button
-        class="menu-button"
-        @click="switchSidebar"
-        v-if="screenWidth < 1024"
-      >
+      <el-button class="menu-button" @click="switchSidebar" v-if="screenWidth < 1024">
         <i class="mdi mdi-menu"></i>
       </el-button>
       <div class="logo">
@@ -17,57 +13,53 @@
     <div class="header-right">
       <el-button class="help-button" @click="goToHelp">{{ $t('header.button.doc') }}</el-button>
       <el-button class="theme-toggle-button" @click="toggleDarkMode">
-        <i
-          :class="
-            isDarkMode ? 'mdi mdi-weather-sunny' : 'mdi mdi-weather-night'
-          "
-        ></i>
+        <i :class="isDarkMode ? 'mdi mdi-weather-sunny' : 'mdi mdi-weather-night'"></i>
       </el-button>
     </div>
   </el-header>
 </template>
 
 <script>
-import { useI18n } from 'vue-i18n';
+import { useI18n } from 'vue-i18n'
 
 export default {
-  name: "AppHeader",
-  emits: ["toggle-sidebar"],
+  name: 'AppHeader',
+  emits: ['toggle-sidebar'],
   data() {
-    const { t } = useI18n();
+    const { t } = useI18n()
     return {
       t,
       isDarkMode: false,
       screenWidth: window.innerWidth,
-    };
+    }
   },
   mounted() {
-    const savedTheme = localStorage.getItem("isDarkMode");
+    const savedTheme = localStorage.getItem('isDarkMode')
     if (savedTheme !== null) {
-      this.isDarkMode = JSON.parse(savedTheme);
+      this.isDarkMode = JSON.parse(savedTheme)
     }
-    window.addEventListener("resize", this.updateScreenWidth);
+    window.addEventListener('resize', this.updateScreenWidth)
   },
   beforeUnmount() {
-    window.removeEventListener("resize", this.updateScreenWidth);
+    window.removeEventListener('resize', this.updateScreenWidth)
   },
   methods: {
     updateScreenWidth() {
-      this.screenWidth = window.innerWidth;
+      this.screenWidth = window.innerWidth
     },
     goToHelp() {
-      window.open("https://bot.teahouse.team", "_blank");
+      window.open('https://bot.teahouse.team', '_blank')
     },
     toggleDarkMode() {
-      this.isDarkMode = !this.isDarkMode;
-      document.documentElement.classList.toggle("dark", this.isDarkMode);
-      localStorage.setItem("isDarkMode", JSON.stringify(this.isDarkMode));
+      this.isDarkMode = !this.isDarkMode
+      document.documentElement.classList.toggle('dark', this.isDarkMode)
+      localStorage.setItem('isDarkMode', JSON.stringify(this.isDarkMode))
     },
     switchSidebar() {
-      this.$emit("toggle-sidebar");
+      this.$emit('toggle-sidebar')
     },
   },
-};
+}
 </script>
 
 <style scoped>
@@ -151,11 +143,11 @@ export default {
   font-size: 16px;
   color: #666;
   font-family:
-          "Roboto",
-          "Noto Sans SC",
-          system-ui,
-          -apple-system,
-          sans-serif;
+    'Roboto',
+    'Noto Sans SC',
+    system-ui,
+    -apple-system,
+    sans-serif;
 }
 
 .dark .web-ui-text {

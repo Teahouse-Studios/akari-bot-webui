@@ -22,12 +22,7 @@
         </div>
       </div>
 
-      <el-button
-        type="primary"
-        @click="checkPassword"
-        :loading="loading"
-        :disabled="loading"
-      >
+      <el-button type="primary" @click="checkPassword" :loading="loading" :disabled="loading">
         {{ $t('login.button.login') }}
       </el-button>
     </div>
@@ -35,55 +30,54 @@
 </template>
 
 <script>
-import axios from "@/axios";
-import { ElMessage } from 'element-plus';
-import Cookies from "js-cookie";
-import { useI18n } from 'vue-i18n';
+import axios from '@/axios.mjs'
+import { ElMessage } from 'element-plus'
+import Cookies from 'js-cookie'
+import { useI18n } from 'vue-i18n'
 
 export default {
   data() {
-    const { t } = useI18n();
+    const { t } = useI18n()
 
     return {
-      password: "",
+      password: '',
       rememberDevice: false,
       loading: false,
       showTooltip: false,
-      t
-    };
+      t,
+    }
   },
   methods: {
     async checkPassword() {
-      this.loading = true;
+      this.loading = true
 
       try {
-        const response = await axios.post("/api/auth", {
+        const response = await axios.post('/api/auth', {
           password: this.password,
           remember: this.rememberDevice,
-        });
+        })
 
         if (response.status === 200) {
-          ElMessage.success(this.t("login.message.success"));
-          localStorage.setItem("noPassword", "false");
-          Cookies.remove('XSRF-TOKEN');
-          location.reload();
+          ElMessage.success(this.t('login.message.success'))
+          localStorage.setItem('noPassword', 'false')
+          Cookies.remove('XSRF-TOKEN')
+          location.reload()
         }
       } catch (error) {
         if (error.response?.status === 401) {
-          ElMessage.error(this.t("login.message.failed"));
+          ElMessage.error(this.t('login.message.failed'))
         } else if (error.response?.status === 403) {
-          ElMessage.error(this.t("login.message.abuse"));
+          ElMessage.error(this.t('login.message.abuse'))
         } else {
-          ElMessage.error(this.t("message.error.fetch") + error.message);
+          ElMessage.error(this.t('message.error.fetch') + error.message)
         }
       } finally {
-        this.loading = false;
+        this.loading = false
       }
     },
   },
-};
+}
 </script>
-
 
 <style scoped>
 .overlay {
@@ -113,7 +107,6 @@ export default {
   background: #333;
   color: white;
 }
-
 
 .remember-device-container {
   display: flex;

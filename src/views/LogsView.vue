@@ -20,13 +20,11 @@
           >
             <i class="mdi mdi-refresh"></i>
           </el-button>
-          <el-switch
-            v-model="autoScroll"
-          />
+          <el-switch v-model="autoScroll" />
           <span class="auto-scroll-label">{{ $t('logs.switch.auto_scroll') }}</span>
         </div>
       </div>
-      
+
       <div class="filter-bottom-row">
         <el-button
           v-for="(level, index) in logLevels"
@@ -45,195 +43,179 @@
 
     <div class="log-viewer" ref="logViewer">
       <div v-for="(logLine, index) in visibleLogs" :key="index">
-        <span
-          v-for="(part, partIndex) in logLine"
-          :key="partIndex"
-          :style="part.style"
-        >
+        <span v-for="(part, partIndex) in logLine" :key="partIndex" :style="part.style">
           {{ part.text }}
         </span>
       </div>
 
-      <div v-if="visibleLogs.length === 0" class="log-viewer-placeholder">There are currently no matching logs here...<br>Use the filter box above to adjust the options.</div>
+      <div v-if="visibleLogs.length === 0" class="log-viewer-placeholder">
+        There are currently no matching logs here...<br />Use the filter box above to adjust the
+        options.
+      </div>
     </div>
   </div>
 </template>
 
 <script>
-import axios from "axios";
-import { ElMessage } from "element-plus";
-import { debounce } from "lodash";
-import { useI18n } from 'vue-i18n';
+import axios from 'axios'
+import { ElMessage } from 'element-plus'
+import { debounce } from 'lodash'
+import { useI18n } from 'vue-i18n'
 
 export default {
-  name: "LogsView",
+  name: 'LogsView',
   data() {
-    const { t } = useI18n();
+    const { t } = useI18n()
 
     return {
-      logData: "",
+      logData: '',
       visibleLogs: [],
       logViewer: null,
-      logLevels: [
-        "DEBUG",
-        "INFO",
-        "SUCCESS",
-        "WARNING",
-        "ERROR",
-        "CRITICAL",
-      ],
-      activeLogLevels: [
-        "INFO",
-        "SUCCESS",
-        "WARNING",
-        "ERROR",
-        "CRITICAL",
-      ],
-      searchText: "",
+      logLevels: ['DEBUG', 'INFO', 'SUCCESS', 'WARNING', 'ERROR', 'CRITICAL'],
+      activeLogLevels: ['INFO', 'SUCCESS', 'WARNING', 'ERROR', 'CRITICAL'],
+      searchText: '',
       websocket: null,
       cancelTokenSource: axios.CancelToken.source(),
       autoScroll: true,
-      t
-    };
+      t,
+    }
   },
   methods: {
     async authenticateToken() {
       try {
-        const response = await axios.get("/api/verify-token", {
+        const response = await axios.get('/api/verify-token', {
           cancelToken: this.cancelTokenSource.token,
-        });
+        })
 
         if (response.status === 200) {
-          this.connectWebSocket();
+          this.connectWebSocket()
         } else {
-          ElMessage.error(this.t('message.error.connect.auth'));
+          ElMessage.error(this.t('message.error.connect.auth'))
         }
       } catch (error) {
         if (axios.isCancel(error)) {
-          console.log("Request canceled");
+          console.log('Request canceled')
         } else {
-          ElMessage.error(this.t('message.error.fetch') + error.message);
+          ElMessage.error(this.t('message.error.fetch') + error.message)
         }
       }
     },
 
     async connectWebSocket() {
       try {
-        const config = await (await fetch("/config.json")).json();
-        const enableHTTPS = config.enable_https;
-        let baseUrl = config.api_url;
+        const config = await (await fetch('/config.json')).json()
+        const enableHTTPS = config.enable_https
+        let baseUrl = config.api_url
 
         if (!baseUrl) {
-          baseUrl = window.location.origin;
+          baseUrl = window.location.origin
         } else if (!/^https?:\/\//i.test(baseUrl)) {
-          baseUrl = (enableHTTPS ? "https://" : "http://") + baseUrl;
+          baseUrl = (enableHTTPS ? 'https://' : 'http://') + baseUrl
         }
 
-        const url = new URL(baseUrl);
-        const wsProtocol = url.protocol === "https:" ? "wss:" : "ws:";
-        const wsUrl = `${wsProtocol}//${url.hostname}${url.port ? `:${url.port}` : ""}/ws/logs`;
+        const url = new URL(baseUrl)
+        const wsProtocol = url.protocol === 'https:' ? 'wss:' : 'ws:'
+        const wsUrl = `${wsProtocol}//${url.hostname}${url.port ? `:${url.port}` : ''}/ws/logs`
 
-        this.websocket = new WebSocket(wsUrl);
+        this.websocket = new WebSocket(wsUrl)
 
         this.websocket.onmessage = (event) => {
-          this.logData += event.data + "\n";
-        };
+          this.logData += event.data + '\n'
+        }
 
         this.websocket.onerror = () => {
-          ElMessage.error(this.t('message.error.connect.server'));
-        };
+          ElMessage.error(this.t('message.error.connect.server'))
+        }
       } catch (error) {
-        ElMessage.error(this.t('message.error.connect') + error.message);
+        ElMessage.error(this.t('message.error.connect') + error.message)
       }
     },
 
     updateLogs: debounce(function () {
-      const rawLines = this.logData.split("\n");
-      let buffer = "";
-      const formattedLines = [];
+      const rawLines = this.logData.split('\n')
+      let buffer = ''
+      const formattedLines = []
 
       rawLines.forEach((line) => {
         if (/^\[.*?\]\[.*?\]\[.*?\]\[.*?\]:/.test(line)) {
-          if (buffer) formattedLines.push(this.formatLogLine(buffer));
-          buffer = line;
+          if (buffer) formattedLines.push(this.formatLogLine(buffer))
+          buffer = line
         } else {
-          buffer += "\n" + line;
+          buffer += '\n' + line
         }
-      });
+      })
 
-      if (buffer) formattedLines.push(this.formatLogLine(buffer));
+      if (buffer) formattedLines.push(this.formatLogLine(buffer))
 
       this.visibleLogs = formattedLines.filter((logLine) => {
         const textMatch = this.searchText
-          ? logLine.some(part => part.text.toLowerCase().includes(this.searchText.toLowerCase()))
-          : true;
+          ? logLine.some((part) => part.text.toLowerCase().includes(this.searchText.toLowerCase()))
+          : true
 
         return (
           textMatch &&
-          this.activeLogLevels.some((level) =>
-            logLine.some(part => part.text.includes(level))
-          )
-        );
-      });
+          this.activeLogLevels.some((level) => logLine.some((part) => part.text.includes(level)))
+        )
+      })
 
       if (this.visibleLogs.length > 16384) {
-        this.visibleLogs = this.visibleLogs.slice(-16384);
+        this.visibleLogs = this.visibleLogs.slice(-16384)
       }
 
       if (this.autoScroll && this.logViewer) {
         setTimeout(() => {
-          this.logViewer.scrollTop = this.logViewer.scrollHeight;
-        }, 200);
+          this.logViewer.scrollTop = this.logViewer.scrollHeight
+        }, 200)
       }
     }, 500),
 
     refreshLog() {
-      this.logData = "";
-      this.visibleLogs = [];
+      this.logData = ''
+      this.visibleLogs = []
       if (this.logViewer) {
-        this.logViewer.scrollTop = 0;
+        this.logViewer.scrollTop = 0
       }
 
       if (this.websocket && this.websocket.readyState === WebSocket.OPEN) {
-        this.websocket.close();
+        this.websocket.close()
       }
 
-      this.authenticateToken();
+      this.authenticateToken()
     },
 
     formatLogLine(logLine) {
-      const logPattern = /^\[([^\]]+)\]\[([^\]]+)\]\[([^\]]+)\]\[([^\]]+)\]:(.*)$/s;
-      const match = logLine.match(logPattern);
+      const logPattern = /^\[([^\]]+)\]\[([^\]]+)\]\[([^\]]+)\]\[([^\]]+)\]:(.*)$/s
+      const match = logLine.match(logPattern)
 
-      const logPlatformColor = "#11a8cd";
-      const logModulesColor = "#e5e510";
-      const logDatetimeColor = "#0dbc79";
-      let logContentColor = "#fff";
-      let logBackgroundColor = "transparent";
+      const logPlatformColor = '#11a8cd'
+      const logModulesColor = '#e5e510'
+      const logDatetimeColor = '#0dbc79'
+      let logContentColor = '#fff'
+      let logBackgroundColor = 'transparent'
 
       if (match) {
-        const [, logPlatform, logModules, logDatetime, logLevel, logContent] = match;
+        const [, logPlatform, logModules, logDatetime, logLevel, logContent] = match
 
         switch (logLevel) {
-          case "DEBUG":
-            logContentColor = "#3b8ec9";
-            break;
-          case "INFO":
-            logContentColor = "#fff";
-            break;
-          case "SUCCESS":
-            logContentColor = "#23d18b";
-            break;
-          case "WARNING":
-            logContentColor = "#f5f543";
-            break;
-          case "ERROR":
-            logContentColor = "#f14c4c";
-            break;
-          case "CRITICAL":
-            logContentColor = "#fff";
-            logBackgroundColor = "#cd3131";
-            break;
+          case 'DEBUG':
+            logContentColor = '#3b8ec9'
+            break
+          case 'INFO':
+            logContentColor = '#fff'
+            break
+          case 'SUCCESS':
+            logContentColor = '#23d18b'
+            break
+          case 'WARNING':
+            logContentColor = '#f5f543'
+            break
+          case 'ERROR':
+            logContentColor = '#f14c4c'
+            break
+          case 'CRITICAL':
+            logContentColor = '#fff'
+            logBackgroundColor = '#cd3131'
+            break
         }
 
         return [
@@ -247,50 +229,47 @@ export default {
               backgroundColor: logBackgroundColor,
             },
           },
-        ];
+        ]
       }
 
       return [
         {
           text: logLine,
           style: {
-            color: "#fff",
+            color: '#fff',
           },
         },
-      ];
+      ]
     },
 
     toggleLogLevel(level) {
       if (this.activeLogLevels.includes(level)) {
-        this.activeLogLevels = this.activeLogLevels.filter(
-          (item) => item !== level,
-        );
+        this.activeLogLevels = this.activeLogLevels.filter((item) => item !== level)
       } else {
-        this.activeLogLevels.push(level);
+        this.activeLogLevels.push(level)
       }
-      this.updateLogs();
+      this.updateLogs()
     },
 
     handleSearch() {
-      this.updateLogs();
+      this.updateLogs()
     },
   },
   watch: {
-    logData: "updateLogs",
+    logData: 'updateLogs',
   },
   mounted() {
-    this.logViewer = this.$refs.logViewer;
-    this.authenticateToken();
+    this.logViewer = this.$refs.logViewer
+    this.authenticateToken()
   },
   beforeUnmount() {
     if (this.websocket) {
-      this.websocket.close();
+      this.websocket.close()
     }
-    this.cancelTokenSource.cancel("Component unmounted");
+    this.cancelTokenSource.cancel('Component unmounted')
   },
-};
+}
 </script>
-
 
 <style scoped>
 .log-viewer-container {
@@ -346,7 +325,7 @@ export default {
   margin-right: 10px;
   color: inherit;
   transition: color 0.3s ease;
-  }
+}
 
 .log-refresh-button:hover {
   background-color: #ddd;
@@ -478,7 +457,7 @@ export default {
   background-color: #0c0c0c;
   color: #fff;
   padding: 10px;
-  font-family: "Consolas", "Noto Sans Mono", "Courier New", Courier, monospace;
+  font-family: 'Consolas', 'Noto Sans Mono', 'Courier New', Courier, monospace;
   white-space: pre-wrap;
   word-wrap: break-word;
 }

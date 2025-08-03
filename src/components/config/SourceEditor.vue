@@ -5,18 +5,18 @@
 </template>
 
 <script>
-import { basicSetup } from "codemirror";
-import { EditorView } from "@codemirror/view";
-import { EditorState } from "@codemirror/state";
-import { oneDark } from "@codemirror/theme-one-dark";
+import { basicSetup } from 'codemirror'
+import { EditorView } from '@codemirror/view'
+import { EditorState } from '@codemirror/state'
+import { oneDark } from '@codemirror/theme-one-dark'
 
 export default {
-  name: "SourceEditor",
+  name: 'SourceEditor',
   props: {
     modelValue: String,
     options: Object,
   },
-  emits: ["update:modelValue"],
+  emits: ['update:modelValue'],
   data() {
     return {
       editorView: null,
@@ -24,16 +24,16 @@ export default {
         lineWrapping: true,
         theme: oneDark,
         lineNumbers: true,
-        scrollbarStyle: "native",
+        scrollbarStyle: 'native',
       },
-    };
+    }
   },
   mounted() {
-    this.initEditor();
+    this.initEditor()
   },
   beforeUnmount() {
     if (this.editorView) {
-      this.editorView.destroy();
+      this.editorView.destroy()
     }
   },
   watch: {
@@ -45,7 +45,7 @@ export default {
             to: this.editorView.state.doc.length,
             insert: newVal,
           },
-        });
+        })
       }
     },
   },
@@ -58,22 +58,22 @@ export default {
           oneDark,
           EditorView.updateListener.of((update) => {
             if (update.docChanged) {
-              const value = update.state.doc.toString();
-              this.$emit("update:modelValue", value);
+              const value = update.state.doc.toString()
+              this.$emit('update:modelValue', value)
             }
           }),
         ],
-      });
+      })
       this.editorView = new EditorView({
         state,
         parent: this.$refs.editor,
-      });
+      })
     },
     getContent() {
-      return this.editorView ? this.editorView.state.doc.toString() : "";
-    }
-  }
-};
+      return this.editorView ? this.editorView.state.doc.toString() : ''
+    },
+  },
+}
 </script>
 
 <style scoped>
@@ -88,11 +88,11 @@ export default {
 }
 
 ::v-deep(.cm-gutters) {
-  font-family: "Consolas", "Noto Sans Mono", "Courier New", Courier, monospace;
+  font-family: 'Consolas', 'Noto Sans Mono', 'Courier New', Courier, monospace;
 }
 
 ::v-deep(.cm-content) {
-  font-family: "Consolas", "Noto Sans Mono", "Courier New", Courier, monospace;
+  font-family: 'Consolas', 'Noto Sans Mono', 'Courier New', Courier, monospace;
 }
 
 .editor-actions {

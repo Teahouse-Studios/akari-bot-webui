@@ -8,4 +8,4 @@ export const elementPlusLangMap = {
   zh_tw: zhTw,
   en_us: en,
   ja_jp: ja,
-};
+}

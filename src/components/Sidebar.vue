@@ -1,10 +1,6 @@
 <template>
   <el-aside width="200px" class="sidebar">
-    <el-menu
-      :default-active="activeMenu"
-      class="sidebar-menu"
-      @select="handleSelect"
-    >
+    <el-menu :default-active="activeMenu" class="sidebar-menu" @select="handleSelect">
       <el-menu-item index="dashboard">
         <i class="mdi mdi-view-dashboard"></i>
         <span>{{ $t('sidebar.item.dashboard') }}</span>
@@ -38,46 +34,38 @@
 </template>
 
 <script>
-import { useI18n } from 'vue-i18n';
+import { useI18n } from 'vue-i18n'
 
 export default {
-  name: "AppSidebar",
+  name: 'AppSidebar',
   data() {
-    const { t } = useI18n();
+    const { t } = useI18n()
 
     return {
       t,
       activeMenu: this.getActiveMenuFromRoute(),
-    };
+    }
   },
   methods: {
     getActiveMenuFromRoute() {
-      const validPaths = [
-        "dashboard",
-        "config",
-        "data",
-        "logs",
-        "chat",
-        "setting",
-        "about",
-      ];
-      const path = this.$route.name;
+      const validPaths = ['dashboard', 'config', 'data', 'logs', 'chat', 'setting', 'about']
+      const path = this.$route.name
       if (validPaths.includes(path)) {
-        return path;
+        return path
       }
-      return "";
+      return ''
     },
     handleSelect(index) {
-      this.activeMenu = index;
-      this.$router.push({ name: index });
+      this.activeMenu = index
+      this.$router.push({ name: index })
     },
   },
   watch: {
-    "$route.name": function () {
-      this.activeMenu = this.getActiveMenuFromRoute();
+    '$route.name': function () {
+      this.activeMenu = this.getActiveMenuFromRoute()
     },
   },
-};
+}
 </script>
 
 <style scoped>

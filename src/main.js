@@ -1,24 +1,24 @@
-import { createApp, reactive } from "vue";
-import { createI18n } from 'vue-i18n';
-import App from "./App.vue";
-import router from "@/router";
-import ElementPlus from "element-plus";
-import { elementPlusLangMap } from "./element-plus-langmap";
-import "@fortawesome/fontawesome-free/css/all.css";
-import "@mdi/font/css/materialdesignicons.css";
-import zh_cn from './i18n/zh_cn.json';
-import zh_tw from './i18n/zh_tw.json';
-import en_us from './i18n/en_us.json';
-import ja_jp from './i18n/ja_jp.json';
+import { createApp, reactive } from 'vue'
+import { createI18n } from 'vue-i18n'
+import App from './App.vue'
+import router from '@/router'
+import ElementPlus from 'element-plus'
+import { elementPlusLangMap } from './element-plus-langmap'
+import '@fortawesome/fontawesome-free/css/all.css'
+import '@mdi/font/css/materialdesignicons.css'
+import zh_cn from './i18n/zh_cn.json'
+import zh_tw from './i18n/zh_tw.json'
+import en_us from './i18n/en_us.json'
+import ja_jp from './i18n/ja_jp.json'
 import './styles/theme-akari/var.scss'
 import './styles/theme-akari/dark/var.css'
 
 fetch('/config.json')
-  .then(res => res.json())
-  .then(config => {
-    const locale = config.locale || 'zh_cn';
+  .then((res) => res.json())
+  .then((config) => {
+    const locale = config.locale || 'zh_cn'
     if (!localStorage.getItem('language')) {
-      localStorage.setItem('language', locale);
+      localStorage.setItem('language', locale)
     }
 
     const i18n = createI18n({
@@ -28,23 +28,23 @@ fetch('/config.json')
         zh_cn,
         zh_tw,
         en_us,
-        ja_jp
-      }
-    });
+        ja_jp,
+      },
+    })
 
-    const app = createApp(App);
+    const app = createApp(App)
 
     const elementPlusLocale = reactive({
-      lang: elementPlusLangMap[locale] || elementPlusLangMap.zh_cn
-    });
+      lang: elementPlusLangMap[locale] || elementPlusLangMap.zh_cn,
+    })
 
-    app.provide('elementLocale', elementPlusLocale);
-    app.use(ElementPlus, { locale: elementPlusLocale.lang });
-    app.use(i18n);
-    app.use(router);
+    app.provide('elementLocale', elementPlusLocale)
+    app.use(ElementPlus, { locale: elementPlusLocale.lang })
+    app.use(i18n)
+    app.use(router)
 
-    const isDark = localStorage.getItem('isDarkMode') === 'true';
-    document.documentElement.classList.toggle('dark', isDark);
+    const isDark = localStorage.getItem('isDarkMode') === 'true'
+    document.documentElement.classList.toggle('dark', isDark)
 
-    app.mount("#app");
-  });
+    app.mount('#app')
+  })

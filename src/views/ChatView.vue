@@ -1,23 +1,26 @@
 <template>
   <div class="chat-container">
     <div class="chat-header">
-      <div 
-        :style="{ 
-          backgroundColor: 
-            connectionStatus === 'connected' ? 'limegreen' : 
-            connectionStatus === 'connecting' ? 'orange' : 'red' 
-        }" 
+      <div
+        :style="{
+          backgroundColor:
+            connectionStatus === 'connected'
+              ? 'limegreen'
+              : connectionStatus === 'connecting'
+                ? 'orange'
+                : 'red',
+        }"
         class="connection-indicator"
-        :title="connectionStatus === 'connected' ? $t('chat.status.tooltip.connected') : 
-                connectionStatus === 'connecting' ? $t('chat.status.tooltip.connecting') : $t('chat.status.tooltip.disconnected')"
+        :title="
+          connectionStatus === 'connected'
+            ? $t('chat.status.tooltip.connected')
+            : connectionStatus === 'connecting'
+              ? $t('chat.status.tooltip.connecting')
+              : $t('chat.status.tooltip.disconnected')
+        "
       ></div>
       <div class="chat-title"># {{ $t('chat.title') }}</div>
-      <el-button
-        class="reset-button"
-        @click="resetChat"
-        :title="$t('chat.button.reset')"
-        circle
-      >
+      <el-button class="reset-button" @click="resetChat" :title="$t('chat.button.reset')" circle>
         <i class="mdi mdi-restart"></i>
       </el-button>
     </div>
@@ -56,7 +59,13 @@
         </template>
       </div>
 
-      <div v-for="(msg, idx) in messages" :key="msg.id || idx" class="chat-message" :class="msg.from" :data-id="msg.id">
+      <div
+        v-for="(msg, idx) in messages"
+        :key="msg.id || idx"
+        class="chat-message"
+        :class="msg.from"
+        :data-id="msg.id"
+      >
         <div v-html="msg.html" @click="handleMarkdownClick"></div>
         <div v-if="debug" class="debug-uuid">{{ msg.id }}</div>
       </div>
@@ -75,10 +84,10 @@
         :disabled="connectionStatus != 'connected'"
       />
       <el-button
-      type="primary"
-      @click="sendMessage"
-      style="margin-left: 10px;"
-      :disabled="connectionStatus != 'connected' || inputText.trim() === ''"
+        type="primary"
+        @click="sendMessage"
+        style="margin-left: 10px"
+        :disabled="connectionStatus != 'connected' || inputText.trim() === ''"
       >
         {{ $t('chat.button.send') }}
       </el-button>
@@ -89,277 +98,290 @@
       :show-close="false"
       :center="true"
     >
-      <img :src="previewImageSrc" style="width: 100%; height: 100%;">
+      <img :src="previewImageSrc" style="width: 100%; height: 100%" />
     </el-dialog>
   </div>
 </template>
 
 <script>
-import axios from "axios";
-import { ElMessage, ElMessageBox } from "element-plus";
-import MarkdownIt from "markdown-it";
-import linkAttributes from "markdown-it-link-attributes";
-import { v4 as uuidv4 } from 'uuid';
-import { useI18n } from 'vue-i18n';
+import axios from 'axios'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import MarkdownIt from 'markdown-it'
+import linkAttributes from 'markdown-it-link-attributes'
+import { v4 as uuidv4 } from 'uuid'
+import { useI18n } from 'vue-i18n'
 
 export default {
-  name: "ChatView",
+  name: 'ChatView',
   data() {
-    const { t } = useI18n();
+    const { t } = useI18n()
     const md = new MarkdownIt('zero')
       .set({ html: false, linkify: true, breaks: true })
       .use(linkAttributes, {
         pattern: /^(https?:)?\/\//,
         attrs: {
-          target: "_blank",
-          rel: "noopener noreferrer"
-        }
+          target: '_blank',
+          rel: 'noopener noreferrer',
+        },
       })
       .use((md) => {
-        md.enable(['blockquote', 'fence', 'heading', 'list']);
-        md.enable(['autolink', 'backticks', 'emphasis', 'escape', 'link', 'linkify', 'newline', 'strikethrough', 'text']);
+        md.enable(['blockquote', 'fence', 'heading', 'list'])
+        md.enable([
+          'autolink',
+          'backticks',
+          'emphasis',
+          'escape',
+          'link',
+          'linkify',
+          'newline',
+          'strikethrough',
+          'text',
+        ])
 
-        md.renderer.rules.paragraph_open = () => '';
-        md.renderer.rules.paragraph_close = () => '<br />';
+        md.renderer.rules.paragraph_open = () => ''
+        md.renderer.rules.paragraph_close = () => '<br />'
 
         md.renderer.rules.fence = (tokens, idx) => {
-          const content = tokens[idx].content;
-          return `<pre class="chat-pre">${md.utils.escapeHtml(content)}</pre>`;
-        };
+          const content = tokens[idx].content
+          return `<pre class="chat-pre">${md.utils.escapeHtml(content)}</pre>`
+        }
 
         md.renderer.rules.code_inline = (tokens, idx) => {
-          const content = tokens[idx].content;
-          return `<code class="chat-code">${md.utils.escapeHtml(content)}</code>`;
-        };
+          const content = tokens[idx].content
+          return `<code class="chat-code">${md.utils.escapeHtml(content)}</code>`
+        }
 
         md.renderer.rules.blockquote_open = () => {
-          return '<blockquote class="chat-blockquote">';
-        };
+          return '<blockquote class="chat-blockquote">'
+        }
       })
-      return {
-      inputText: "",
+    return {
+      inputText: '',
       messages: [],
       chatBox: null,
       websocket: null,
-      connectionStatus: "connecting",
+      connectionStatus: 'connecting',
       imageDialogVisible: false,
       isMobileView: window.innerWidth < 1024,
-      previewImageSrc: "",
+      previewImageSrc: '',
       cancelTokenSource: axios.CancelToken.source(),
-      debug: process.env.VUE_APP_DEBUG === "true",
+      debug: process.env.VUE_APP_DEBUG === 'true',
       md,
-      t
-    };
+      t,
+    }
   },
   methods: {
     async connectWebSocket() {
-      this.connectionStatus = "connecting";
+      this.connectionStatus = 'connecting'
       try {
-        const config = await (await fetch("/config.json")).json();
-        const enableHTTPS = config.enable_https;
-        let baseUrl = config.api_url;
+        const config = await (await fetch('/config.json')).json()
+        const enableHTTPS = config.enable_https
+        let baseUrl = config.api_url
 
         if (!baseUrl) {
           baseUrl = window.location.origin
         } else if (!/^https?:\/\//i.test(baseUrl)) {
-          baseUrl = (enableHTTPS ? "https://" : "http://") + baseUrl;
+          baseUrl = (enableHTTPS ? 'https://' : 'http://') + baseUrl
         }
 
-        const url = new URL(baseUrl);
-        const wsProtocol = url.protocol === "https:" ? "wss:" : "ws:";
-        const wsUrl = `${wsProtocol}//${url.hostname}${url.port ? `:${url.port}` : ""}/ws/chat`;
+        const url = new URL(baseUrl)
+        const wsProtocol = url.protocol === 'https:' ? 'wss:' : 'ws:'
+        const wsUrl = `${wsProtocol}//${url.hostname}${url.port ? `:${url.port}` : ''}/ws/chat`
 
-        this.websocket = new WebSocket(wsUrl);
+        this.websocket = new WebSocket(wsUrl)
 
         this.websocket.onopen = () => {
-          this.connectionStatus = "connected";
-        };
+          this.connectionStatus = 'connected'
+        }
 
         this.websocket.onmessage = (event) => {
-          const data = JSON.parse(event.data);
+          const data = JSON.parse(event.data)
 
-          if (data.action === "delete" && Array.isArray(data.id)) {
-            this.messages = this.messages.filter(msg => !data.id.includes(msg.id));
-            return;
+          if (data.action === 'delete' && Array.isArray(data.id)) {
+            this.messages = this.messages.filter((msg) => !data.id.includes(msg.id))
+            return
           }
 
-          if (data.action === "send") {
+          if (data.action === 'send') {
             this.messages.push({
-              from: "bot",
+              from: 'bot',
               text: this.renderResponse(data.message),
               html: this.renderMarkdown(this.renderResponse(data.message)),
-              id: data.id || uuidv4()
-            });
-            
-            this.scrollToBottom();
+              id: data.id || uuidv4(),
+            })
+
+            this.scrollToBottom()
           }
-        };
+        }
 
         this.websocket.onerror = () => {
-          this.connectionStatus = "disconnected";
-          ElMessage.error(this.t('message.error.connect.server'));
-        };
+          this.connectionStatus = 'disconnected'
+          ElMessage.error(this.t('message.error.connect.server'))
+        }
       } catch (error) {
-        this.connectionStatus = "disconnected";
-        ElMessage.error(this.t('message.error.connect') + error.message);
+        this.connectionStatus = 'disconnected'
+        ElMessage.error(this.t('message.error.connect') + error.message)
       }
     },
 
     async authenticateToken() {
       try {
-        const response = await axios.get("/api/verify-token", {
+        const response = await axios.get('/api/verify-token', {
           cancelToken: this.cancelTokenSource.token,
-        });
+        })
 
         if (response.status === 200) {
-          this.connectWebSocket();
+          this.connectWebSocket()
         } else {
-          this.connectionStatus = "disconnected";
-          ElMessage.error(this.t('message.error.connect.auth'));
+          this.connectionStatus = 'disconnected'
+          ElMessage.error(this.t('message.error.connect.auth'))
         }
       } catch (error) {
         if (axios.isCancel(error)) {
-          console.log("Request canceled");
+          console.log('Request canceled')
         } else {
-          this.connectionStatus = "disconnected";
-          ElMessage.error(this.t('message.error.fetch') + error.message);
+          this.connectionStatus = 'disconnected'
+          ElMessage.error(this.t('message.error.fetch') + error.message)
         }
       }
     },
 
     sendMessage() {
-      const text = this.inputText.trim();
-      if (!text) return;
+      const text = this.inputText.trim()
+      if (!text) return
 
-      const uuid = uuidv4();
+      const uuid = uuidv4()
       this.messages.push({
-        from: "user",
+        from: 'user',
         text: text,
         html: this.renderMarkdown(text),
-        id: uuid
-      });
-      this.websocket?.send(JSON.stringify({
-        action: "send",
-        message: [{ type: "text", content: text }],
-        id: uuid
-      }));
-      this.inputText = "";
-      this.scrollToBottom();
+        id: uuid,
+      })
+      this.websocket?.send(
+        JSON.stringify({
+          action: 'send',
+          message: [{ type: 'text', content: text }],
+          id: uuid,
+        }),
+      )
+      this.inputText = ''
+      this.scrollToBottom()
     },
 
     resetChat() {
-      this.connectionStatus = "connecting";
-      this.messages = [];
+      this.connectionStatus = 'connecting'
+      this.messages = []
 
       if (this.websocket && this.websocket.readyState === WebSocket.OPEN) {
-        this.websocket.close();
+        this.websocket.close()
       }
 
-      this.authenticateToken();
+      this.authenticateToken()
     },
 
     scrollToBottom() {
       setTimeout(() => {
         if (this.chatBox) {
-          this.chatBox.scrollTop = this.chatBox.scrollHeight;
+          this.chatBox.scrollTop = this.chatBox.scrollHeight
         }
-      }, 0);
+      }, 0)
     },
 
     handleResize() {
-      this.isMobileView = window.innerWidth < 1024;
+      this.isMobileView = window.innerWidth < 1024
     },
 
     handleEnterKey(event) {
       if (this.isMobileView) {
-        return;
+        return
       }
       if (event.shiftKey) {
-        return;
+        return
       } else {
-        event.preventDefault();
-        this.sendMessage();
+        event.preventDefault()
+        this.sendMessage()
       }
     },
 
     renderMarkdown(text) {
-      return this.md.render(text)
-      .replace(/\[image:([^\]]+)\]/g, (match, src) => {
+      return this.md.render(text).replace(/\[image:([^\]]+)\]/g, (match, src) => {
         return `<img src="${src}" class="chat-img" />`
       })
     },
 
     handleMarkdownClick(event) {
       const target = event.target
-      if (target.tagName === "A") {
+      if (target.tagName === 'A') {
         event.preventDefault()
         this.confirmExternalLink(target.href)
-      } else if (target.tagName === "IMG") {
+      } else if (target.tagName === 'IMG') {
         this.showImagePreview(target.src)
       }
     },
 
     confirmExternalLink(url) {
       ElMessageBox.confirm(
-        this.$t('chat.external_link.confirm.message', {url: url}),
+        this.$t('chat.external_link.confirm.message', { url: url }),
         this.$t('chat.external_link.confirm.title'),
         {
           confirmButtonText: this.$t('yes'),
           cancelButtonText: this.$t('no'),
           type: 'warning',
-        }
+        },
       )
         .then(() => {
-          window.open(url, '_blank');
+          window.open(url, '_blank')
         })
         .catch(() => {
-          console.log('Link blocked');
-        });
+          console.log('Link blocked')
+        })
     },
 
     renderResponse(data) {
       if (Array.isArray(data)) {
         return data
           .map((item) => {
-            if (item.type === "text") {
-              return item.content;
+            if (item.type === 'text') {
+              return item.content
             }
-            if (item.type === "image") {
-              const base64Content = item.content;
-              if (base64Content.startsWith("data:image/png;base64,") || 
-                  base64Content.startsWith("data:image/jpeg;base64,") || 
-                  base64Content.startsWith("data:image/gif;base64,")) {
-                return `[image:${base64Content}]`;
+            if (item.type === 'image') {
+              const base64Content = item.content
+              if (
+                base64Content.startsWith('data:image/png;base64,') ||
+                base64Content.startsWith('data:image/jpeg;base64,') ||
+                base64Content.startsWith('data:image/gif;base64,')
+              ) {
+                return `[image:${base64Content}]`
               }
-              return "";
+              return ''
             }
-            return "";
+            return ''
           })
-          .join("\n");
+          .join('\n')
       }
-      return data;
+      return data
     },
 
     showImagePreview(src) {
-      this.previewImageSrc = src;
-      this.imageDialogVisible = true;
+      this.previewImageSrc = src
+      this.imageDialogVisible = true
     },
   },
 
   mounted() {
-    this.chatBox = this.$refs.chatBox;
-    this.authenticateToken();
-    window.addEventListener('resize', this.handleResize);
+    this.chatBox = this.$refs.chatBox
+    this.authenticateToken()
+    window.addEventListener('resize', this.handleResize)
   },
 
   beforeUnmount() {
     if (this.websocket) {
-      this.websocket.close();
+      this.websocket.close()
     }
-    this.cancelTokenSource.cancel("Component unmounted");
-    window.removeEventListener('resize', this.handleResize);
+    this.cancelTokenSource.cancel('Component unmounted')
+    window.removeEventListener('resize', this.handleResize)
   },
-};
+}
 </script>
 
 <style>
@@ -378,33 +400,33 @@ export default {
 }
 
 .chat-pre {
-  color : black;
+  color: black;
   background-color: #f7f7f7;
   border: 1px solid #dcdcdc;
   padding: 15px;
   border-radius: 8px;
-  font-family: "Consolas", "Noto Sans Mono", "Courier New", Courier, monospace;
+  font-family: 'Consolas', 'Noto Sans Mono', 'Courier New', Courier, monospace;
   word-wrap: break-word;
   white-space: pre-wrap;
 }
 
 .chat-code {
-  color : black;
+  color: black;
   background-color: #f0f0f0;
   border: 1px solid #ccc;
   padding: 2px 6px;
   border-radius: 4px;
-  font-family: "Consolas", "Noto Sans Mono", "Courier New", Courier, monospace;
+  font-family: 'Consolas', 'Noto Sans Mono', 'Courier New', Courier, monospace;
 }
 
 .dark .chat-pre {
-  color : white;
+  color: white;
   background-color: #2a2a2a;
   border: 1px solid #444;
 }
 
 .dark .chat-code {
-  color : white;
+  color: white;
   background-color: #3a3a3a;
   border: 1px solid #555;
 }
@@ -460,12 +482,12 @@ export default {
 }
 
 .reset-button {
-background: transparent;
-border: none;
-padding: 0;
-font-size: 22px !important;
-color: inherit;
-transition: color 0.3s ease;
+  background: transparent;
+  border: none;
+  padding: 0;
+  font-size: 22px !important;
+  color: inherit;
+  transition: color 0.3s ease;
 }
 
 .reset-button:hover {

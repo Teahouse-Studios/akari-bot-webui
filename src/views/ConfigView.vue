@@ -1,50 +1,39 @@
 <template>
   <div class="editor-container" v-loading="loading">
     <el-button-group class="active-button-group">
-      <el-button :type="activeCard === 'visible' ? 'primary' : 'default'" @click="activeCard = 'visible'"><i class="mdi mdi-text-box-edit-outline"></i></el-button>
-      <el-button :type="activeCard === 'source' ? 'primary' : 'default'" @click="activeCard = 'source'"><i class="mdi mdi-code-brackets"></i></el-button>
+      <el-button
+        :type="activeCard === 'visible' ? 'primary' : 'default'"
+        @click="activeCard = 'visible'"
+        ><i class="mdi mdi-text-box-edit-outline"></i
+      ></el-button>
+      <el-button
+        :type="activeCard === 'source' ? 'primary' : 'default'"
+        @click="activeCard = 'source'"
+        ><i class="mdi mdi-code-brackets"></i
+      ></el-button>
     </el-button-group>
 
     <el-tabs v-model="activeTab" @tab-click="handleTabClick">
-      <el-tab-pane
-        v-for="file in configFiles"
-        :key="file"
-        :label="file"
-        :name="file"
-      ></el-tab-pane>
+      <el-tab-pane v-for="file in configFiles" :key="file" :label="file" :name="file"></el-tab-pane>
     </el-tabs>
-    <VisibleEditor
-      v-if="activeCard === 'visible'"
-      ref="visibleEditor"
-      v-model="editorContent"
-    />
+    <VisibleEditor v-if="activeCard === 'visible'" ref="visibleEditor" v-model="editorContent" />
 
-    <SourceEditor
-      v-else
-      ref="sourceEditor"
-      v-model="editorContent"
-    />
+    <SourceEditor v-else ref="sourceEditor" v-model="editorContent" />
     <div class="editor-footer">
       <div class="editor-actions">
-        <el-button
-          type="warning"
-          :disabled="!unsavedChanges"
-          @click="resetConfig">
-          <i class="mdi mdi-restart"></i> {{ $t("button.reset") }}
+        <el-button type="warning" :disabled="!unsavedChanges" @click="resetConfig">
+          <i class="mdi mdi-restart"></i> {{ $t('button.reset') }}
         </el-button>
-        <el-button
-          type="success"
-          :disabled="!unsavedChanges"
-          @click="applyConfig">
-          <i class="mdi mdi-content-save-outline"></i> {{ $t("button.apply") }}
+        <el-button type="success" :disabled="!unsavedChanges" @click="applyConfig">
+          <i class="mdi mdi-content-save-outline"></i> {{ $t('button.apply') }}
         </el-button>
         <div v-if="unsavedChanges" class="unsaved-warning">
-        <el-alert
-          :title="$t('config.alert.warning.unsaved')"
-          type="warning"
-          show-icon
-          :closable="false"
-        />
+          <el-alert
+            :title="$t('config.alert.warning.unsaved')"
+            type="warning"
+            show-icon
+            :closable="false"
+          />
         </div>
       </div>
     </div>
@@ -52,91 +41,91 @@
 </template>
 
 <script>
-import { ref } from "vue";
-import axios from "@/axios";
-import VisibleEditor from "@/components/config/VisibleEditor.vue";
-import SourceEditor from "@/components/config/SourceEditor.vue";
-import { ElMessage } from 'element-plus';
-import { useI18n } from 'vue-i18n';
+import { ref } from 'vue'
+import axios from '@/axios.mjs'
+import VisibleEditor from '@/components/config/VisibleEditor.vue'
+import SourceEditor from '@/components/config/SourceEditor.vue'
+import { ElMessage } from 'element-plus'
+import { useI18n } from 'vue-i18n'
 
 export default {
-  name: "ConfigView",
-  components: { 
+  name: 'ConfigView',
+  components: {
     VisibleEditor,
-    SourceEditor
+    SourceEditor,
   },
   data() {
-    const { t } = useI18n();
-    const activeCard = ref('visible');
+    const { t } = useI18n()
+    const activeCard = ref('visible')
 
     return {
       activeCard,
-      activeTab: "",
+      activeTab: '',
       configFiles: [],
       unsavedChanges: false,
-      initialContent: "",
-      editorContent: "",
+      initialContent: '',
+      editorContent: '',
       fileContents: {},
       cancelTokenSource: axios.CancelToken.source(),
       loading: false,
-      t
-    };
+      t,
+    }
   },
   mounted() {
-    this.fetchConfigFiles();
+    this.fetchConfigFiles()
   },
   beforeUnmount() {
-    this.cancelTokenSource.cancel("Component unmounted");
+    this.cancelTokenSource.cancel('Component unmounted')
   },
   watch: {
     editorContent(newVal) {
-      this.unsavedChanges = newVal !== this.initialContent;
-    }
+      this.unsavedChanges = newVal !== this.initialContent
+    },
   },
   methods: {
     async fetchConfigFiles() {
-      this.loading = true;
+      this.loading = true
       try {
-        const response = await axios.get("/api/config", {
+        const response = await axios.get('/api/config', {
           cancelToken: this.cancelTokenSource.token,
-        });
-        this.configFiles = response.data.cfg_files;
+        })
+        this.configFiles = response.data.cfg_files
         if (this.configFiles.length > 0) {
-          this.activeTab = this.configFiles[0];
-          this.fetchConfig(this.activeTab);
+          this.activeTab = this.configFiles[0]
+          this.fetchConfig(this.activeTab)
         }
       } catch (error) {
         if (axios.isCancel(error)) {
-          console.log("Request canceled");
+          console.log('Request canceled')
         } else {
-          ElMessage.error(this.t('message.error.fetch') + error.message);
+          ElMessage.error(this.t('message.error.fetch') + error.message)
         }
       } finally {
-        this.loading = false;
+        this.loading = false
       }
     },
     async fetchConfig(fileName, force = false) {
       if (!force && this.fileContents[fileName]) {
-        this.editorContent = this.fileContents[fileName];
-        this.initialContent = this.fileContents[fileName];
-        this.unsavedChanges = false;
-        this.updateEditorContent();
-        return;
+        this.editorContent = this.fileContents[fileName]
+        this.initialContent = this.fileContents[fileName]
+        this.unsavedChanges = false
+        this.updateEditorContent()
+        return
       }
 
       try {
         const response = await axios.get(`/api/config/${fileName}`, {
           cancelToken: this.cancelTokenSource.token,
-        });
-        this.fileContents[fileName] = response.data.content;
-        this.editorContent = response.data.content;
-        this.initialContent = response.data.content;
-        this.unsavedChanges = false;
+        })
+        this.fileContents[fileName] = response.data.content
+        this.editorContent = response.data.content
+        this.initialContent = response.data.content
+        this.unsavedChanges = false
       } catch (error) {
         if (axios.isCancel(error)) {
-          console.log("Request canceled");
+          console.log('Request canceled')
         } else {
-          ElMessage.error(this.t('message.error.fetch') + error.message);
+          ElMessage.error(this.t('message.error.fetch') + error.message)
         }
       }
     },
@@ -148,27 +137,29 @@ export default {
             to: this.editorView.state.doc.length,
             insert: this.editorContent,
           },
-        });
+        })
       }
     },
     handleTabClick(pane) {
-      this.fetchConfig(pane.paneName);
+      this.fetchConfig(pane.paneName)
     },
     resetConfig() {
-      this.fetchConfig(this.activeTab, true);
-      this.unsavedChanges = false;
+      this.fetchConfig(this.activeTab, true)
+      this.unsavedChanges = false
     },
     async applyConfig() {
       try {
-        await axios.post(`/api/config/${this.activeTab}/edit`, { content: this.editorContent });
-        ElMessage.success(this.t('config.message.save.success'));
-        this.unsavedChanges = false;
+        await axios.post(`/api/config/${this.activeTab}/edit`, {
+          content: this.editorContent,
+        })
+        ElMessage.success(this.t('config.message.save.success'))
+        this.unsavedChanges = false
       } catch (error) {
-        ElMessage.error(this.t('message.error.fetch') + error.message);
+        ElMessage.error(this.t('message.error.fetch') + error.message)
       }
-    }
+    },
   },
-};
+}
 </script>
 
 <style scoped>
@@ -197,7 +188,6 @@ export default {
 }
 
 .editor-actions .el-button i {
-margin-right: 8px;
+  margin-right: 8px;
 }
-
 </style>
