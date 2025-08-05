@@ -1,5 +1,8 @@
 {
   "api_url": "http://127.0.0.1:6485",
   "locale": "zh_cn",
-  "enable_https": false
+  "enable_https": false,
+  "heartbeat_interval": 30,
+  "heartbeat_timeout": 5,
+  "heartbeat_prompt": 3
 }

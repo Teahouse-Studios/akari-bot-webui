@@ -161,6 +161,12 @@ export default {
       chatBox: null,
       websocket: null,
       connectionStatus: 'connecting',
+      heartbeatTimer: null,
+      heartbeatTimeoutTimer: null,
+      heartbeatRetryCount: 0,
+      heartbeatInterval: 30000,
+      heartbeatTimeout: 5000,
+      heartbeatPrompt: 3,
       imageDialogVisible: false,
       isMobileView: window.innerWidth < 1024,
       previewImageSrc: '',
@@ -191,11 +197,29 @@ export default {
         this.websocket = new WebSocket(wsUrl)
 
         this.websocket.onopen = () => {
-          this.connectionStatus = 'connected'
+          const interval = parseFloat(config.heartbeat_interval)
+          const timeout = parseFloat(config.heartbeat_timeout)
+          const prompt = parseInt(config.heartbeat_prompt)
+
+          this.heartbeatInterval = isNaN(interval) || interval <= 0 ? 30000 : interval * 1000
+          this.heartbeatTimeout = isNaN(timeout) || timeout <= 0 ? 5000 : timeout * 1000
+          this.heartbeatPrompt = isNaN(prompt) || prompt <= 0 ? 3 : prompt
+
+          this.startHeartbeat()
         }
 
         this.websocket.onmessage = (event) => {
           const data = JSON.parse(event.data)
+
+          clearTimeout(this.heartbeatTimeoutTimer)
+          this.heartbeatRetryCount = 0
+
+          if (data.action === 'heartbeat' && data.message === 'pong!') {
+            this.handleHeartbeatResponse()
+            return
+          }
+
+          this.connectionStatus = 'connected'
 
           if (data.action === 'delete' && Array.isArray(data.id)) {
             this.messages = this.messages.filter((msg) => !data.id.includes(msg.id))
@@ -221,6 +245,77 @@ export default {
       } catch (error) {
         this.connectionStatus = 'disconnected'
         ElMessage.error(this.t('message.error.connect') + error.message)
+      }
+    },
+
+    startHeartbeat() {
+      this.heartbeatRetryCount = 0
+      this.sendHeartbeat()
+
+      this.heartbeatTimer = setInterval(() => {
+        this.sendHeartbeat()
+      }, this.heartbeatInterval)
+    },
+
+    sendHeartbeat(immediate = false) {
+      if (!this.websocket || this.websocket.readyState !== WebSocket.OPEN) {
+        this.disconnectWebSocket()
+        this.connectionStatus = 'unconnected'
+        return
+      }
+
+      this.websocket.send(JSON.stringify({ action: 'heartbeat', message: 'ping!' }))
+
+      clearTimeout(this.heartbeatTimeoutTimer)
+      this.heartbeatTimeoutTimer = setTimeout(() => {
+        this.heartbeatRetryCount++
+        this.connectionStatus = 'connecting'
+
+        if (this.heartbeatRetryCount >= this.heartbeatPrompt) {
+          this.stopHeartbeat()
+          this.disconnectWebSocket()
+          this.connectionStatus = 'disconnected'
+          ElMessage.error(this.t('message.error.connect.server'))
+        } else {
+          this.sendHeartbeat(true)
+        }
+      }, this.heartbeatTimeout)
+
+      if (!immediate) {
+        clearInterval(this.heartbeatTimer)
+        this.heartbeatTimer = setInterval(() => {
+          this.sendHeartbeat()
+        }, this.heartbeatInterval)
+      }
+    },
+
+    handleHeartbeatResponse() {
+      clearTimeout(this.heartbeatTimeoutTimer)
+      this.heartbeatRetryCount = 0
+      this.connectionStatus = 'connected'
+    },
+
+    stopHeartbeat() {
+      clearInterval(this.heartbeatTimer)
+      clearTimeout(this.heartbeatTimeoutTimer)
+      this.heartbeatTimer = null
+      this.heartbeatTimeoutTimer = null
+    },
+
+    disconnectWebSocket() {
+      if (this.websocket) {
+        this.websocket.close()
+        this.websocket = null
+      }
+
+      if (this.heartbeatTimer) {
+        clearInterval(this.heartbeatTimer)
+        this.heartbeatTimer = null
+      }
+
+      if (this.heartbeatTimeoutTimer) {
+        clearTimeout(this.heartbeatTimeoutTimer)
+        this.heartbeatTimeoutTimer = null
       }
     },
 
@@ -375,6 +470,7 @@ export default {
   },
 
   beforeUnmount() {
+    this.stopHeartbeat()
     if (this.websocket) {
       this.websocket.close()
     }
