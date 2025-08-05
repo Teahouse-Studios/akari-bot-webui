@@ -166,7 +166,7 @@ export default {
       heartbeatRetryCount: 0,
       heartbeatInterval: 30000,
       heartbeatTimeout: 5000,
-      heartbeatPrompt: 3,
+      heartbeatAttempt: 3,
       imageDialogVisible: false,
       isMobileView: window.innerWidth < 1024,
       previewImageSrc: '',
@@ -199,11 +199,11 @@ export default {
         this.websocket.onopen = () => {
           const interval = parseFloat(config.heartbeat_interval)
           const timeout = parseFloat(config.heartbeat_timeout)
-          const prompt = parseInt(config.heartbeat_prompt)
+          const attempt = parseInt(config.heartbeat_attempt)
 
           this.heartbeatInterval = isNaN(interval) || interval <= 0 ? 30000 : interval * 1000
           this.heartbeatTimeout = isNaN(timeout) || timeout <= 0 ? 5000 : timeout * 1000
-          this.heartbeatPrompt = isNaN(prompt) || prompt <= 0 ? 3 : prompt
+          this.heartbeatAttempt = isNaN(attempt) || attempt <= 0 ? 3 : attempt
 
           this.startHeartbeat()
         }
@@ -271,7 +271,7 @@ export default {
         this.heartbeatRetryCount++
         this.connectionStatus = 'connecting'
 
-        if (this.heartbeatRetryCount >= this.heartbeatPrompt) {
+        if (this.heartbeatRetryCount >= this.heartbeatAttempt) {
           this.stopHeartbeat()
           this.disconnectWebSocket()
           this.connectionStatus = 'disconnected'
