@@ -150,7 +150,7 @@
   "setting.restart_bot.button.restart": "再起動",
   "setting.restart_bot.confirm.title": "再起動の確認",
   "setting.restart_bot.loading.text": "再起動中……このページを更新しないでください。",
-  "setting.restart_bot.message.failed": "等待超时，请检查机器人状态。",
+  "setting.restart_bot.message.failed": "タイムアウト。ボットのステータスを確認してください。",
   "setting.restart_bot.title": "ボットの再起動",
   "setting.select_language.title": "言語",
   "setting.theme_setting.button.blue": "ティーハウス青",
