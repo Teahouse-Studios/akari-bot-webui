@@ -49,15 +49,15 @@
       </div>
 
       <div v-if="visibleLogs.length === 0" class="log-viewer-placeholder">
-        There are currently no matching logs here...<br />Use the filter box above to adjust the
-        options.
+        There are currently no matching logs here...<br />
+        Use the filter box above to adjust the options.
       </div>
     </div>
   </div>
 </template>
 
 <script>
-import axios from 'axios'
+import axios from '@/axios.mjs'
 import { ElMessage } from 'element-plus'
 import { debounce } from 'lodash'
 import { useI18n } from 'vue-i18n'
@@ -75,7 +75,7 @@ export default {
       activeLogLevels: ['INFO', 'SUCCESS', 'WARNING', 'ERROR', 'CRITICAL'],
       searchText: '',
       websocket: null,
-      cancelTokenSource: axios.CancelToken.source(),
+      abortController: new AbortController(),
       autoScroll: true,
       t,
     }
@@ -84,7 +84,7 @@ export default {
     async authenticateToken() {
       try {
         const response = await axios.get('/api/verify-token', {
-          cancelToken: this.cancelTokenSource.token,
+          signal: this.abortController.signal,
         })
 
         if (response.status === 200) {
@@ -103,6 +103,14 @@ export default {
 
     async connectWebSocket() {
       try {
+        if (process.env.VUE_APP_DEMO_MODE === 'true') {
+          const mockLogWebSocket = (await import('@/mock/log_ws.js')).default
+          this.websocket = mockLogWebSocket((event) => {
+            this.logData += event.data + '\n'
+          })
+          return
+        }
+
         const config = await (await fetch('/config.json')).json()
         const enableHTTPS = config.enable_https
         let baseUrl = config.api_url
@@ -266,7 +274,7 @@ export default {
     if (this.websocket) {
       this.websocket.close()
     }
-    this.cancelTokenSource.cancel('Component unmounted')
+    this.abortController.abort()
   },
 }
 </script>

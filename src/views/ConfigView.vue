@@ -66,7 +66,7 @@ export default {
       initialContent: '',
       editorContent: '',
       fileContents: {},
-      cancelTokenSource: axios.CancelToken.source(),
+      abortController: new AbortController(),
       loading: false,
       t,
     }
@@ -75,7 +75,7 @@ export default {
     this.fetchConfigFiles()
   },
   beforeUnmount() {
-    this.cancelTokenSource.cancel('Component unmounted')
+    this.abortController.abort()
   },
   watch: {
     editorContent(newVal) {
@@ -87,7 +87,7 @@ export default {
       this.loading = true
       try {
         const response = await axios.get('/api/config', {
-          cancelToken: this.cancelTokenSource.token,
+          signal: this.abortController.signal,
         })
         this.configFiles = response.data.cfg_files
         if (this.configFiles.length > 0) {
@@ -115,7 +115,7 @@ export default {
 
       try {
         const response = await axios.get(`/api/config/${fileName}`, {
-          cancelToken: this.cancelTokenSource.token,
+          signal: this.abortController.signal,
         })
         this.fileContents[fileName] = response.data.content
         this.editorContent = response.data.content
@@ -155,7 +155,11 @@ export default {
         ElMessage.success(this.t('config.message.save.success'))
         this.unsavedChanges = false
       } catch (error) {
-        ElMessage.error(this.t('message.error.fetch') + error.message)
+        if (error.response?.status === 403 && process.env.VUE_APP_DEMO_MODE === 'true') {
+          ElMessage.error(this.t('message.error.demo'))
+        } else {
+          ElMessage.error(this.t('message.error.fetch') + error.message)
+        }
       }
     },
   },

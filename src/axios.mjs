@@ -12,22 +12,19 @@ const initAxios = async () => {
     axios.defaults.withCredentials = true;
 
     axios.interceptors.request.use(
-      (config) => {
-        return config;
-      },
-      (error) => {
-        return Promise.reject(error);
-      },
+      (config) => config,
+      (error) => Promise.reject(error),
     );
 
     axios.interceptors.response.use(
-      (response) => {
-        return response;
-      },
-      (error) => {
-        return Promise.reject(error);
-      },
+      (response) => response,
+      (error) => Promise.reject(error),
     );
+
+    if (process.env.VUE_APP_DEMO_MODE === "true") {
+      const { default: setupMock } = await import("@/mock/api");
+      setupMock();
+    }
 
     return axios;
   } catch (err) {

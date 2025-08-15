@@ -124,7 +124,7 @@ export default {
       commandStats: [],
       chartInstance: null,
       resizeObserver: null,
-      cancelTokenSource: axios.CancelToken.source(),
+      abortController: new AbortController(),
       loading: false,
     }
   },
@@ -138,7 +138,7 @@ export default {
     this.resizeObserver.observe(this.$refs.chartContainer)
   },
   beforeUnmount() {
-    this.cancelTokenSource.cancel('Component unmounted')
+    this.abortController.abort()
     if (this.resizeObserver && this.$refs.chartContainer) {
       this.resizeObserver.unobserve(this.$refs.chartContainer)
       this.resizeObserver.disconnect()
@@ -152,7 +152,7 @@ export default {
       this.loading = true
       try {
         const response = await axios.get('/api/analytics', {
-          cancelToken: this.cancelTokenSource.token,
+          signal: this.abortController.signal,
           params: { days },
         })
         const { data } = response

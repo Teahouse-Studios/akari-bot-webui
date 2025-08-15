@@ -166,7 +166,7 @@ export default {
         used: 0,
         percent: 0,
       },
-      cancelTokenSource: axios.CancelToken.source(),
+      abortController: new AbortController(),
       loading: false,
       dashboardOverflow: false,
       t,
@@ -179,7 +179,7 @@ export default {
   },
   beforeUnmount() {
     window.removeEventListener('resize', this.checkOverflow)
-    this.cancelTokenSource.cancel('Component unmounted')
+    this.abortController.abort()
   },
   methods: {
     formatRunningTime(seconds) {
@@ -233,7 +233,7 @@ export default {
       try {
         this.loading = true
         const response = await axios.get('/api/server-info', {
-          cancelToken: this.cancelTokenSource.token,
+          signal: this.abortController.signal,
         })
         const data = response.data
 

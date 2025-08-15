@@ -104,7 +104,7 @@
 </template>
 
 <script>
-import axios from 'axios'
+import axios from '@/axios.mjs'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import MarkdownIt from 'markdown-it'
 import linkAttributes from 'markdown-it-link-attributes'
@@ -170,7 +170,7 @@ export default {
       imageDialogVisible: false,
       isMobileView: window.innerWidth < 1024,
       previewImageSrc: '',
-      cancelTokenSource: axios.CancelToken.source(),
+      abortController: new AbortController(),
       debug: process.env.VUE_APP_DEBUG === 'true',
       md,
       t,
@@ -178,6 +178,29 @@ export default {
   },
   methods: {
     async connectWebSocket() {
+      if (process.env.VUE_APP_DEMO_MODE === 'true') {
+        this.connectionStatus = 'connected'
+        ElMessage.warning(this.t('chat.message.warning.demo'))
+
+        this.websocket = {
+          send: (data) => {
+            const parsed = JSON.parse(data)
+            if (parsed.action === 'send') {
+              const uuid = parsed.id || uuidv4()
+              this.messages.push({
+                from: 'user',
+                text: parsed.message[0].content,
+                html: this.renderMarkdown(parsed.message[0].content),
+                id: uuid,
+              })
+              this.scrollToBottom()
+            }
+          },
+          close: () => {},
+        }
+        return
+      }
+
       this.connectionStatus = 'connecting'
       try {
         const config = await (await fetch('/config.json')).json()
@@ -322,7 +345,7 @@ export default {
     async authenticateToken() {
       try {
         const response = await axios.get('/api/verify-token', {
-          cancelToken: this.cancelTokenSource.token,
+          signal: this.abortController.signal,
         })
 
         if (response.status === 200) {
@@ -352,13 +375,16 @@ export default {
         html: this.renderMarkdown(text),
         id: uuid,
       })
-      this.websocket?.send(
-        JSON.stringify({
-          action: 'send',
-          message: [{ type: 'text', content: text }],
-          id: uuid,
-        }),
-      )
+
+      if (process.env.VUE_APP_DEMO_MODE !== 'true') {
+        this.websocket?.send(
+          JSON.stringify({
+            action: 'send',
+            message: [{ type: 'text', content: text }],
+            id: uuid,
+          }),
+        )
+      }
       this.inputText = ''
       this.scrollToBottom()
     },
@@ -474,7 +500,7 @@ export default {
     if (this.websocket) {
       this.websocket.close()
     }
-    this.cancelTokenSource.cancel('Component unmounted')
+    this.abortController.abort()
     window.removeEventListener('resize', this.handleResize)
   },
 }

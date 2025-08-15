@@ -1,6 +1,7 @@
 <template>
   <el-config-provider :locale="elementLocale.lang">
     <div id="app">
+      <DemoWatermark />
       <div
         class="loading-overlay"
         v-if="userVerified === null"
@@ -39,6 +40,7 @@ import { inject } from 'vue'
 import axios from '@/axios.mjs'
 import AppSidebar from './components/Sidebar.vue'
 import AppHeader from './components/Header.vue'
+import DemoWatermark from './components/DemoWatermark.vue'
 import LoginModal from './components/LoginModal.vue'
 import SuggestSetPasswordModal from './components/SuggestSetPasswordModal.vue'
 import { ElMessage } from 'element-plus'
@@ -49,6 +51,7 @@ export default {
   components: {
     AppHeader,
     AppSidebar,
+    DemoWatermark,
     LoginModal,
     SuggestSetPasswordModal,
   },
@@ -57,12 +60,13 @@ export default {
     const { t } = useI18n()
 
     return {
+      csrfRefreshTimer: null,
       currentView: null,
       userVerified: null,
       isSidebarVisible: true,
       showSuggestPasswordModal: false,
       windowWidth: window.innerWidth,
-      cancelTokenSource: axios.CancelToken.source(),
+      abortController: new AbortController(),
       elementLocale,
       t,
     }
@@ -82,6 +86,9 @@ export default {
     '$route.name': 'loadCurrentView',
   },
   beforeUnmount() {
+    if (this.csrfRefreshTimer) {
+      clearInterval(this.csrfRefreshTimer)
+    }
     window.removeEventListener('resize', this.updateSidebarVisibility)
   },
   methods: {
@@ -91,14 +98,18 @@ export default {
         if (response.status === 200) {
           this.userVerified = true
 
-          const noPassword = response.data.no_password
-
-          const promptDisabled = localStorage.getItem('noPasswordPromptDisabled') === 'true'
-          if (noPassword && !promptDisabled) {
+          if (process.env.VUE_APP_DEMO_MODE === 'true') {
             this.showSuggestPasswordModal = true
+          } else {
+            const noPassword = response.data.no_password
+            const promptDisabled = localStorage.getItem('noPasswordPromptDisabled') === 'true'
+            if (noPassword && !promptDisabled) {
+              this.showSuggestPasswordModal = true
+            }
           }
 
           await this.checkCsrfToken()
+          this.startCsrfAutoRefresh()
           this.loadCurrentView(this.$route.name)
         } else {
           this.checkPassword()
@@ -119,6 +130,7 @@ export default {
           }
 
           await this.checkCsrfToken()
+          this.startCsrfAutoRefresh()
           this.loadCurrentView(this.$route.name)
         }
       } catch (error) {
@@ -149,7 +161,7 @@ export default {
 
           if (csrfTokenFromResponse) {
             Cookies.set('XSRF-TOKEN', csrfTokenFromResponse, {
-              expires: 60 / (24 * 60),
+              expires: 1,
               sameSite: 'Strict',
               secure: enableHTTPS,
             })
@@ -159,6 +171,26 @@ export default {
           }
         }
       }
+    },
+    startCsrfAutoRefresh() {
+      if (this.csrfRefreshTimer) {
+        clearInterval(this.csrfRefreshTimer)
+      }
+      this.csrfRefreshTimer = setInterval(
+        async () => {
+          try {
+            const verifyRes = await axios.get('/api/verify-token')
+            if (verifyRes.status === 200) {
+              await this.checkCsrfToken()
+            } else {
+              clearInterval(this.csrfRefreshTimer)
+            }
+          } catch (err) {
+            clearInterval(this.csrfRefreshTimer)
+          }
+        },
+        6 * 60 * 60 * 1000,
+      )
     },
     updateSidebarVisibility() {
       this.windowWidth = window.innerWidth

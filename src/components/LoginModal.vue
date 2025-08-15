@@ -13,8 +13,9 @@
         <el-checkbox v-model="rememberDevice">{{ $t('login.checkbox.remember') }}</el-checkbox>
         <span
           class="forgot-password"
-          @mouseenter="showTooltip = true"
-          @mouseleave="showTooltip = false"
+          @mouseenter="onHoverStart"
+          @mouseleave="onHoverEnd"
+          @click="onClickText"
           >{{ $t('login.forgot_password.text') }}
         </span>
         <div v-show="showTooltip" class="tooltip">
@@ -75,6 +76,39 @@ export default {
         this.loading = false
       }
     },
+    onHoverStart() {
+      if (!this.isTouchDevice()) {
+        this.showTooltip = true
+      }
+    },
+    onHoverEnd() {
+      if (!this.isTouchDevice()) {
+        this.showTooltip = false
+      }
+    },
+    onClickText(event) {
+      if (this.isTouchDevice()) {
+        this.showTooltip = !this.showTooltip
+        event.stopPropagation()
+      }
+    },
+    isTouchDevice() {
+      return 'ontouchstart' in window || navigator.maxTouchPoints > 0
+    },
+  },
+  mounted() {
+    document.addEventListener('click', () => {
+      if (this.isTouchDevice()) {
+        this.showTooltip = false
+      }
+    })
+  },
+  beforeUnmount() {
+    document.removeEventListener('click', () => {
+      if (this.isTouchDevice()) {
+        this.showTooltip = false
+      }
+    })
   },
 }
 </script>

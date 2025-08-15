@@ -84,7 +84,7 @@
         </el-table-column>
         <el-table-column :label="$t('data.user.table.sender_data')" min-width="140">
           <template #default="{ row }">
-            <el-popover placement="top" width="300" trigger="hover">
+            <el-popover placement="top" width="300" :hide-after="0" :trigger="['hover', 'click']">
               <pre>{{ JSON.stringify(row.sender_data, null, 2) }}</pre>
               <template #reference>
                 <el-button size="mini" type="text">{{ $t('data.table.text.detail') }}</el-button>
@@ -170,7 +170,7 @@
 </template>
 
 <script>
-import axios from 'axios'
+import axios from '@/axios.mjs'
 import { ElMessage } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 
@@ -198,7 +198,7 @@ export default {
       totalItems: 0,
       debounceTimer: null,
       loading: false,
-      cancelTokenSource: axios.CancelToken.source(),
+      abortController: new AbortController(),
       t,
     }
   },
@@ -206,7 +206,7 @@ export default {
     this.refreshData()
   },
   beforeUnmount() {
-    this.cancelTokenSource.cancel('Component unmounted')
+    this.abortController.abort()
   },
   methods: {
     debouncedRefresh() {
@@ -224,7 +224,7 @@ export default {
       this.loading = true
       try {
         const response = await axios.get('/api/sender', {
-          cancelToken: this.cancelTokenSource.token,
+          signal: this.abortController.signal,
           params: {
             prefix: this.selectedPrefix || undefined,
             status: this.selectedStatus || undefined,
@@ -299,7 +299,11 @@ export default {
         this.editDialogVisible = false
         this.fetchData()
       } catch (error) {
-        ElMessage.error(this.t('message.error.fetch') + error.message)
+        if (error.response?.status === 403 && process.env.VUE_APP_DEMO_MODE === 'true') {
+          ElMessage.error(this.t('message.error.demo'))
+        } else {
+          ElMessage.error(this.t('message.error.fetch') + error.message)
+        }
       }
     },
     confirmDelete(row) {
@@ -325,7 +329,11 @@ export default {
         ElMessage.success(this.t('data.message.success.delete'))
         this.fetchData()
       } catch (error) {
-        ElMessage.error(this.t('message.error.fetch') + error.message)
+        if (error.response?.status === 403 && process.env.VUE_APP_DEMO_MODE === 'true') {
+          ElMessage.error(this.t('message.error.demo'))
+        } else {
+          ElMessage.error(this.t('message.error.fetch') + error.message)
+        }
       }
     },
   },

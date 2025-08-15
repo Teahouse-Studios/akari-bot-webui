@@ -16,10 +16,11 @@ import './styles/theme-akari/dark/var.css'
 fetch('/config.json')
   .then((res) => res.json())
   .then((config) => {
-    const locale = config.locale || 'zh_cn'
+    const config_locale = config.locale || 'zh_cn'
     if (!localStorage.getItem('language')) {
-      localStorage.setItem('language', locale)
+      localStorage.setItem('language', config_locale)
     }
+    const locale = localStorage.getItem('language')
 
     const i18n = createI18n({
       legacy: false,
