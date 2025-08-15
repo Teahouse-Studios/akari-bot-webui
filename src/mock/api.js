@@ -24,9 +24,7 @@ export default function setupMock() {
 
   mock.onPost('/api/auth').reply(200, { message: 'Success' })
 
-  mock.onPost('/api/change-password').reply(403, {
-    detail: 'Cannot edit data in demo mode',
-  })
+  mock.onPost('/api/change-password').reply(200, { message: 'Success' })
   mock.onGet('/api/server-info').reply(200, {
     message: 'Success',
     os: {
