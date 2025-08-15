@@ -102,25 +102,29 @@ export default {
     },
 
     async connectWebSocket() {
+      if (process.env.VUE_APP_DEMO_MODE === 'true') {
+        const mockLogWebSocket = (await import('@/mock/log_ws.js')).default
+        this.websocket = mockLogWebSocket((event) => {
+          this.logData += event.data + '\n'
+        })
+        return
+      }
+
+      let config = {}
       try {
-        if (process.env.VUE_APP_DEMO_MODE === 'true') {
-          const mockLogWebSocket = (await import('@/mock/log_ws.js')).default
-          this.websocket = mockLogWebSocket((event) => {
-            this.logData += event.data + '\n'
-          })
-          return
+        const response = await fetch('/config.json')
+        if (response.ok) {
+          config = await response.json()
         }
+      } catch (e) {}
 
-        const config = await (await fetch('/config.json')).json()
-        const enableHTTPS = config.enable_https
-        let baseUrl = config.api_url
+      const enableHTTPS = config.enable_https ?? window.location.protocol === 'https:'
+      let baseUrl = config.api_url || window.location.origin
+      if (!/^https?:\/\//i.test(baseUrl)) {
+        baseUrl = (enableHTTPS ? 'https://' : 'http://') + baseUrl
+      }
 
-        if (!baseUrl) {
-          baseUrl = window.location.origin
-        } else if (!/^https?:\/\//i.test(baseUrl)) {
-          baseUrl = (enableHTTPS ? 'https://' : 'http://') + baseUrl
-        }
-
+      try {
         const url = new URL(baseUrl)
         const wsProtocol = url.protocol === 'https:' ? 'wss:' : 'ws:'
         const wsUrl = `${wsProtocol}//${url.hostname}${url.port ? `:${url.port}` : ''}/ws/logs`

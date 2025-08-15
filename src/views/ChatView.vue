@@ -202,17 +202,21 @@ export default {
       }
 
       this.connectionStatus = 'connecting'
+      let config = {}
       try {
-        const config = await (await fetch('/config.json')).json()
-        const enableHTTPS = config.enable_https
-        let baseUrl = config.api_url
-
-        if (!baseUrl) {
-          baseUrl = window.location.origin
-        } else if (!/^https?:\/\//i.test(baseUrl)) {
-          baseUrl = (enableHTTPS ? 'https://' : 'http://') + baseUrl
+        const response = await fetch('/config.json')
+        if (response.ok) {
+          config = await response.json()
         }
+      } catch (e) {}
 
+      const enableHTTPS = config.enable_https ?? window.location.protocol === 'https:'
+      let baseUrl = config.api_url || window.location.origin
+      if (!/^https?:\/\//i.test(baseUrl)) {
+        baseUrl = (enableHTTPS ? 'https://' : 'http://') + baseUrl
+      }
+
+      try {
         const url = new URL(baseUrl)
         const wsProtocol = url.protocol === 'https:' ? 'wss:' : 'ws:'
         const wsUrl = `${wsProtocol}//${url.hostname}${url.port ? `:${url.port}` : ''}/ws/chat`

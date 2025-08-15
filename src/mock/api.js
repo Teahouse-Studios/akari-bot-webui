@@ -116,43 +116,99 @@ export default function setupMock() {
   mock.onPost('/api/config/bot_web.toml/edit').reply(403, {
     detail: 'Cannot edit data in demo mode',
   })
-  mock.onGet('/api/target').reply(200, {
-    message: 'Success',
-    target_list: [
+
+  const mockTargets = [
+    {
+      target_data: {},
+      blocked: false,
+      target_id: 'Web|Console|0',
+      muted: false,
+      custom_admins: [],
+      modules: ['wiki'],
+      banned_users: [],
+      locale: 'zh_cn',
+    },
+  ]
+
+  mock.onGet('/api/target').reply((config) => {
+    let { prefix, status, id } = config.params || {}
+
+    let filtered = mockTargets
+
+    if (prefix) {
+      filtered = filtered.filter((item) => item.target_id.startsWith(`${prefix}|`))
+    }
+
+    if (status === 'muted') {
+      filtered = filtered.filter((item) => item.muted === true)
+    } else if (status === 'blocked') {
+      filtered = filtered.filter((item) => item.blocked === true)
+    }
+
+    if (id) {
+      filtered = filtered.filter((item) => item.target_id.toLowerCase().includes(id.toLowerCase()))
+    }
+
+    return [
+      200,
       {
-        target_data: {},
-        blocked: false,
-        target_id: 'Web|Console|0',
-        muted: false,
-        custom_admins: [],
-        modules: ['wiki'],
-        banned_users: [],
-        locale: 'zh_cn',
+        message: 'Success',
+        target_list: filtered,
+        total: filtered.length,
       },
-    ],
-    total: 1,
+    ]
   })
+
   mock.onPost('/api/target/Web|Console|0/edit').reply(403, {
     detail: 'Cannot edit data in demo mode',
   })
   mock.onPost('/api/target/Web|Console|0/delete').reply(403, {
     detail: 'Cannot edit data in demo mode',
   })
-  mock.onGet('/api/sender').reply(200, {
-    message: 'Success',
-    sender_list: [
+
+  const mockSenders = [
+    {
+      sender_id: 'Web|0',
+      sender_data: {},
+      blocked: false,
+      superuser: true,
+      petal: 0,
+      warns: 0,
+      trusted: false,
+    },
+  ]
+
+  mock.onGet('/api/sender').reply((config) => {
+    let { prefix, status, id } = config.params || {}
+
+    let filtered = mockSenders
+
+    if (prefix) {
+      filtered = filtered.filter((item) => item.sender_id.startsWith(`${prefix}|`))
+    }
+
+    if (status === 'superuser') {
+      filtered = filtered.filter((item) => item.superuser === true)
+    } else if (status === 'trusted') {
+      filtered = filtered.filter((item) => item.trusted === true)
+    } else if (status === 'blocked') {
+      filtered = filtered.filter((item) => item.blocked === true)
+    }
+
+    if (id) {
+      filtered = filtered.filter((item) => item.sender_id.toLowerCase().includes(id.toLowerCase()))
+    }
+
+    return [
+      200,
       {
-        sender_id: 'Web|0',
-        sender_data: {},
-        blocked: false,
-        superuser: true,
-        petal: 0,
-        warns: 0,
-        trusted: false,
+        message: 'Success',
+        sender_list: filtered,
+        total: filtered.length,
       },
-    ],
-    total: 1,
+    ]
   })
+
   mock.onPost('/api/sender/Web|0/edit').reply(403, {
     detail: 'Cannot edit data in demo mode',
   })

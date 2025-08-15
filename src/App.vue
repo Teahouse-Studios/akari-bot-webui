@@ -146,8 +146,19 @@ export default {
       }
     },
     async checkCsrfToken() {
-      const config = await (await fetch('/config.json')).json()
-      const enableHTTPS = config.enable_https
+      let enableHTTPS = false
+
+      try {
+        const response = await fetch('/config.json')
+        if (response.ok) {
+          const config = await response.json()
+          enableHTTPS = !!config.enable_https
+        } else {
+          enableHTTPS = window.location.protocol === 'https:'
+        }
+      } catch (error) {
+        enableHTTPS = window.location.protocol === 'https:'
+      }
 
       let csrfToken = Cookies.get('XSRF-TOKEN')
 
@@ -166,12 +177,13 @@ export default {
               secure: enableHTTPS,
             })
 
-            let csrfToken = Cookies.get('XSRF-TOKEN')
+            csrfToken = Cookies.get('XSRF-TOKEN')
             axios.defaults.headers.common['X-XSRF-TOKEN'] = csrfToken
           }
         }
       }
     },
+
     startCsrfAutoRefresh() {
       if (this.csrfRefreshTimer) {
         clearInterval(this.csrfRefreshTimer)
