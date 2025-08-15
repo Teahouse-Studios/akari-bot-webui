@@ -36,7 +36,7 @@ export default function setupMock() {
     bot: {
       running_time: 42314,
       python_version: '3.12.8',
-      version: 'badf0d',
+      version: 'badf8d',
       web_render_status: false,
     },
     cpu: {
