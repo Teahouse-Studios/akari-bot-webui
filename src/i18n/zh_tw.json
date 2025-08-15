@@ -22,7 +22,7 @@
   "chat.chatbox.text.prompt3.prefix": "按下",
   "chat.chatbox.text.prompt3.suffix": "換行",
   "chat.chatbox.title": "你好！我是 AkariBot",
-  "chat.external_link.confirm.message": "你即將前往外部連結：{url}，你確定嗎？",
+  "chat.external_link.confirm.message": "即將前往外部連結：{url}，你確定嗎？",
   "chat.external_link.confirm.title": "外部連結警告",
   "chat.input.send": "傳送訊息……",
   "chat.message.warning.demo": "演示模式下可傳送訊息，但無法收到回复",
