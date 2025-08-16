@@ -173,7 +173,7 @@ export default {
       previewImageSrc: '',
       abortController: new AbortController(),
       // debug: process.env.VUE_APP_DEBUG === 'true',
-      debug: true,
+      debug: false,
       md,
       t,
     }
