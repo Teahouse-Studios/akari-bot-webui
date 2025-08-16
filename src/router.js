@@ -57,6 +57,10 @@ const routes = [
     path: '/webui/:pathMatch(.*)*',
     redirect: '/webui/dashboard',
   },
+  {
+    path: '/',
+    redirect: '/webui',
+  },
 ]
 
 const router = createRouter({
