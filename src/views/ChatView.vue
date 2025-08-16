@@ -382,7 +382,7 @@ export default {
         id: uuid,
       })
 
-      if (IS_DEMO) {
+      if (!IS_DEMO) {
         this.websocket?.send(
           JSON.stringify({
             action: 'send',
