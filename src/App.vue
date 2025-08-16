@@ -46,6 +46,7 @@ import SuggestSetPasswordModal from './components/SuggestSetPasswordModal.vue'
 import { ElMessage } from 'element-plus'
 import Cookies from 'js-cookie'
 import { useI18n } from 'vue-i18n'
+import { IS_DEMO } from './const'
 
 export default {
   components: {
@@ -98,7 +99,7 @@ export default {
         if (response.status === 200) {
           this.userVerified = true
 
-          if (process.env.VUE_APP_DEMO_MODE === 'true') {
+          if (IS_DEMO) {
             this.showSuggestPasswordModal = true
           } else {
             const noPassword = response.data.no_password

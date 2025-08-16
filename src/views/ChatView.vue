@@ -105,6 +105,7 @@
 
 <script>
 import axios from '@/axios.mjs'
+import { IS_DEMO } from '@/const'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import MarkdownIt from 'markdown-it'
 import linkAttributes from 'markdown-it-link-attributes'
@@ -171,14 +172,15 @@ export default {
       isMobileView: window.innerWidth < 1024,
       previewImageSrc: '',
       abortController: new AbortController(),
-      debug: process.env.VUE_APP_DEBUG === 'true',
+      // debug: process.env.VUE_APP_DEBUG === 'true',
+      debug: true,
       md,
       t,
     }
   },
   methods: {
     async connectWebSocket() {
-      if (process.env.VUE_APP_DEMO_MODE === 'true') {
+      if (IS_DEMO) {
         this.connectionStatus = 'connected'
         ElMessage.warning(this.t('chat.message.warning.demo'))
 
@@ -380,7 +382,7 @@ export default {
         id: uuid,
       })
 
-      if (process.env.VUE_APP_DEMO_MODE !== 'true') {
+      if (IS_DEMO) {
         this.websocket?.send(
           JSON.stringify({
             action: 'send',

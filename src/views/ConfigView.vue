@@ -47,6 +47,7 @@ import VisibleEditor from '@/components/config/VisibleEditor.vue'
 import SourceEditor from '@/components/config/SourceEditor.vue'
 import { ElMessage } from 'element-plus'
 import { useI18n } from 'vue-i18n'
+import { IS_DEMO } from '@/const'
 
 export default {
   name: 'ConfigView',
@@ -155,7 +156,7 @@ export default {
         ElMessage.success(this.t('config.message.save.success'))
         this.unsavedChanges = false
       } catch (error) {
-        if (error.response?.status === 403 && process.env.VUE_APP_DEMO_MODE === 'true') {
+        if (error.response?.status === 403 && IS_DEMO) {
           ElMessage.error(this.t('message.error.demo'))
         } else {
           ElMessage.error(this.t('message.error.fetch') + error.message)

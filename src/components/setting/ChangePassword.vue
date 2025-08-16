@@ -58,6 +58,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 import axios from '@/axios.mjs'
 import Cookies from 'js-cookie'
+import { IS_DEMO } from '@/const'
 
 export default {
   data() {
@@ -107,8 +108,7 @@ export default {
     }
   },
   mounted() {
-    this.noPassword =
-      localStorage.getItem('noPassword') === 'true' || process.env.VUE_APP_DEMO_MODE === 'true'
+    this.noPassword = localStorage.getItem('noPassword') === 'true' || IS_DEMO
   },
   methods: {
     async handleUpdatePassword() {
@@ -136,7 +136,7 @@ export default {
       } catch (error) {
         if (error.response?.status === 401) {
           ElMessage.error(this.$t('setting.change_password.message.failed'))
-        } else if (error.response?.status === 403 && process.env.VUE_APP_DEMO_MODE === 'true') {
+        } else if (error.response?.status === 403 && IS_DEMO) {
           ElMessage.error(this.t('message.error.demo'))
         } else {
           ElMessage.error(this.$t('message.error.fetch') + error.message)

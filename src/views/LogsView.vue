@@ -58,6 +58,7 @@
 
 <script>
 import axios from '@/axios.mjs'
+import { IS_DEMO } from '@/const'
 import { ElMessage } from 'element-plus'
 import { debounce } from 'lodash'
 import { useI18n } from 'vue-i18n'
@@ -102,7 +103,7 @@ export default {
     },
 
     async connectWebSocket() {
-      if (process.env.VUE_APP_DEMO_MODE === 'true') {
+      if (IS_DEMO) {
         const mockLogWebSocket = (await import('@/mock/log_ws.js')).default
         this.websocket = mockLogWebSocket((event) => {
           this.logData += event.data + '\n'

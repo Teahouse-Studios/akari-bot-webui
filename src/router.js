@@ -6,9 +6,10 @@ import LogsView from './views/LogsView.vue'
 import ChatView from './views/ChatView.vue'
 import SettingView from './views/SettingView.vue'
 import AboutView from './views/AboutView.vue'
+import { IS_DEMO } from './const'
 
 const routes = [
-  ...(process.env.VUE_APP_DEMO_MODE === 'true'
+  ...(IS_DEMO
     ? [
         {
           path: '/',

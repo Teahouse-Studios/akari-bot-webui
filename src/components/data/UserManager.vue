@@ -171,6 +171,7 @@
 
 <script>
 import axios from '@/axios.mjs'
+import { IS_DEMO } from '@/const'
 import { ElMessage } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 
@@ -299,7 +300,7 @@ export default {
         this.editDialogVisible = false
         this.fetchData()
       } catch (error) {
-        if (error.response?.status === 403 && process.env.VUE_APP_DEMO_MODE === 'true') {
+        if (error.response?.status === 403 && IS_DEMO) {
           ElMessage.error(this.t('message.error.demo'))
         } else {
           ElMessage.error(this.t('message.error.fetch') + error.message)
@@ -329,7 +330,7 @@ export default {
         ElMessage.success(this.t('data.message.success.delete'))
         this.fetchData()
       } catch (error) {
-        if (error.response?.status === 403 && process.env.VUE_APP_DEMO_MODE === 'true') {
+        if (error.response?.status === 403 && IS_DEMO) {
           ElMessage.error(this.t('message.error.demo'))
         } else {
           ElMessage.error(this.t('message.error.fetch') + error.message)

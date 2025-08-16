@@ -12,11 +12,13 @@
 </template>
 
 <script>
+import { IS_DEMO } from '@/const'
+
 export default {
   name: 'DemoWatermark',
   data() {
     return {
-      isDemoMode: process.env.VUE_APP_DEMO_MODE === 'true',
+      isDemoMode: IS_DEMO,
       watermarks: [],
       spacingX: 300,
       spacingY: 200,
