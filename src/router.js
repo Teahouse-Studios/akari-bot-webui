@@ -8,15 +8,6 @@ import SettingView from './views/SettingView.vue'
 import AboutView from './views/AboutView.vue'
 
 const routes = [
-  ...(process.env.VUE_APP_DEMO_MODE === 'true'
-    ? [
-        {
-          path: '/',
-          redirect: '/webui',
-        },
-      ]
-    : []),
-
   {
     path: '/webui/dashboard',
     name: 'dashboard',
@@ -55,6 +46,10 @@ const routes = [
   {
     path: '/webui/:pathMatch(.*)*',
     redirect: '/webui/dashboard',
+  },
+  {
+    path: '/',
+    redirect: '/webui',
   },
 ]
 
