@@ -108,7 +108,18 @@
 import { ElMessage } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 import axios from '@/axios.mjs'
-import * as echarts from 'echarts'
+import * as echarts from 'echarts/core'
+import {LineChart} from 'echarts/charts'
+import {
+  TitleComponent,
+  TooltipComponent,
+  GridComponent,
+  DatasetComponent,
+  TransformComponent,
+  DataZoomComponent
+} from 'echarts/components';
+import { LabelLayout, UniversalTransition } from 'echarts/features';
+import { CanvasRenderer } from 'echarts/renderers';
 
 export default {
   data() {
@@ -136,6 +147,18 @@ export default {
     })
 
     this.resizeObserver.observe(this.$refs.chartContainer)
+    echarts.use([
+      LineChart,
+      TitleComponent,
+      TooltipComponent,
+      GridComponent,
+      DatasetComponent,
+      TransformComponent,
+      LabelLayout,
+      UniversalTransition,
+      CanvasRenderer,
+      DataZoomComponent
+    ])
   },
   beforeUnmount() {
     this.abortController.abort()

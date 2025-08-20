@@ -1,5 +1,6 @@
 import axios from "axios";
 import { IS_DEMO } from "./const";
+import setupMock from "@/mock/api";
 
 const initAxios = async () => {
   let apiUrl = window.location.origin;
@@ -30,7 +31,6 @@ const initAxios = async () => {
   );
 
   if (IS_DEMO) {
-    const { default: setupMock } = await import("@/mock/api");
     setupMock();
   }
 

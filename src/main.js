@@ -4,7 +4,7 @@ import App from './App.vue'
 import router from '@/router'
 import ElementPlus from 'element-plus'
 import { elementPlusLangMap } from './element-plus-langmap'
-import '@fortawesome/fontawesome-free/css/all.css'
+// import '@fortawesome/fontawesome-free/css/all.css'
 import '@mdi/font/css/materialdesignicons.css'
 import zh_cn from './i18n/zh_cn.json'
 import zh_tw from './i18n/zh_tw.json'
@@ -40,7 +40,7 @@ function initApp(config) {
   })
 
   app.provide('elementLocale', elementPlusLocale)
-  app.use(ElementPlus, { locale: elementPlusLocale.lang })
+  // app.use(ElementPlus, { locale: elementPlusLocale.lang })
   app.use(i18n)
   app.use(router)
 

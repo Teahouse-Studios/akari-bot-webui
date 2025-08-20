@@ -12,7 +12,7 @@
     <div class="repo-buttons">
       <div class="github-link">
         <el-button class="repo-button" @click="goToRepo">
-          <i class="fab fa-github"></i>
+          <i class="mdi mdi-github"></i>
           <span>{{ $t('about.button.repo.main') }}</span>
         </el-button>
         <img
@@ -23,7 +23,7 @@
       </div>
       <div class="github-link">
         <el-button class="repo-button" @click="goToWebUIRepo">
-          <i class="fab fa-github"></i>
+          <i class="mdi mdi-github"></i>
           <span>{{ $t('about.button.repo.webui') }}</span>
         </el-button>
         <img
