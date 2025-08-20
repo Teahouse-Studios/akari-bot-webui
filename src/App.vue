@@ -45,7 +45,6 @@ import DemoWatermark from './components/DemoWatermark.vue'
 import LoginModal from './components/LoginModal.vue'
 import SuggestSetPasswordModal from './components/SuggestSetPasswordModal.vue'
 import { ElMessage } from 'element-plus'
-import Cookies from 'js-cookie'
 import { useI18n } from 'vue-i18n'
 import { IS_DEMO } from './const'
 
@@ -62,7 +61,6 @@ export default {
     const { t } = useI18n()
 
     return {
-      csrfRefreshTimer: null,
       currentView: null,
       userVerified: null,
       isSidebarVisible: true,
@@ -85,9 +83,6 @@ export default {
     this.observeThemeChange()
   },
   beforeUnmount() {
-    if (this.csrfRefreshTimer) {
-      clearInterval(this.csrfRefreshTimer)
-    }
     window.removeEventListener('resize', this.updateSidebarVisibility)
   },
   methods: {
@@ -106,9 +101,6 @@ export default {
               this.showSuggestPasswordModal = true
             }
           }
-
-          await this.checkCsrfToken()
-          this.startCsrfAutoRefresh()
           // this.loadCurrentView(this.$route.name)
         } else {
           this.checkPassword()
@@ -127,9 +119,6 @@ export default {
           if (!promptDisabled) {
             this.showSuggestPasswordModal = true
           }
-
-          await this.checkCsrfToken()
-          this.startCsrfAutoRefresh()
           // this.loadCurrentView(this.$route.name)
         }
       } catch (error) {
@@ -143,65 +132,6 @@ export default {
           ElMessage.error(this.t('message.error.fetch') + error.message)
         }
       }
-    },
-    async checkCsrfToken() {
-      let enableHTTPS = false
-
-      try {
-        const response = await fetch('/config.json')
-        if (response.ok) {
-          const config = await response.json()
-          enableHTTPS = !!config.enable_https
-        } else {
-          enableHTTPS = window.location.protocol === 'https:'
-        }
-      } catch (error) {
-        enableHTTPS = window.location.protocol === 'https:'
-      }
-
-      let csrfToken = Cookies.get('XSRF-TOKEN')
-
-      if (csrfToken) {
-        axios.defaults.headers.common['X-XSRF-TOKEN'] = csrfToken
-      } else {
-        const response = await axios.get('/api/get-csrf-token')
-
-        if (response.status === 200) {
-          const csrfTokenFromResponse = response.data.csrf_token
-
-          if (csrfTokenFromResponse) {
-            Cookies.set('XSRF-TOKEN', csrfTokenFromResponse, {
-              expires: 1,
-              sameSite: 'Strict',
-              secure: enableHTTPS,
-            })
-
-            csrfToken = Cookies.get('XSRF-TOKEN')
-            axios.defaults.headers.common['X-XSRF-TOKEN'] = csrfToken
-          }
-        }
-      }
-    },
-
-    startCsrfAutoRefresh() {
-      if (this.csrfRefreshTimer) {
-        clearInterval(this.csrfRefreshTimer)
-      }
-      this.csrfRefreshTimer = setInterval(
-        async () => {
-          try {
-            const verifyRes = await axios.get('/api/verify-token')
-            if (verifyRes.status === 200) {
-              await this.checkCsrfToken()
-            } else {
-              clearInterval(this.csrfRefreshTimer)
-            }
-          } catch (err) {
-            clearInterval(this.csrfRefreshTimer)
-          }
-        },
-        6 * 60 * 60 * 1000,
-      )
     },
     updateSidebarVisibility() {
       this.windowWidth = window.innerWidth
@@ -370,3 +300,4 @@ export default {
   }
 }
 </style>
+

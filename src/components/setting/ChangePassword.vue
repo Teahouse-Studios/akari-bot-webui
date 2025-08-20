@@ -57,7 +57,6 @@
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 import axios from '@/axios.mjs'
-import Cookies from 'js-cookie'
 import { IS_DEMO } from '@/const'
 
 export default {
@@ -130,7 +129,6 @@ export default {
         const response = await axios.post('/api/change-password', requestData)
 
         if (response.status === 200) {
-          Cookies.remove('XSRF-TOKEN')
           location.reload()
         }
       } catch (error) {
@@ -179,7 +177,6 @@ export default {
         if (response.status === 200) {
           ElMessage.success(this.$t('setting.change_password.message.success.clear'))
           localStorage.removeItem('noPasswordPromptDisabled')
-          Cookies.remove('XSRF-TOKEN')
           location.reload()
         }
       } catch (error) {
