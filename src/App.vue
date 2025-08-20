@@ -27,7 +27,8 @@
           ]"
           :style="{ marginLeft: sidebarMarginLeft }"
         >
-          <component :is="currentView" v-if="userVerified" :userVerified="userVerified"></component>
+          <RouterView v-if="userVerified"/>
+          <!-- <component :is="currentView" v-if="userVerified" :userVerified="userVerified"></component> -->
         </el-main>
         <div class="content-footer"></div>
       </el-container>
@@ -83,9 +84,6 @@ export default {
     this.initializeUserVerification()
     this.observeThemeChange()
   },
-  watch: {
-    '$route.name': 'loadCurrentView',
-  },
   beforeUnmount() {
     if (this.csrfRefreshTimer) {
       clearInterval(this.csrfRefreshTimer)
@@ -100,7 +98,7 @@ export default {
           this.userVerified = true
 
           if (IS_DEMO) {
-            this.showSuggestPasswordModal = true
+            // this.showSuggestPasswordModal = true
           } else {
             const noPassword = response.data.no_password
             const promptDisabled = localStorage.getItem('noPasswordPromptDisabled') === 'true'
@@ -111,7 +109,7 @@ export default {
 
           await this.checkCsrfToken()
           this.startCsrfAutoRefresh()
-          this.loadCurrentView(this.$route.name)
+          // this.loadCurrentView(this.$route.name)
         } else {
           this.checkPassword()
         }
@@ -132,7 +130,7 @@ export default {
 
           await this.checkCsrfToken()
           this.startCsrfAutoRefresh()
-          this.loadCurrentView(this.$route.name)
+          // this.loadCurrentView(this.$route.name)
         }
       } catch (error) {
         if (error.response?.status === 401) {
@@ -210,11 +208,7 @@ export default {
       this.isSidebarVisible = this.windowWidth > 1024
     },
     handleMenuSelect(view) {
-      const viewComponent = `${view.charAt(0).toUpperCase() + view.slice(1)}View`
-      import(`./views/${viewComponent}.vue`).then((module) => {
-        this.currentView = module.default
-        this.$router.push({ name: view })
-      })
+      this.$router.push({ name: view })
     },
     toggleSidebar() {
       if (this.windowWidth <= 1024) {
@@ -223,23 +217,6 @@ export default {
     },
     closeSidebar() {
       this.isSidebarVisible = false
-    },
-    loadCurrentView(newRouteName) {
-      if (this.userVerified) {
-        const viewMap = {
-          dashboard: 'Dashboard',
-          config: 'Config',
-          data: 'Data',
-          logs: 'Logs',
-          chat: 'Chat',
-          setting: 'Setting',
-          about: 'About',
-        }
-        const viewName = viewMap[newRouteName] || 'Empty'
-        import(`./views/${viewName}View.vue`).then((module) => {
-          this.currentView = module.default
-        })
-      }
     },
     applyThemeColor(color) {
       if (!color) return

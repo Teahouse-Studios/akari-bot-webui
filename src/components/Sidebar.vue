@@ -1,31 +1,31 @@
 <template>
   <el-aside width="200px" class="sidebar">
     <el-menu :default-active="activeMenu" class="sidebar-menu" @select="handleSelect">
-      <el-menu-item index="dashboard">
+      <el-menu-item index="/dashboard">
         <i class="mdi mdi-view-dashboard"></i>
         <span>{{ $t('sidebar.item.dashboard') }}</span>
       </el-menu-item>
-      <el-menu-item index="config">
+      <el-menu-item index="/config">
         <i class="mdi mdi-cog"></i>
         <span>{{ $t('sidebar.item.config') }}</span>
       </el-menu-item>
-      <el-menu-item index="data">
+      <el-menu-item index="/data">
         <i class="mdi mdi-database"></i>
         <span>{{ $t('sidebar.item.data') }}</span>
       </el-menu-item>
-      <el-menu-item index="logs">
+      <el-menu-item index="/logs">
         <i class="mdi mdi-console"></i>
         <span>{{ $t('sidebar.item.logs') }}</span>
       </el-menu-item>
-      <el-menu-item index="chat">
+      <el-menu-item index="/chat">
         <i class="mdi mdi-chat"></i>
         <span>{{ $t('sidebar.item.chat') }}</span>
       </el-menu-item>
-      <el-menu-item index="setting">
+      <el-menu-item index="/setting">
         <i class="mdi mdi-tune"></i>
         <span>{{ $t('sidebar.item.setting') }}</span>
       </el-menu-item>
-      <el-menu-item index="about">
+      <el-menu-item index="/about">
         <i class="mdi mdi-information-outline"></i>
         <span>{{ $t('sidebar.item.about') }}</span>
       </el-menu-item>
@@ -48,12 +48,13 @@ export default {
   },
   methods: {
     getActiveMenuFromRoute() {
-      const validPaths = ['dashboard', 'config', 'data', 'logs', 'chat', 'setting', 'about']
-      const path = this.$route.name
-      if (validPaths.includes(path)) {
-        return path
-      }
-      return ''
+      return this.$route.name
+      // const validPaths = ['dashboard', 'config', 'data', 'logs', 'chat', 'setting', 'about']
+      // const path = this.$route.name
+      // if (validPaths.includes(path)) {
+      //   return path
+      // }
+      // return ''
     },
     handleSelect(index) {
       this.activeMenu = index
