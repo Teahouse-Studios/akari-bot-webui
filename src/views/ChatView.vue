@@ -173,7 +173,7 @@ export default {
       previewImageSrc: '',
       abortController: new AbortController(),
       // debug: process.env.VUE_APP_DEBUG === 'true',
-      debug: true,
+      debug: false,
       md,
       t,
     }
@@ -382,7 +382,7 @@ export default {
         id: uuid,
       })
 
-      if (IS_DEMO) {
+      if (!IS_DEMO) {
         this.websocket?.send(
           JSON.stringify({
             action: 'send',
