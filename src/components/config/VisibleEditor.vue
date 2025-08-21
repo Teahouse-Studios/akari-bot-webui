@@ -105,7 +105,7 @@
 </template>
 
 <script>
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElInput, ElSwitch, ElInputNumber, ElInputTag } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 
 function debounce(fn, delay) {
@@ -121,6 +121,12 @@ export default {
   props: {
     modelValue: String,
     options: Object,
+  },
+    components: {
+    ElInput,
+    ElSwitch,
+    ElInputNumber,
+    ElInputTag,
   },
   emits: ['update:modelValue'],
   data() {

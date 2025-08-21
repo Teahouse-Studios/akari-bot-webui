@@ -18,7 +18,7 @@ export default function setupMock() {
 
   mock.onGet('/api/check-password').reply(200, { message: 'Success' })
 
-  mock.onPost('/api/auth').reply(200, { message: 'Success' })
+  mock.onPost('/api/login').reply(200, { message: 'Success' })
 
   mock.onPost('/api/change-password').reply(200, { message: 'Success' })
   mock.onGet('/api/server-info').reply(200, {
