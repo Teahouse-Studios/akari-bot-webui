@@ -15,10 +15,6 @@ export default function setupMock() {
     },
   })
 
-  mock.onGet('/api/get-csrf-token').reply(200, {
-    message: 'Success',
-    csrf_token: 'f9bf78b9a18ce6d46a0cd2b0b86df9da',
-  })
 
   mock.onGet('/api/check-password').reply(200, { message: 'Success' })
 

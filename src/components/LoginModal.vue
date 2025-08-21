@@ -60,7 +60,9 @@ export default {
         if (response.status === 200) {
           ElMessage.success(this.t('login.message.success'))
           localStorage.setItem('noPassword', 'false')
-          location.reload()
+          localStorage.setItem("token", response.data.data)
+          // TODO 改
+          // location.reload()
         }
       } catch (error) {
         if (error.response?.status === 401) {

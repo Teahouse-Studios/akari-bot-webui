@@ -2,32 +2,21 @@
   <el-config-provider :locale="elementLocale.lang">
     <div id="app">
       <DemoWatermark />
-      <div
-        class="loading-overlay"
-        v-if="userVerified === null"
-        v-loading="userVerified === null"
-      ></div>
+      <div class="loading-overlay" v-if="userVerified === null" v-loading="userVerified === null"></div>
       <AppHeader @toggle-sidebar="toggleSidebar" />
       <LoginModal v-if="userVerified == false" />
       <SuggestSetPasswordModal v-model="showSuggestPasswordModal" />
-      <div
-        v-if="isSidebarVisible && windowWidth <= 1024"
-        class="sidebar-overlay"
-        @click="closeSidebar"
-      ></div>
+      <div v-if="isSidebarVisible && windowWidth <= 1024" class="sidebar-overlay" @click="closeSidebar"></div>
       <AppSidebar :class="['sidebar', { show: isSidebarVisible }]" @menuSelect="handleMenuSelect" />
       <el-container :style="{ marginTop: '60px' }">
-        <el-main
-          :class="[
-            'content',
-            {
-              'content-with-sidebar': isSidebarVisible,
-              'show-sidebar': isSidebarVisible && windowWidth <= 1024,
-            },
-          ]"
-          :style="{ marginLeft: sidebarMarginLeft }"
-        >
-          <RouterView v-if="userVerified"/>
+        <el-main :class="[
+          'content',
+          {
+            'content-with-sidebar': isSidebarVisible,
+            'show-sidebar': isSidebarVisible && windowWidth <= 1024,
+          },
+        ]" :style="{ marginLeft: sidebarMarginLeft }">
+          <RouterView v-if="userVerified" />
           <!-- <component :is="currentView" v-if="userVerified" :userVerified="userVerified"></component> -->
         </el-main>
         <div class="content-footer"></div>
@@ -82,6 +71,16 @@ export default {
     this.initializeUserVerification()
     this.observeThemeChange()
   },
+  // async beforeCreate() {
+  //   let that = this
+  //   let r = await fetch('/config.json')
+  //     .then((res) => res.json())
+  //     .then((config) => {
+  //       that.$i18n.locale = config.lang
+  //       localStorage.setItem('language', lang)
+  //       that.elementLocale.lang = elementPlusLangMap[lang]
+  //     })
+  // },
   beforeUnmount() {
     window.removeEventListener('resize', this.updateSidebarVisibility)
   },
@@ -111,7 +110,7 @@ export default {
     },
     async checkPassword() {
       try {
-        const response = await axios.get('/api/check-password', {})
+        const response = await axios.get('/api/check-password')
         if (response.status === 200) {
           this.userVerified = true
           localStorage.setItem('noPassword', 'true')
@@ -119,6 +118,7 @@ export default {
           if (!promptDisabled) {
             this.showSuggestPasswordModal = true
           }
+
           // this.loadCurrentView(this.$route.name)
         }
       } catch (error) {
@@ -242,6 +242,7 @@ export default {
   background-color: white;
   z-index: -1;
 }
+
 .dark .content-footer {
   background-color: #181818;
 }

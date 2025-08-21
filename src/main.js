@@ -13,46 +13,37 @@ import ja_jp from './i18n/ja_jp.json'
 import './styles/theme-akari/var.scss'
 import './styles/theme-akari/dark/var.css'
 
-function initApp(config) {
-  const config_locale = (config && config.locale) || 'zh_cn'
+// @TODO locale
+const config_locale = 'zh_cn'
 
-  if (!localStorage.getItem('language')) {
-    localStorage.setItem('language', config_locale)
-  }
-
-  const locale = localStorage.getItem('language')
-
-  const i18n = createI18n({
-    legacy: false,
-    locale,
-    messages: {
-      zh_cn,
-      zh_tw,
-      en_us,
-      ja_jp,
-    },
-  })
-
-  const app = createApp(App)
-
-  const elementPlusLocale = reactive({
-    lang: elementPlusLangMap[locale] || elementPlusLangMap.zh_cn,
-  })
-
-  app.provide('elementLocale', elementPlusLocale)
-  // app.use(ElementPlus, { locale: elementPlusLocale.lang })
-  app.use(i18n)
-  app.use(router)
-
-  const isDark = localStorage.getItem('isDarkMode') === 'true'
-  document.documentElement.classList.toggle('dark', isDark)
-
-  app.mount('#app')
+if (!localStorage.getItem('language')) {
+  localStorage.setItem('language', config_locale)
 }
 
-fetch('/config.json')
-  .then((res) => res.json())
-  .then((config) => initApp(config))
-  .catch(() => {
-    initApp({ locale: 'zh_cn' })
-  })
+const locale = localStorage.getItem('language')
+
+const i18n = createI18n({
+  legacy: false,
+  locale,
+  messages: {
+    zh_cn,
+    zh_tw,
+    en_us,
+    ja_jp,
+  },
+})
+
+const app = createApp(App)
+
+const elementPlusLocale = reactive({
+  lang: elementPlusLangMap[locale] || elementPlusLangMap.zh_cn,
+})
+
+app.provide('elementLocale', elementPlusLocale)
+app.use(i18n)
+app.use(router)
+
+const isDark = localStorage.getItem('isDarkMode') === 'true'
+document.documentElement.classList.toggle('dark', isDark)
+
+app.mount('#app')

@@ -30,6 +30,15 @@ export default defineConfig({
     }),
     // analyzer()
   ],
+  server: {
+    proxy: {
+      '/api': 'http://127.0.0.1:6485',
+      '/ws/chat': {
+        target: 'http://127.0.0.1:6485',
+        ws: true
+      }
+    }
+  },
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
