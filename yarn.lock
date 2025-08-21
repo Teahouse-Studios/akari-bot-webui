@@ -2533,13 +2533,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"js-cookie@npm:^3.0.5":
-  version: 3.0.5
-  resolution: "js-cookie@npm:3.0.5"
-  checksum: 10c0/04a0e560407b4489daac3a63e231d35f4e86f78bff9d792011391b49c59f721b513411cd75714c418049c8dc9750b20fcddad1ca5a2ca616c3aca4874cce5b3a
-  languageName: node
-  linkType: hard
-
 "js-tokens@npm:^9.0.1":
   version: 9.0.1
   resolution: "js-tokens@npm:9.0.1"
@@ -4294,7 +4287,6 @@ __metadata:
     eslint: "npm:^9.33.0"
     eslint-plugin-vue: "npm:^10.4.0"
     husky: "npm:^9.1.7"
-    js-cookie: "npm:^3.0.5"
     lint-staged: "npm:^16.1.5"
     lodash: "npm:^4.17.21"
     markdown-it: "npm:^14.1.0"
