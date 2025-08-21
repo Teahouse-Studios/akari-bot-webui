@@ -83,23 +83,24 @@ export default {
   },
   methods: {
     async authenticateToken() {
-      try {
-        const response = await axios.get('/api/verify-token', {
-          signal: this.abortController.signal,
-        })
+      // TODO 需要重新验证?
+      // try {
+      //   const response = await axios.get('/api/verify-token', {
+      //     signal: this.abortController.signal,
+      //   })
 
-        if (response.status === 200) {
+      //   if (response.status === 200) {
           this.connectWebSocket()
-        } else {
-          ElMessage.error(this.t('message.error.connect.auth'))
-        }
-      } catch (error) {
-        if (axios.isCancel(error)) {
-          console.log('Request canceled')
-        } else {
-          ElMessage.error(this.t('message.error.fetch') + error.message)
-        }
-      }
+      //   } else {
+      //     ElMessage.error(this.t('message.error.connect.auth'))
+      //   }
+      // } catch (error) {
+      //   if (axios.isCancel(error)) {
+      //     console.log('Request canceled')
+      //   } else {
+      //     ElMessage.error(this.t('message.error.fetch') + error.message)
+      //   }
+      // }
     },
 
     async connectWebSocket() {
@@ -111,9 +112,10 @@ export default {
         return
       }
 
+      // TODO config store
       let config = {}
       try {
-        const response = await fetch('/config.json')
+        const response = await fetch('/api/init')
         if (response.ok) {
           config = await response.json()
         }

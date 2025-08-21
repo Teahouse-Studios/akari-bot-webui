@@ -4,23 +4,25 @@
       <DemoWatermark />
       <div class="loading-overlay" v-if="userVerified === null" v-loading="userVerified === null"></div>
       <AppHeader @toggle-sidebar="toggleSidebar" />
-      <LoginModal v-if="userVerified == false" />
-      <SuggestSetPasswordModal v-model="showSuggestPasswordModal" />
-      <div v-if="isSidebarVisible && windowWidth <= 1024" class="sidebar-overlay" @click="closeSidebar"></div>
-      <AppSidebar :class="['sidebar', { show: isSidebarVisible }]" @menuSelect="handleMenuSelect" />
-      <el-container :style="{ marginTop: '60px' }">
-        <el-main :class="[
-          'content',
-          {
-            'content-with-sidebar': isSidebarVisible,
-            'show-sidebar': isSidebarVisible && windowWidth <= 1024,
-          },
-        ]" :style="{ marginLeft: sidebarMarginLeft }">
-          <RouterView v-if="userVerified" />
-          <!-- <component :is="currentView" v-if="userVerified" :userVerified="userVerified"></component> -->
-        </el-main>
-        <div class="content-footer"></div>
-      </el-container>
+      <LoginModal v-if="isPromptLogin" />
+      <div v-if="!isLoading">
+        <SuggestSetPasswordModal v-model="showSuggestPasswordModal" />
+        <div v-if="isSidebarVisible && windowWidth <= 1024" class="sidebar-overlay" @click="closeSidebar"></div>
+        <AppSidebar :class="['sidebar', { show: isSidebarVisible }]" @menuSelect="handleMenuSelect" />
+        <el-container :style="{ marginTop: '60px' }">
+          <el-main :class="[
+            'content',
+            {
+              'content-with-sidebar': isSidebarVisible,
+              'show-sidebar': isSidebarVisible && windowWidth <= 1024,
+            },
+          ]" :style="{ marginLeft: sidebarMarginLeft }">
+            <RouterView v-if="userVerified" />
+          </el-main>
+          <div class="content-footer"></div>
+        </el-container>
+      </div>
+      <el-skeleton v-else :rows="5" animated />
     </div>
   </el-config-provider>
 </template>
@@ -50,8 +52,9 @@ export default {
     const { t } = useI18n()
 
     return {
-      currentView: null,
-      userVerified: null,
+      isLoading: false,
+      userVerified: false,
+      isPromptLogin: false,
       isSidebarVisible: true,
       showSuggestPasswordModal: false,
       windowWidth: window.innerWidth,
@@ -68,67 +71,64 @@ export default {
   mounted() {
     this.updateSidebarVisibility()
     window.addEventListener('resize', this.updateSidebarVisibility)
-    this.initializeUserVerification()
     this.observeThemeChange()
   },
-  // async beforeCreate() {
-  //   let that = this
-  //   let r = await fetch('/config.json')
-  //     .then((res) => res.json())
-  //     .then((config) => {
-  //       that.$i18n.locale = config.lang
-  //       localStorage.setItem('language', lang)
-  //       that.elementLocale.lang = elementPlusLangMap[lang]
-  //     })
-  // },
+  async beforeMount() {
+    let that = this
+    if (!localStorage.getItem("language")) {
+      await fetch('/api/init')
+        .then((res) => res.json())
+        .then((config) => {
+          that.$i18n.locale = config.lang
+          localStorage.setItem('language', config.lang)
+          that.elementLocale.lang = elementPlusLangMap[config.lang]
+        })
+    }
+    await this.initializeUserVerification()
+    this.isLoading = false
+  },
   beforeUnmount() {
     window.removeEventListener('resize', this.updateSidebarVisibility)
   },
   methods: {
     async initializeUserVerification() {
+      if(!localStorage.getItem("token")) return this.checkPassword()
       try {
-        const response = await axios.get('/api/verify-token')
-        if (response.status === 200) {
-          this.userVerified = true
+        const response = await axios.get('/api/verify')
+        if (response.status !== 200) return this.checkPassword()
+        this.userVerified = true
 
-          if (IS_DEMO) {
-            // this.showSuggestPasswordModal = true
-          } else {
-            const noPassword = response.data.no_password
-            const promptDisabled = localStorage.getItem('noPasswordPromptDisabled') === 'true'
-            if (noPassword && !promptDisabled) {
-              this.showSuggestPasswordModal = true
-            }
-          }
-          // this.loadCurrentView(this.$route.name)
+        if (IS_DEMO) {
+          // this.showSuggestPasswordModal = true
         } else {
-          this.checkPassword()
+          const noPassword = response.data.no_password
+          const promptDisabled = localStorage.getItem('noPasswordPromptDisabled') === 'true'
+          if (noPassword && !promptDisabled) {
+            this.showSuggestPasswordModal = true
+          }
         }
       } catch (error) {
         this.checkPassword()
+        localStorage.removeItem("token")
       }
     },
     async checkPassword() {
       try {
-        const response = await axios.get('/api/check-password')
+        const response = await axios.post('/api/login', {})
         if (response.status === 200) {
           this.userVerified = true
-          localStorage.setItem('noPassword', 'true')
+          localStorage.setItem("token", response.data.data)
           const promptDisabled = localStorage.getItem('noPasswordPromptDisabled') === 'true'
           if (!promptDisabled) {
             this.showSuggestPasswordModal = true
           }
-
-          // this.loadCurrentView(this.$route.name)
         }
       } catch (error) {
         if (error.response?.status === 401) {
-          this.userVerified = false
+          this.isPromptLogin = true
         } else if (error.response?.status === 403) {
-          this.userVerified = false
           ElMessage.error(this.t('login.message.abuse'))
         } else {
-          this.userVerified = null
           ElMessage.error(this.t('message.error.fetch') + error.message)
         }
       }
@@ -301,4 +301,3 @@ export default {
   }
 }
 </style>
-

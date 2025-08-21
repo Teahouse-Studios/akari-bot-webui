@@ -33,7 +33,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': 'http://127.0.0.1:6485',
-      '/ws/chat': {
+      '/ws': {
         target: 'http://127.0.0.1:6485',
         ws: true
       }

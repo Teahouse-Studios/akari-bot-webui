@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div v-loading="isLoading">
     <h3><i class="mdi mdi-lock"></i> {{ $t('setting.change_password.title') }}</h3>
     <el-form :model="form" :rules="rules" ref="formRef" label-width="auto">
       <el-form-item
@@ -64,6 +64,7 @@ export default {
     const { t } = useI18n()
 
     return {
+      isLoading: true,
       form: {
         old_password: '',
         new_password: '',
@@ -106,8 +107,10 @@ export default {
       t,
     }
   },
-  mounted() {
-    this.noPassword = localStorage.getItem('noPassword') === 'true' || IS_DEMO
+  async mounted() {
+    const {data} = await axios.get("/api/has-password")
+    this.noPassword = !data.data
+    this.isLoading = false
   },
   methods: {
     async handleUpdatePassword() {
@@ -128,7 +131,7 @@ export default {
 
         const response = await axios.post('/api/change-password', requestData)
 
-        if (response.status === 200) {
+        if (response.status === 204) {
           location.reload()
         }
       } catch (error) {

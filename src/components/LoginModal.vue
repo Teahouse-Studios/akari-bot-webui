@@ -10,7 +10,7 @@
       ></el-input>
 
       <div class="remember-device-container">
-        <el-checkbox v-model="rememberDevice">{{ $t('login.checkbox.remember') }}</el-checkbox>
+        <!-- <el-checkbox v-model="rememberDevice">{{ $t('login.checkbox.remember') }}</el-checkbox> -->
         <span
           class="forgot-password"
           @mouseenter="onHoverStart"
@@ -52,22 +52,21 @@ export default {
       this.loading = true
 
       try {
-        const response = await axios.post('/api/auth', {
+        const response = await axios.post('/api/login', {
           password: this.password,
           remember: this.rememberDevice,
         })
 
         if (response.status === 200) {
           ElMessage.success(this.t('login.message.success'))
-          localStorage.setItem('noPassword', 'false')
           localStorage.setItem("token", response.data.data)
           // TODO 改
-          // location.reload()
+          location.reload()
         }
       } catch (error) {
-        if (error.response?.status === 401) {
+        if (error.response?.status === 403) {
           ElMessage.error(this.t('login.message.failed'))
-        } else if (error.response?.status === 403) {
+        } else if (error.response?.status === 429) {
           ElMessage.error(this.t('login.message.abuse'))
         } else {
           ElMessage.error(this.t('message.error.fetch') + error.message)
