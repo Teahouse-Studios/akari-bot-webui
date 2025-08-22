@@ -98,7 +98,11 @@
       :show-close="false"
       :center="true"
     >
-      <img :src="previewImageSrc" style="width: 100%; height: 100%" />
+      <img
+        :src="previewImageSrc"
+        style="width: 100%; height: 100%; cursor: pointer"
+        @click="openImageInNewWindow"
+      />
     </el-dialog>
   </div>
 </template>
@@ -493,6 +497,12 @@ export default {
     showImagePreview(src) {
       this.previewImageSrc = src
       this.imageDialogVisible = true
+    },
+
+    openImageInNewWindow() {
+      if (this.previewImageSrc) {
+        window.open(this.previewImageSrc, '_blank')
+      }
     },
   },
 
