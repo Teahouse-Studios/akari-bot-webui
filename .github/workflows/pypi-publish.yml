@@ -42,8 +42,8 @@ jobs:
       - name: Install the project dependencies
         run: poetry install
 
-      - name: Yarn setup
-        uses: DerYeger/yarn-setup-action@master
+      - name: Node setup
+        uses: actions/setup-node@v4
         with:
           node-version: 22
 
@@ -53,6 +53,9 @@ jobs:
           # NOTE: put your own distribution build steps here.
           # python -m pip install build
           # python -m build
+          npm install -g corepack
+          corepack enable
+          yarn 
           yarn build
           mv dist akari_bot_webui/dist
           poetry lock
