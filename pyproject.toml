@@ -15,6 +15,7 @@ package-mode = true
 packages = [
     { include = "akari_bot_webui" },
 ]
+include = ["akari_bot_webui/dist"]
 
 
 [build-system]
