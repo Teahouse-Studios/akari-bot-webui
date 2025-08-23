@@ -118,7 +118,7 @@
   "login.button.login": "ログイン",
   "login.checkbox.remember": "ログイン状態を記憶する",
   "login.forgot_password.text": "忘れた",
-  "login.forgot_password.tooltip": "サーバーの「assets/private/api」フォルダにある「.password」ファイルを削除してからパスワードを再設定してください。",
+  "login.forgot_password.tooltip": "サーバーの「assets/private/web」フォルダにある「.password」ファイルを削除してからパスワードを再設定してください。",
   "login.input.password": "パスワードを入力してください",
   "login.message.abuse": "ログイン失敗回数が多すぎます。しばらくしてから再試行してください",
   "login.message.failed": "パスワードが間違っています。再入力してください",

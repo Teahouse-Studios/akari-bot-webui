@@ -118,7 +118,7 @@
   "login.button.login": "Login",
   "login.checkbox.remember": "Remember Me",
   "login.forgot_password.text": "Forgot Password",
-  "login.forgot_password.tooltip": "Please go to the server, open \"assets/private/api\" directory, delete \".password\" file, and reset your password.",
+  "login.forgot_password.tooltip": "Please go to the server, open \"assets/private/web\" directory, delete \".password\" file, and reset your password.",
   "login.input.password": "Enter Password",
   "login.message.abuse": "Too many failed attempts. Please try again later.",
   "login.message.failed": "Incorrect password. Please try again.",

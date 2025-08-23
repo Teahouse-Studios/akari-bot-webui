@@ -118,7 +118,7 @@
   "login.button.login": "登录",
   "login.checkbox.remember": "记住登录状态",
   "login.forgot_password.text": "忘记密码",
-  "login.forgot_password.tooltip": "请前往服务端，进入“assets/private/api”目录，删除“.password”文件后重新设置密码。",
+  "login.forgot_password.tooltip": "请前往服务端，进入“assets/private/web”目录，删除“.password”文件后重新设置密码。",
   "login.input.password": "输入密码",
   "login.message.abuse": "登录失败次数过多，请稍后再试",
   "login.message.failed": "密码错误，请重新输入",
