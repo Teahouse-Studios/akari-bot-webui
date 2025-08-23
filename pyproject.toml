@@ -3,7 +3,9 @@ name = "akari-bot-webui"
 version = "0.1.2"
 description = ""
 authors = [
-    {name = "OasisAkari",email = "oasisakari@gmail.com"}
+    {name = "OasisAkari",email = "oasisakari@gmail.com"},
+    {name = "DoroWolf",email = "dorowolf314@gmail.com"},
+    {name = "_LittleC_",email = "i@ltlec.com"}
 ]
 readme = "README.md"
 requires-python = ">=3.12"
