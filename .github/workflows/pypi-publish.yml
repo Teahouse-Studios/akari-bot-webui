@@ -42,10 +42,10 @@ jobs:
       - name: Install the project dependencies
         run: poetry install
 
-      - name: NPM or Yarn install with caching
-        uses: bahmutov/npm-install@v1.10.10
+      - name: Yarn setup
+        uses: DerYeger/yarn-setup-action@master
         with:
-          install-command: yarn
+          node-version: 22
 
 
       - name: Build release distributions
