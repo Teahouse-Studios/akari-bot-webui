@@ -2,7 +2,6 @@
 node_modules
 /dist
 /py_dist
-/akari_bot_webui/dist
 
 
 # local env files
