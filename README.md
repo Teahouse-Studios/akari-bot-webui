@@ -5,19 +5,19 @@ This project is a web UI panel for [AkariBot](https://github.com/Teahouse-Studio
 ## Setup
 
 ```
-npm install
+yarn
 ```
 
 ### Compiles and hot-reloads for development
 
 ```
-npm run dev
+yarn dev
 ```
 
 ### Compiles and minifies for production
 
 ```
-npm run build
+yarn build
 ```
 
 ## Localization
