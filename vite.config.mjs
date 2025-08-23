@@ -30,6 +30,7 @@ export default defineConfig({
     }),
     // analyzer()
   ],
+  base: '/webui/',
   server: {
     proxy: {
       '/api': 'http://127.0.0.1:6485',
