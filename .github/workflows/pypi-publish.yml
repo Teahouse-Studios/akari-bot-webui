@@ -58,6 +58,8 @@ jobs:
           yarn 
           yarn build
           cp -R dist akari_bot_webui/dist
+          ls akari_bot_webui
+          ls akari_bot_webui/dist
           poetry lock
           poetry build -o py_dist
           
