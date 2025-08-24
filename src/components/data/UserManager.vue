@@ -172,7 +172,7 @@
 <script>
 import axios from '@/axios.mjs'
 import { IS_DEMO } from '@/const'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 
 export default {
@@ -308,7 +308,7 @@ export default {
       }
     },
     confirmDelete(row) {
-      this.$confirm(
+      ElMessageBox.confirm(
         this.t('data.user.confirm.message', { sender_id: row.sender_id }),
         this.t('confirm.warning'),
         {
