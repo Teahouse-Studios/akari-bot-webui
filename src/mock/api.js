@@ -6,23 +6,29 @@ export default function setupMock() {
 
   mock.onGet('/api').reply(200, { message: 'Hello, AkariBot!' })
 
-  mock.onGet('/api/verify-token').reply(200, {
-    message: 'Success',
+  mock.onGet('/api/init').reply(200, {
+    enable_https: false,
+    locale: 'zh_cn',
+    heartbeat_interval: 5,
+    heartbeat_timeout: 30,
+    heartbeat_attempt: 3
+  })
+
+  mock.onGet('/api/verify').reply(200, {
     payload: {
       exp: Math.floor(Date.now() / 1000) + 24 * 60 * 60,
       iat: Math.floor(Date.now() / 1000),
-      iss: 'auth-api',
+      iss: 'auth-api'
     },
   })
 
+  mock.onGet('/api/login').reply(205, { data: 'eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiSm9obiIsImFkbWluIjp0cnVlLCJpc3MiOiJhdXRoLWFwaSJ9.l6piMCKreZU-gjum6VXafyknIUdO8r1NdMP-kcemyJXxD32Chv5LsRDHnD3oUow0qX8vTPeujNgTu6iKLgHe8Q' })
 
-  mock.onGet('/api/check-password').reply(200, { message: 'Success' })
+  mock.onPost('/api/change-password').reply(205, {})
 
-  mock.onPost('/api/login').reply(200, { message: 'Success' })
+  mock.onGet('/api/have-password').reply(200, { data: false })
 
-  mock.onPost('/api/change-password').reply(200, { message: 'Success' })
   mock.onGet('/api/server-info').reply(200, {
-    message: 'Success',
     os: {
       system: 'Linux',
       version: '#42~22.04.3-Ubuntu SMP Fri Aug 15 10:23:45 UTC 2025',
@@ -61,7 +67,6 @@ export default function setupMock() {
     return [
       200,
       {
-        message: 'Success',
         count: 2,
         change_rate: 2,
         data: [
@@ -89,12 +94,10 @@ export default function setupMock() {
   })
 
   mock.onGet('/api/config').reply(200, {
-    message: 'Success',
     cfg_files: ['config.toml', 'bot_web.toml'],
   })
 
   mock.onGet('/api/config/config.toml').reply(200, {
-    message: 'Success',
     content:
       '# https://toml.io/cn/v1.0.0\n# 注意：TOML 不是 Python。请不要在此处使用 Python 语法。\n# 例如：TOML 中的布尔值必须是小写。\n\ndefault_locale = "zh_cn" # 默认的会话语言环境。\nconfig_version = 2 # 配置版本号，将会随功能更新自增，一般情况请勿修改。\ninitialized = true\n\n[config]\n# 一些基础的配置部分，此处填写的值可在消息中以明文形式展示。请不要在此部分填写敏感信息。\nenable_dirty_check = false # 是否启用文字过滤检测，需要配置阿里云内容安全服务的 AccessKey ID 与 AccessKey Secret。\nenable_urlmanager = true # 是否启用 URLManager，用于 URL 跳板用。（声明此 URL 非官方链接等）\nenable_tos = true # 是否启用内置的 ToS 检查规则。\nignored_sender = ["QQ|2854196310"] # 无视的用户列表，匹配到此列表中的用户将会被忽略。\nissue_url = "https://github.com/Teahouse-Studios/bot/issues/new/choose" # 问题反馈网址。\nenable_petal = false # 是否启用花瓣功能。\nrickroll_msg = "<Replace me with str value>" # 文字过滤检测失败时的 Rickroll 消息。\nenable_rickroll = true # 当文字过滤检测失败时，是否 Rickroll 用户。\nenable_joke = true # 是否启用玩笑，启用后将在服务器时间 4 月 1 日时发生。\nshuffle_rate = 0 # 玩笑的随机发生率，范围 0 到 1 之间。\nunloaded_modules = [] # 不加载的模块列表，匹配到此列表中的模块将不会被加载。\ndebug = true # 是否启用调试模式，启用后会输出更多的日志信息。\nreport_targets = [] # 上报会话列表，此处填写的值将会被识别为上报会话。（如：在机器人执行命令出错时，机器人将会把错误信息发送至对应会话）\ntos_warning_counts = 5 # 违反 ToS 时的警告次数。\nbase_superuser = ["QQ|2596322644"] # 机器人的基础超级用户列表，此处填写的值将会在机器人启动时被加载进入数据库。\nenable_analytics = false # 是否启用内置的统计功能。\nbug_report_url = "https://s.wd-ljt.com/botreportbug" # 汇报错误网址。\ntos_temp_ban_time = 300 # 违反 ToS 时的临时封禁时间。\ntimezone_offset = "+8" # 机器人的默认时区偏移量。\nno_confirm = false # 是否无需发送者确认消息后再执行命令。\nconfirm_command = ["是", "对", "對", "yes", "Yes", "YES", "y", "Y"] # 确认命令的关键词，此处填写的值将会被识别为确认命令。\ncommand_prefix = ["~", "～"] # 命令前缀，此处填写的值将会被识别为命令前缀。\nallow_request_private_ip = false # 是否允许机器人请求本地私有 IP 地址。（防止可能的信息泄露）\nuse_font_mirror = false # 渲染网页时是否使用字体镜像。\nenable_get_petal = false # 是否允许获取花瓣。\npetal_gained_limit = 0 # 单日获取花瓣上限。\npetal_lost_limit = 0 # 单日失去花瓣上限。\npetal_sign_limit = 5 # 单日签到获取花瓣上限。\npetal_sign_rate = 0.5 # 签到获取花瓣概率，范围 0 到 1 之间，获取数量呈指数衰减。\nuse_secrets_random = false # 是否使用基于 secrets 库的随机数生成器。\nhelp_url = "https://bot.teahouse.team" # 帮助文档网址。\ndonate_url = "http://afdian.com/a/teahouse" # 捐赠网址。\nhelp_page_url = "https://bot.teahouse.team/wiki/${module}" # 模块帮助文档网址。\nallow_reload_base = false # 是否允许重载基础模块。\nenable_eval = true # 是否启用 eval 模块。\nenable_commit_url = true # 是否在展示版本信息时显示 commit URL。\nlocale_url = "https://www.crowdin.com/project/akari-bot" # 本地化项目网址。\nslower_schedule = false # 是否启用更慢的计划任务调度器。（减少请求压力用）\n\n\n[secret]\n# 密钥配置部分，此处的值若意外出现在发送的消息中，机器人会尝试拦截。但请务必提防泄露。\nproxy = "<Replace me with str value>" # 代理服务地址。\ncheck_access_key_id = "<Replace me with str value>" # 阿里云内容安全服务的 AccessKey ID。\ncheck_access_key_secret = "<Replace me with str value>" # 阿里云内容安全服务的 AccessKey Secret。\ndb_path = "sqlite://database/save.db" # 数据库连接字符串，请使用 Tortoise ORM 支持的数据库连接字符串格式。\n',
   })
@@ -103,7 +106,6 @@ export default function setupMock() {
   })
 
   mock.onGet('/api/config/bot_web.toml').reply(200, {
-    message: 'Success',
     content:
       '# https://toml.io/cn/v1.0.0\n# 注意：TOML 不是 Python。请不要在此处使用 Python 语法。\n# 例如：TOML 中的布尔值必须是小写。\n\n[bot_web]\n# 平台端的配置部分，此处填写的值可在消息中以明文形式展示。请不要在此部分填写敏感信息。\nenable_https = false # 是否启用 HTTPS 协议安全措施。\nweb_host = "127.0.0.1" # Web 服务的主机地址，设为 0.0.0.0 则监听所有地址。\nweb_port = 6485 # Web 服务的端口号，设为 0 则禁用服务。\nlogin_max_attempts = 5 # 登录请求最大次数限制。\nenable = true # 是否启用此平台。\nheartbeat_interval = 30 # 心跳信息发送时间间隔。\nheartbeat_timeout = 5 # 心跳消息回应超时时间。\nheartbeat_attempt = 3 # 心跳消息发送尝试次数。\n\n[bot_web_secret]\n# 平台端的密钥配置部分，此处的值若意外出现在发送的消息中，机器人会尝试拦截。但请务必提防泄露。\nallow_origins = [] # API 服务允许 CORS 的源列表。\njwt_secret = "<Replace me with str value>" # 内置 API 的身份认证密钥，用于签名和验证有效性。\n',
   })
@@ -146,7 +148,6 @@ export default function setupMock() {
     return [
       200,
       {
-        message: 'Success',
         target_list: filtered,
         total: filtered.length,
       },
@@ -196,7 +197,6 @@ export default function setupMock() {
     return [
       200,
       {
-        message: 'Success',
         sender_list: filtered,
         total: filtered.length,
       },
@@ -210,8 +210,7 @@ export default function setupMock() {
     detail: 'Cannot edit data in demo mode',
   })
   mock.onGet('/api/modules_list').reply(200, {
-    message: 'Success',
     modules: [],
   })
-  mock.onPost('/api/restart').reply(200, { message: 'Success' })
+  mock.onPost('/api/restart').reply(202, {})
 }

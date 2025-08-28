@@ -39,7 +39,7 @@ export default {
     async restartBot() {
       try {
         const response = await axios.post('/api/restart', {})
-        if (response.status === 200) {
+        if (response.status === 202) {
           ElLoading.service({
             fullscreen: true,
             text: this.t('setting.restart_bot.loading.text'),

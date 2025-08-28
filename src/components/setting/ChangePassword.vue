@@ -108,7 +108,7 @@ export default {
     }
   },
   async mounted() {
-    const {data} = await axios.get("/api/has-password")
+    const {data} = await axios.get("/api/have-password")
     this.noPassword = !data.data
     this.isLoading = false
   },
@@ -131,7 +131,7 @@ export default {
 
         const response = await axios.post('/api/change-password', requestData)
 
-        if (response.status === 204) {
+        if (response.status === 205) {
           location.reload()
         }
       } catch (error) {
@@ -177,7 +177,7 @@ export default {
 
         const response = await axios.post('/api/clear-password', requestData)
 
-        if (response.status === 200) {
+        if (response.status === 205) {
           ElMessage.success(this.$t('setting.change_password.message.success.clear'))
           localStorage.removeItem('noPasswordPromptDisabled')
           location.reload()
