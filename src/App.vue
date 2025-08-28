@@ -7,19 +7,21 @@
       <LoginModal v-if="isPromptLogin" />
       <div v-if="!isLoading">
         <SuggestSetPasswordModal v-model="showSuggestPasswordModal" />
-        <div v-if="isSidebarVisible && windowWidth <= 1024" class="sidebar-overlay" @click="closeSidebar"></div>
-        <AppSidebar :class="['sidebar', { show: isSidebarVisible }]" @menuSelect="handleMenuSelect" />
+        <AppSidebar
+          v-if="windowWidth > 1024"
+          @menuSelect="handleMenuSelect"
+        />
+        <AppSidebarDrawer
+          v-else
+          v-model="isSidebarVisible"
+          @menuSelect="handleMenuSelect" />
         <el-container :style="{ marginTop: '60px' }">
-          <el-main :class="[
-            'content',
-            {
-              'content-with-sidebar': isSidebarVisible,
-              'show-sidebar': isSidebarVisible && windowWidth <= 1024,
-            },
-          ]" :style="{ marginLeft: sidebarMarginLeft }">
+          <el-main
+            class="content"
+            :style="{ marginLeft: sidebarMarginLeft }"
+          >
             <RouterView v-if="userVerified" />
           </el-main>
-          <div class="content-footer"></div>
         </el-container>
       </div>
       <el-skeleton v-else :rows="5" animated />
@@ -30,6 +32,7 @@
 <script>
 import { inject } from 'vue'
 import axios from '@/axios.mjs'
+import AppSidebarDrawer from './components/SidebarDrawer.vue'
 import AppSidebar from './components/Sidebar.vue'
 import AppHeader from './components/Header.vue'
 import DemoWatermark from './components/DemoWatermark.vue'
@@ -42,6 +45,7 @@ import { IS_DEMO } from './const'
 export default {
   components: {
     AppHeader,
+    AppSidebarDrawer,
     AppSidebar,
     DemoWatermark,
     LoginModal,
@@ -55,7 +59,7 @@ export default {
       isLoading: false,
       userVerified: false,
       isPromptLogin: false,
-      isSidebarVisible: true,
+      isSidebarVisible: false,
       showSuggestPasswordModal: false,
       windowWidth: window.innerWidth,
       abortController: new AbortController(),
@@ -65,7 +69,10 @@ export default {
   },
   computed: {
     sidebarMarginLeft() {
-      return this.isSidebarVisible ? '200px' : '0'
+      if (this.windowWidth > 1024 && this.isSidebarVisible) {
+        return '200px'
+      }
+      return '0'
     },
   },
   mounted() {
@@ -220,7 +227,6 @@ export default {
 }
 
 .content {
-  top: 60px;
   overflow-y: auto;
   background-color: transparent;
   z-index: 0;
@@ -233,71 +239,4 @@ export default {
   margin-left: 200px;
 }
 
-.content-footer {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: white;
-  z-index: -1;
-}
-
-.dark .content-footer {
-  background-color: #181818;
-}
-
-.sidebar {
-  position: fixed;
-  top: 60px;
-  left: 0;
-  bottom: 0;
-  width: 200px;
-  background-color: white;
-  z-index: 100;
-  transition: transform 0.3s ease-in-out;
-}
-
-.sidebar-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  z-index: 99;
-}
-
-@media (max-width: 1024px) {
-  .sidebar {
-    transform: translateX(-200px);
-    transition: transform 0.3s ease-in-out;
-  }
-
-  .sidebar.show {
-    transform: translateX(0px);
-  }
-
-  .content-with-sidebar {
-    margin-left: 0 !important;
-  }
-
-  .sidebar-overlay {
-    display: block;
-  }
-}
-
-@media (min-width: 1025px) {
-  .sidebar {
-    left: 0;
-  }
-
-  .content-with-sidebar {
-    margin-left: 200px;
-  }
-
-  .sidebar-overlay {
-    display: none;
-  }
-}
 </style>
