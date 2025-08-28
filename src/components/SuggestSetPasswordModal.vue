@@ -22,8 +22,11 @@
 import { useI18n } from 'vue-i18n'
 
 export default {
+  name: 'SuggestSetPasswordModal',
   props: {
-    modelValue: Boolean,
+    modelValue: {
+      type: Boolean
+    }
   },
   emits: ['update:modelValue'],
   data() {

@@ -5,7 +5,6 @@ import vue from '@vitejs/plugin-vue'
 import path from 'path'
 import VueRouter from 'unplugin-vue-router/vite'
 import AutoImport from 'unplugin-auto-import/vite'
-import { analyzer } from 'vite-bundle-analyzer'
 
 // https://vite.dev/config/
 export default defineConfig({

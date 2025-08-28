@@ -60,6 +60,7 @@ import axios from '@/axios.mjs'
 import { IS_DEMO } from '@/const'
 
 export default {
+  name: 'ChangePasswordForm',
   data() {
     const { t } = useI18n()
 

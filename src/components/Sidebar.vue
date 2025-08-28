@@ -62,7 +62,7 @@ export default {
     },
   },
   watch: {
-    '$route.name': function () {
+    '$route.name' () {
       this.activeMenu = this.getActiveMenuFromRoute()
     },
   },

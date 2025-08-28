@@ -50,7 +50,7 @@ import { useI18n } from 'vue-i18n'
 import { IS_DEMO } from '@/const'
 
 export default {
-  name: 'ConfigView',
+  name: 'ConfigPage',
   components: {
     VisibleEditor,
     SourceEditor,

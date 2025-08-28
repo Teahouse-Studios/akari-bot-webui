@@ -14,6 +14,7 @@ import ThemeSetting from '@/components/setting/ThemeSetting.vue'
 import RestartBot from '@/components/setting/RestartBot.vue'
 
 export default {
+  name: 'SettingPage',
   components: {
     ChangePassword,
     SelectLanguage,

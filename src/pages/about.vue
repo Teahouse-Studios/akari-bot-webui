@@ -53,7 +53,7 @@
 import { useI18n } from 'vue-i18n'
 
 export default {
-  name: 'AboutView',
+  name: 'AboutPage',
   data() {
     const { t } = useI18n()
 

@@ -2,10 +2,12 @@ import axios from "axios";
 import { IS_DEMO } from "./const";
 import setupMock from "@/mock/api";
 
-const initAxios = async () => {
-  let apiUrl = window.location.origin;
+// const initAxios = async () => {
+const initAxios = () => {
+  const apiUrl = window.location.origin;
 
   // TODO api base
+  // let apiUrl = window.location.origin;
   // try {
   //   const response = await fetch("/config.json");
   //   if (response.ok) {
@@ -24,7 +26,7 @@ const initAxios = async () => {
   axios.interceptors.request.use(
     (config) => {
       if (localStorage.getItem("token")) {
-        config.headers["Authorization"] = `Bearer ${localStorage.getItem("token")}`;
+        config.headers.Authorization = `Bearer ${localStorage.getItem("token")}`;
       }
       return config;
     },

@@ -108,7 +108,7 @@
 </template>
 
 <script>
-import axios from '@/axios.mjs'
+// import axios from '@/axios.mjs'
 import { IS_DEMO } from '@/const'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import MarkdownIt from 'markdown-it'
@@ -117,7 +117,7 @@ import { v4 as uuidv4 } from 'uuid'
 import { useI18n } from 'vue-i18n'
 
 export default {
-  name: 'ChatView',
+  name: 'ChatPage',
   data() {
     const { t } = useI18n()
     const md = new MarkdownIt('zero')
@@ -129,9 +129,9 @@ export default {
           rel: 'noopener noreferrer',
         },
       })
-      .use((md) => {
-        md.enable(['blockquote', 'fence', 'heading', 'list'])
-        md.enable([
+      .use((md_) => {
+        md_.enable(['blockquote', 'fence', 'heading', 'list'])
+        md_.enable([
           'autolink',
           'backticks',
           'emphasis',
@@ -143,20 +143,20 @@ export default {
           'text',
         ])
 
-        md.renderer.rules.paragraph_open = () => ''
-        md.renderer.rules.paragraph_close = () => '<br />'
+        md_.renderer.rules.paragraph_open = () => ''
+        md_.renderer.rules.paragraph_close = () => '<br />'
 
-        md.renderer.rules.fence = (tokens, idx) => {
+        md_.renderer.rules.fence = (tokens, idx) => {
           const content = tokens[idx].content
-          return `<pre class="chat-pre">${md.utils.escapeHtml(content)}</pre>`
+          return `<pre class="chat-pre">${md_.utils.escapeHtml(content)}</pre>`
         }
 
-        md.renderer.rules.code_inline = (tokens, idx) => {
+        md_.renderer.rules.code_inline = (tokens, idx) => {
           const content = tokens[idx].content
-          return `<code class="chat-code">${md.utils.escapeHtml(content)}</code>`
+          return `<code class="chat-code">${md_.utils.escapeHtml(content)}</code>`
         }
 
-        md.renderer.rules.blockquote_open = () => {
+        md_.renderer.rules.blockquote_open = () => {
           return '<blockquote class="chat-blockquote">'
         }
       })
@@ -202,7 +202,9 @@ export default {
               this.scrollToBottom()
             }
           },
-          close: () => {},
+          close: () => {
+            // empty
+          },
         }
         return
       }
@@ -214,7 +216,9 @@ export default {
         if (response.ok) {
           config = await response.json()
         }
-      } catch (e) {}
+      } catch (e) {
+        // empty
+      }
 
       const enableHTTPS = config.enable_https ?? window.location.protocol === 'https:'
       let baseUrl = config.api_url || window.location.origin
@@ -352,7 +356,8 @@ export default {
       }
     },
 
-    async authenticateToken() {
+    authenticateToken() {
+    // async authenticateToken() {
       // TODO 需要重新验证?
       // try {
       //   const response = await axios.get('/api/verify', {
@@ -382,7 +387,7 @@ export default {
       const uuid = uuidv4()
       this.messages.push({
         from: 'user',
-        text: text,
+        text,
         html: this.renderMarkdown(text),
         id: uuid,
       })
@@ -428,7 +433,7 @@ export default {
         return
       }
       if (event.shiftKey) {
-        return
+        // empty for newline
       } else {
         event.preventDefault()
         this.sendMessage()
@@ -453,7 +458,7 @@ export default {
 
     confirmExternalLink(url) {
       ElMessageBox.confirm(
-        this.$t('chat.external_link.confirm.message', { url: url }),
+        this.$t('chat.external_link.confirm.message', { url }),
         this.$t('chat.external_link.confirm.title'),
         {
           confirmButtonText: this.$t('yes'),

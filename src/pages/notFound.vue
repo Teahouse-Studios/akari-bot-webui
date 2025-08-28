@@ -15,7 +15,7 @@ import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 
 export default {
-  name: 'EmptyView',
+  name: 'NotFoundPage',
   data() {
     const router = useRouter()
     const { t } = useI18n()

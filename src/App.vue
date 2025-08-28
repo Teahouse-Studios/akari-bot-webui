@@ -43,6 +43,7 @@ import { useI18n } from 'vue-i18n'
 import { IS_DEMO } from './const'
 
 export default {
+  name: 'App',
   components: {
     AppHeader,
     AppSidebarDrawer,
@@ -81,14 +82,13 @@ export default {
     this.observeThemeChange()
   },
   async beforeMount() {
-    let that = this
     if (!localStorage.getItem("language")) {
       await fetch('/api/init')
         .then((res) => res.json())
         .then((config) => {
-          that.$i18n.locale = config.lang
+          this.$i18n.locale = config.lang
           localStorage.setItem('language', config.lang)
-          that.elementLocale.lang = elementPlusLangMap[config.lang]
+          this.elementLocale.lang = elementPlusLangMap[config.lang]
         })
     }
     await this.initializeUserVerification()
@@ -99,10 +99,14 @@ export default {
   },
   methods: {
     async initializeUserVerification() {
-      if(!localStorage.getItem("token")) return this.checkPassword()
+      if (!localStorage.getItem("token")) { 
+        this.checkPassword()
+      }
       try {
         const response = await axios.get('/api/verify')
-        if (response.status !== 200) return this.checkPassword()
+        if (response.status !== 200) {
+          this.checkPassword()
+        }
         this.userVerified = true
 
         if (IS_DEMO) {
@@ -161,18 +165,18 @@ export default {
       const white = isDark ? '#000000' : '#ffffff'
       const black = isDark ? '#ffffff' : '#000000'
 
-      const mix = (color, weight, mixWith = '#ffffff') => {
+      const mix = (_color, weight, mixWith = '#ffffff') => {
         const d2h = (d) => d.toString(16).padStart(2, '0')
         const h2d = (h) => parseInt(h, 16)
 
-        const col1 = color.slice(1)
+        const col1 = _color.slice(1)
         const col2 = mixWith.slice(1)
 
-        const r = Math.round(h2d(col1.slice(0, 2)) * (1 - weight) + h2d(col2.slice(0, 2)) * weight)
-        const g = Math.round(h2d(col1.slice(2, 4)) * (1 - weight) + h2d(col2.slice(2, 4)) * weight)
-        const b = Math.round(h2d(col1.slice(4, 6)) * (1 - weight) + h2d(col2.slice(4, 6)) * weight)
+        const red = Math.round(h2d(col1.slice(0, 2)) * (1 - weight) + h2d(col2.slice(0, 2)) * weight)
+        const green = Math.round(h2d(col1.slice(2, 4)) * (1 - weight) + h2d(col2.slice(2, 4)) * weight)
+        const blue = Math.round(h2d(col1.slice(4, 6)) * (1 - weight) + h2d(col2.slice(4, 6)) * weight)
 
-        return `#${d2h(r)}${d2h(g)}${d2h(b)}`
+        return `#${d2h(red)}${d2h(green)}${d2h(blue)}`
       }
 
       const root = document.documentElement

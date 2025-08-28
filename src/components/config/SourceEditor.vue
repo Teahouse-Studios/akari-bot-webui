@@ -13,8 +13,10 @@ import { oneDark } from '@codemirror/theme-one-dark'
 export default {
   name: 'SourceEditor',
   props: {
-    modelValue: String,
-    options: Object,
+    modelValue: {
+      type: String,
+      default: ''
+    },
   },
   emits: ['update:modelValue'],
   data() {

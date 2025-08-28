@@ -13,6 +13,7 @@ import AnalyticsCard from '@/components/dashboard/AnalyticsCard.vue'
 import ServerInfoCard from '@/components/dashboard/ServerInfoCard.vue'
 
 export default {
+  name: 'DashboardPage',
   components: {
     AnalyticsCard,
     ServerInfoCard,

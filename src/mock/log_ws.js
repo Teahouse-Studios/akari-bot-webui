@@ -95,6 +95,8 @@ export default function mockLogWebSocket(onMessage) {
   finalLogs.forEach((line) => onMessage({ data: line }))
 
   return {
-    close() {},
+    close() {
+      // empty
+    },
   }
 }

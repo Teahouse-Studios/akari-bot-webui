@@ -108,8 +108,7 @@
 import { ElMessage } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 import axios from '@/axios.mjs'
-import * as echarts from 'echarts/core'
-import {LineChart} from 'echarts/charts'
+import { LineChart } from 'echarts/charts'
 import {
   TitleComponent,
   TooltipComponent,
@@ -118,10 +117,12 @@ import {
   TransformComponent,
   DataZoomComponent
 } from 'echarts/components';
+import { init, use } from 'echarts/core'
 import { LabelLayout, UniversalTransition } from 'echarts/features';
 import { CanvasRenderer } from 'echarts/renderers';
 
 export default {
+  name: 'AnalyticsCard',
   data() {
     const { t } = useI18n()
 
@@ -147,7 +148,7 @@ export default {
     })
 
     this.resizeObserver.observe(this.$refs.chartContainer)
-    echarts.use([
+    use([
       LineChart,
       TitleComponent,
       TooltipComponent,
@@ -298,7 +299,7 @@ export default {
         if (!chartDom || chartDom.offsetWidth === 0) return
 
         const primaryColor = this.getPrimaryColor()
-        const chart = echarts.init(this.$refs.chartContainer)
+        const chart = init(this.$refs.chartContainer)
         const option = {
           color: [primaryColor],
           tooltip: { trigger: 'axis' },

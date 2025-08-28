@@ -36,6 +36,7 @@ import { ElMessage } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 
 export default {
+  name: 'LoginModal',
   data() {
     const { t } = useI18n()
 

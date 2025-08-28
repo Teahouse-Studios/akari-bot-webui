@@ -22,6 +22,7 @@ import SessionManager from '@/components/data/SessionManager.vue'
 import UserManager from '@/components/data/UserManager.vue'
 
 export default {
+  name: 'DataPage',
   components: {
     SessionManager,
     UserManager,

@@ -57,14 +57,14 @@
 </template>
 
 <script>
-import axios from '@/axios.mjs'
+// import axios from '@/axios.mjs'
 import { IS_DEMO } from '@/const'
 import { ElMessage } from 'element-plus'
 import { debounce } from 'lodash'
 import { useI18n } from 'vue-i18n'
 
 export default {
-  name: 'LogsView',
+  name: 'LogsPage',
   data() {
     const { t } = useI18n()
 
@@ -82,7 +82,8 @@ export default {
     }
   },
   methods: {
-    async authenticateToken() {
+    authenticateToken() {
+    // async authenticateToken() {
       // TODO 需要重新验证?
       // try {
       //   const response = await axios.get('/api/verify-token', {
@@ -107,7 +108,7 @@ export default {
       if (IS_DEMO) {
         const mockLogWebSocket = (await import('@/mock/log_ws.js')).default
         this.websocket = mockLogWebSocket((event) => {
-          this.logData += event.data + '\n'
+          this.logData += `${event.data}\n`
         })
         return
       }
@@ -119,7 +120,9 @@ export default {
         if (response.ok) {
           config = await response.json()
         }
-      } catch (e) {}
+      } catch (e) {
+        // empty
+      }
 
       const enableHTTPS = config.enable_https ?? window.location.protocol === 'https:'
       let baseUrl = config.api_url || window.location.origin
@@ -135,7 +138,7 @@ export default {
         this.websocket = new WebSocket(wsUrl)
 
         this.websocket.onmessage = (event) => {
-          this.logData += event.data + '\n'
+          this.logData += `${event.data}\n`
         }
 
         this.websocket.onerror = () => {
@@ -156,7 +159,7 @@ export default {
           if (buffer) formattedLines.push(this.formatLogLine(buffer))
           buffer = line
         } else {
-          buffer += '\n' + line
+          buffer += `\n${line}`
         }
       })
 
@@ -216,7 +219,7 @@ export default {
             logContentColor = '#3b8ec9'
             break
           case 'INFO':
-            logContentColor = '#fff'
+            logContentColor = '#ffffff'
             break
           case 'SUCCESS':
             logContentColor = '#23d18b'
@@ -228,8 +231,11 @@ export default {
             logContentColor = '#f14c4c'
             break
           case 'CRITICAL':
-            logContentColor = '#fff'
+            logContentColor = '#ffffff'
             logBackgroundColor = '#cd3131'
+            break
+          default:
+            logContentColor = '#ffffff'
             break
         }
 

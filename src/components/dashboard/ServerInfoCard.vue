@@ -136,6 +136,7 @@ import { useI18n } from 'vue-i18n'
 const progress_colors = ['#1989fa', '#e6a23c', '#f56c6c']
 
 export default {
+  name: 'ServerInfoCard',
   data() {
     const { t } = useI18n()
 
@@ -187,8 +188,8 @@ export default {
       const minutes = Math.floor((seconds % 3600) / 60)
       const remainingSeconds = Math.floor(seconds % 60)
       return this.t('dashboard.server_info.text.format_time', {
-        hours: hours,
-        minutes: minutes,
+        hours,
+        minutes,
         seconds: remainingSeconds,
       })
     },

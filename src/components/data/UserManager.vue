@@ -176,6 +176,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 
 export default {
+  name: 'UserManager',
   data() {
     const { t } = useI18n()
     return {
@@ -284,7 +285,7 @@ export default {
       this.editDialogVisible = true
     },
     async submitEdit() {
-      let parsedSenderData
+      let parsedSenderData = {}
       try {
         parsedSenderData = JSON.parse(this.senderDataString)
       } catch (e) {

@@ -119,8 +119,10 @@ function debounce(fn, delay) {
 export default {
   name: 'VisibleEditor',
   props: {
-    modelValue: String,
-    options: Object,
+    modelValue: {
+      type: String,
+      default: ''
+    },
   },
     components: {
     ElInput,
@@ -196,7 +198,7 @@ export default {
     },
     confirmEditComment() {
       const section = this.parsedSections[this.editCommentSectionKey]
-      if (section && section.items[this.editCommentKey]) {
+      if (section.items?.[this.editCommentKey]) {
         section.items[this.editCommentKey].comment = this.editCommentValue
       }
       this.resetEditCommentDialog()
@@ -258,12 +260,12 @@ export default {
       this.updateTomlFromParsed()
     },
     parseTomlWithComments(input) {
+      const len = input.length
       const result = {}
       let currentSection = ''
       let sectionObj = null
-      let i = 0,
-        len = input.length,
-        lineStart = 0
+      let i = 0
+      let lineStart = 0
 
       while (i <= len) {
         if (i === len || input[i] === '\n') {
@@ -284,7 +286,7 @@ export default {
           ) {
             const eqIdx = line.indexOf('=')
             const key = line.slice(0, eqIdx).trim()
-            let valueComment = line.slice(eqIdx + 1).trim()
+            const valueComment = line.slice(eqIdx + 1).trim()
             let valueStr = valueComment,
               comment = ''
             const hashIdx = valueComment.indexOf('#')
