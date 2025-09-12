@@ -20,9 +20,11 @@
         "
       ></div>
       <div class="chat-title"># {{ $t('chat.title') }}</div>
-      <el-button class="reset-button" @click="resetChat" :title="$t('chat.button.reset')" circle>
-        <i class="mdi mdi-restart"></i>
-      </el-button>
+      <el-tooltip :content="$t('chat.button.reset')" placement="right-end">
+        <el-button class="reset-button" @click="resetChat" circle>
+          <i class="mdi mdi-restart"></i>
+        </el-button>
+      </el-tooltip>
     </div>
 
     <div class="chat-box" ref="chatBox">
@@ -62,12 +64,26 @@
       <div
         v-for="(msg, idx) in messages"
         :key="msg.id || idx"
-        class="chat-message"
+        class="chat-message-wrapper"
         :class="msg.from"
         :data-id="msg.id"
       >
-        <div v-html="msg.html" @click="handleMarkdownClick"></div>
-        <div v-if="debug" class="debug-uuid">{{ msg.id }}</div>
+        <div class="chat-message" :class="msg.from">
+          <div v-html="msg.html" @click="handleMarkdownClick"></div>
+          <div v-if="debug" class="debug-uuid">{{ msg.id }}</div>
+        </div>
+        <div class="chat-actions" v-if="msg.text.replace(/\[image:[^\]]+\]/g, '').trim()">
+          <el-tooltip :content="$t('button.copy')" placement="bottom">
+            <el-button
+              class="copy-button"
+              circle
+              size="small"
+              @click="copyMessage(msg)"
+            >
+              <i :class="copiedId === msg.id ? 'mdi mdi-check' : 'mdi mdi-content-copy'"></i>
+            </el-button>
+          </el-tooltip>
+        </div>
       </div>
     </div>
 
@@ -104,6 +120,9 @@
         @click="openImageInNewWindow"
       />
     </el-dialog>
+    <div class="chat-tip">
+      {{ $t('chat.tip') }}
+    </div>
   </div>
 </template>
 
@@ -166,6 +185,7 @@ export default {
       chatBox: null,
       websocket: null,
       connectionStatus: 'connecting',
+      copiedId: null,
       heartbeatTimer: null,
       heartbeatTimeoutTimer: null,
       heartbeatRetryCount: 0,
@@ -279,9 +299,9 @@ export default {
           this.connectionStatus = 'disconnected'
           ElMessage.error(this.t('message.error.connect.server'))
         }
-      } catch (error) {
+      } catch (e) {
         this.connectionStatus = 'disconnected'
-        ElMessage.error(this.t('message.error.connect') + error.message)
+        ElMessage.error(this.t('message.error.connect') + e.message)
       }
     },
 
@@ -499,6 +519,26 @@ export default {
       return data
     },
 
+    async copyMessage(msg) {
+      try {
+        const textWithoutImages = msg.text.replace(/\[image:[^\]]+\]/g, '').trim();
+        if (!textWithoutImages) {
+          ElMessage.warning(this.t('chat.message.warning.nothing_to_copy'));
+          return;
+        }
+
+        await navigator.clipboard.writeText(textWithoutImages)
+        this.copiedId = msg.id
+        setTimeout(() => {
+          if (this.copiedId === msg.id) {
+            this.copiedId = null
+          }
+        }, 2000)
+      } catch (e) {
+        ElMessage.error(this.t('chat.message.error.copy') + e.message)
+      }
+    },
+
     showImagePreview(src) {
       this.previewImageSrc = src
       this.imageDialogVisible = true
@@ -629,18 +669,16 @@ export default {
   background: transparent;
   border: none;
   padding: 0;
-  font-size: 22px !important;
+  font-size: 22px;
   color: inherit;
-  transition: color 0.3s ease;
 }
 
 .reset-button:hover {
-  background-color: #f3f3f3;
+  background-color: transparent;
   color: #888;
 }
 
 .dark .reset-button:hover {
-  background-color: #333;
   color: #aaa;
 }
 
@@ -703,6 +741,7 @@ export default {
   padding: 10px;
   word-wrap: break-word;
   word-break: break-word;
+  margin: 12px 20px 0 20px;
 }
 
 .chat-message.user {
@@ -730,6 +769,41 @@ export default {
   color: #666;
 }
 
+.chat-message-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin-bottom: 8px;
+}
+
+.chat-actions {
+  margin: 2px 20px 0 20px;
+  text-align: right;
+  align-self: flex-end;
+}
+
+.chat-message-wrapper.bot .chat-actions {
+  align-self: flex-start;
+  text-align: left;
+}
+
+.copy-button {
+  background: transparent;
+  border: none;
+  padding: 0;
+  font-size: 14px;
+  color: inherit;
+}
+
+.copy-button:hover {
+  color: #888;
+  background-color: transparent;
+}
+
+.dark .copy-button:hover {
+  color: #aaa;
+}
+
 .send-box {
   height: auto;
   min-height: 50px;
@@ -752,5 +826,16 @@ export default {
 
 .el-button:disabled {
   cursor: default !important;
+}
+
+.chat-tip {
+  font-size: 12px;
+  color: #888;
+  text-align: center;
+  margin: 6px 0 0 0;
+}
+
+.dark .chat-tip {
+  color: #aaa;
 }
 </style>

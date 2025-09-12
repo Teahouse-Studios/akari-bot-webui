@@ -12,14 +12,15 @@
           />
         </div>
         <div class="right-controls">
-          <el-button
-            class="log-refresh-button"
-            @click="refreshLog"
-            :title="$t('logs.button.refresh')"
-            circle
-          >
-            <i class="mdi mdi-refresh"></i>
-          </el-button>
+          <el-tooltip :content="$t('logs.button.refresh')" placement="bottom">
+            <el-button
+              class="log-refresh-button"
+              @click="refreshLog"
+              circle
+            >
+              <i class="mdi mdi-refresh"></i>
+            </el-button>
+          </el-tooltip>
           <el-switch v-model="autoScroll" />
           <span class="auto-scroll-label">{{ $t('logs.switch.auto_scroll') }}</span>
         </div>
@@ -144,8 +145,8 @@ export default {
         this.websocket.onerror = () => {
           ElMessage.error(this.t('message.error.connect.server'))
         }
-      } catch (error) {
-        ElMessage.error(this.t('message.error.connect') + error.message)
+      } catch (e) {
+        ElMessage.error(this.t('message.error.connect') + e.message)
       }
     },
 
@@ -349,17 +350,16 @@ export default {
 }
 
 .log-refresh-button:hover {
-  background-color: #ddd;
+  background-color: transparent;
   color: #888;
+}
+
+.dark .log-refresh-button:hover {
+  color: #aaa;
 }
 
 .auto-scroll-label {
   margin-left: 5px;
-}
-
-.dark .log-refresh-button:hover {
-  background-color: #555;
-  color: #aaa;
 }
 
 .right-controls {
@@ -485,5 +485,6 @@ export default {
 
 .log-viewer-placeholder {
   color: #636363;
+  white-space: normal;
 }
 </style>
