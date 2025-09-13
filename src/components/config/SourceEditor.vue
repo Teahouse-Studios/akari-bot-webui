@@ -80,13 +80,13 @@ export default {
 
 <style scoped>
 .editor-body {
-  height: 60vh;
+  height: calc(100vh - 260px);
   overflow: auto;
   border-radius: 4px;
 }
 
 ::v-deep(.cm-editor) {
-  height: 60vh;
+  height: calc(100vh - 260px);
 }
 
 ::v-deep(.cm-gutters) {

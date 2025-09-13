@@ -25,6 +25,12 @@ import { useI18n } from 'vue-i18n'
 export default {
   name: 'AppHeader',
   emits: ['toggle-sidebar'],
+  props: {
+    userVerified: {
+      type: Boolean,
+      default: false
+    }
+  },
   data() {
     const { t } = useI18n()
     return {
@@ -56,6 +62,7 @@ export default {
       localStorage.setItem('isDarkMode', JSON.stringify(this.isDarkMode))
     },
     switchSidebar() {
+      if (!this.userVerified) return;
       this.$emit('toggle-sidebar')
     },
   },

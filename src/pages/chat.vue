@@ -73,7 +73,29 @@
           <div v-if="debug" class="debug-uuid">{{ msg.id }}</div>
         </div>
         <div class="chat-actions" v-if="msg.text.replace(/\[image:[^\]]+\]/g, '').trim()">
-          <el-tooltip :content="$t('button.copy')" placement="bottom">
+          <i
+            v-if="msg.typingStatus"
+            :class="[
+              'mdi',
+              msg.typingStatus === 'start'
+                ? 'mdi-message-processing-outline'
+                : msg.typingStatus === 'end'
+                  ? 'mdi-message-check-outline'
+                  : msg.typingStatus === 'error'
+                    ? 'mdi-message-alert-outline'
+                    : ''
+            ]"
+            class="typing-status-icon"
+          ></i>
+
+          <el-tooltip
+            :content="
+              msg.from === 'bot' && /\[image:[^\]]+\]/.test(msg.text)
+                ? $t('chat.button.copy_text')
+                : $t('button.copy')
+            "
+            placement="bottom"
+          >
             <el-button
               class="copy-button"
               circle
@@ -120,9 +142,9 @@
         @click="openImageInNewWindow"
       />
     </el-dialog>
-    <div class="chat-tip">
-      {{ $t('chat.tip') }}
-    </div>
+  </div>
+  <div class="chat-tip">
+    {{ $t('chat.tip') }}
   </div>
 </template>
 
@@ -289,9 +311,24 @@ export default {
               text: this.renderResponse(data.message),
               html: this.renderMarkdown(this.renderResponse(data.message)),
               id: data.id || uuidv4(),
+              typingStatus: null,
             })
 
             this.scrollToBottom()
+            return
+          }
+
+          if (data.action === 'typing') {
+            const msg = this.messages.find((m) => m.id === data.id)
+            if (msg) {
+              if (['start', 'end', 'error'].includes(data.status)) {
+                if (msg.typingStatus === 'error' && data.status === 'end') {
+                  return
+                }
+                msg.typingStatus = data.status
+              }
+            }
+            return
           }
         }
 
@@ -683,7 +720,7 @@ export default {
 }
 
 .chat-box {
-  height: calc(80vh - 100px);
+  height: calc(100vh - 260px);
   overflow-y: auto;
   display: flex;
   flex-direction: column;
@@ -787,6 +824,13 @@ export default {
   text-align: left;
 }
 
+.typing-status-icon {
+  font-size: 16px;
+  margin-right: 6px;
+  opacity: 0.8;
+  vertical-align: middle;
+}
+
 .copy-button {
   background: transparent;
   border: none;
@@ -832,7 +876,7 @@ export default {
   font-size: 12px;
   color: #888;
   text-align: center;
-  margin: 6px 0 0 0;
+  margin: 10px 0 0 0;
 }
 
 .dark .chat-tip {

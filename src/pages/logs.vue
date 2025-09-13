@@ -471,7 +471,7 @@ export default {
 
 .log-viewer {
   flex-grow: 1;
-  height: 60vh;
+  height: calc(100vh - 260px);
   overflow-y: auto;
   overflow-x: hidden;
   border-radius: 8px;

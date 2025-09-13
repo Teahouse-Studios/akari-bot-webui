@@ -10,17 +10,12 @@
       ></el-input>
 
       <div class="remember-device-container">
-        <!-- <el-checkbox v-model="rememberDevice">{{ $t('login.checkbox.remember') }}</el-checkbox> -->
-        <span
-          class="forgot-password"
-          @mouseenter="onHoverStart"
-          @mouseleave="onHoverEnd"
-          @click="onClickText"
-          >{{ $t('login.forgot_password.text') }}
-        </span>
-        <div v-show="showTooltip" class="tooltip">
-          {{ $t('login.forgot_password.tooltip') }}
-        </div>
+        <el-tooltip
+          :content="$t('login.forgot_password.tooltip')"
+          placement="top-start"
+        >
+          <span class="forgot-password">{{ $t('login.forgot_password.text') }}</span>
+        </el-tooltip>
       </div>
 
       <el-button type="primary" @click="checkPassword" :loading="loading" :disabled="loading">
@@ -39,36 +34,36 @@ export default {
   name: 'LoginModal',
   data() {
     const { t } = useI18n()
-
     return {
       password: '',
       rememberDevice: false,
       loading: false,
-      showTooltip: false,
       t,
     }
   },
   methods: {
     async checkPassword() {
-      this.loading = true
+    if (!this.password || !this.password.trim()) {
+      ElMessage.warning(this.t('login.message.warning.empty'))
+      return
+    }
 
+      this.loading = true
       try {
         const response = await axios.post('/api/login', {
           password: this.password,
           remember: this.rememberDevice,
         })
-
         if (response.status === 200) {
           ElMessage.success(this.t('login.message.success'))
           localStorage.setItem("token", response.data.data)
-          // TODO 改
           location.reload()
         }
       } catch (error) {
         if (error.response?.status === 403) {
-          ElMessage.error(this.t('login.message.failed'))
+          ElMessage.error(this.t('login.message.error.failed'))
         } else if (error.response?.status === 429) {
-          ElMessage.error(this.t('login.message.abuse'))
+          ElMessage.error(this.t('login.message.error.abuse'))
         } else {
           ElMessage.error(this.t('message.error.fetch') + error.message)
         }
@@ -76,39 +71,6 @@ export default {
         this.loading = false
       }
     },
-    onHoverStart() {
-      if (!this.isTouchDevice()) {
-        this.showTooltip = true
-      }
-    },
-    onHoverEnd() {
-      if (!this.isTouchDevice()) {
-        this.showTooltip = false
-      }
-    },
-    onClickText(event) {
-      if (this.isTouchDevice()) {
-        this.showTooltip = !this.showTooltip
-        event.stopPropagation()
-      }
-    },
-    isTouchDevice() {
-      return 'ontouchstart' in window || navigator.maxTouchPoints > 0
-    },
-  },
-  mounted() {
-    document.addEventListener('click', () => {
-      if (this.isTouchDevice()) {
-        this.showTooltip = false
-      }
-    })
-  },
-  beforeUnmount() {
-    document.removeEventListener('click', () => {
-      if (this.isTouchDevice()) {
-        this.showTooltip = false
-      }
-    })
   },
 }
 </script>
@@ -124,7 +86,7 @@ export default {
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 9999;
+  z-index: 2000;
   backdrop-filter: blur(5px);
 }
 
@@ -154,7 +116,7 @@ export default {
   cursor: pointer;
   font-size: 14px;
   text-decoration: underline;
-  transition: color 0.3s;
+  transition: color 0.2s;
 }
 .forgot-password:hover {
   color: #333;
@@ -163,19 +125,7 @@ export default {
 .dark .forgot-password {
   color: #ccc;
 }
-
 .dark .forgot-password:hover {
   color: white;
-}
-
-.tooltip {
-  position: absolute;
-  top: 50vh;
-  padding: 5px 10px;
-  background-color: rgba(0, 0, 0, 0.6);
-  color: white;
-  font-size: 12px;
-  border-radius: 4px;
-  z-index: 10;
 }
 </style>

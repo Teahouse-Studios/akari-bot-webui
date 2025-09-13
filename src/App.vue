@@ -3,16 +3,18 @@
     <div id="app">
       <DemoWatermark />
       <div class="loading-overlay" v-if="userVerified === null" v-loading="userVerified === null"></div>
-      <AppHeader @toggle-sidebar="toggleSidebar" />
+      <AppHeader
+       :userVerified="userVerified"
+       @toggle-sidebar="toggleSidebar" />
       <LoginModal v-if="isPromptLogin" />
       <div v-if="!isLoading">
         <SuggestSetPasswordModal v-model="showSuggestPasswordModal" />
         <AppSidebar
-          v-if="windowWidth > 1024"
+          :visible="windowWidth > 1024"
           @menuSelect="handleMenuSelect"
         />
         <AppSidebarDrawer
-          v-else
+          v-if="windowWidth <= 1024"
           v-model="isSidebarVisible"
           @menuSelect="handleMenuSelect" />
         <el-container :style="{ marginTop: '60px' }">
@@ -70,10 +72,7 @@ export default {
   },
   computed: {
     sidebarMarginLeft() {
-      if (this.windowWidth > 1024 && this.isSidebarVisible) {
-        return '200px'
-      }
-      return '0'
+      return this.isSidebarVisible && this.windowWidth > 1024 ? '200px' : '0'
     },
   },
   mounted() {
@@ -101,26 +100,26 @@ export default {
     async initializeUserVerification() {
       if (!localStorage.getItem("token")) { 
         this.checkPassword()
-      }
-      try {
-        const response = await axios.get('/api/verify')
-        if (response.status !== 200) {
-          this.checkPassword()
-        }
-        this.userVerified = true
-
-        if (IS_DEMO) {
-          // this.showSuggestPasswordModal = true
-        } else {
-          const noPassword = response.data.no_password
-          const promptDisabled = localStorage.getItem('noPasswordPromptDisabled') === 'true'
-          if (noPassword && !promptDisabled) {
-            this.showSuggestPasswordModal = true
+      } else {
+        try {
+          const response = await axios.get('/api/verify')
+          if (response.status === 200) {
+            this.userVerified = true
           }
+
+          if (IS_DEMO) {
+            // this.showSuggestPasswordModal = true
+          } else {
+            const noPassword = response.data.no_password
+            const promptDisabled = localStorage.getItem('noPasswordPromptDisabled') === 'true'
+            if (noPassword && !promptDisabled) {
+              this.showSuggestPasswordModal = true
+            }
+          }
+        } catch (error) {
+          this.checkPassword()
+          localStorage.removeItem("token")
         }
-      } catch (error) {
-        this.checkPassword()
-        localStorage.removeItem("token")
       }
     },
     async checkPassword() {
@@ -137,8 +136,9 @@ export default {
       } catch (error) {
         if (error.response?.status === 401) {
           this.isPromptLogin = true
-        } else if (error.response?.status === 403) {
-          ElMessage.error(this.t('login.message.abuse'))
+        } else if (error.response?.status === 429) {
+          this.isPromptLogin = true
+          ElMessage.error(this.t('login.message.error.abuse'))
         } else {
           ElMessage.error(this.t('message.error.fetch') + error.message)
         }

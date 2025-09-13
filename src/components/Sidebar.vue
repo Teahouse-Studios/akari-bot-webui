@@ -1,5 +1,9 @@
 <template>
-  <el-aside width="200px" class="sidebar">
+  <el-aside
+    width="200px"
+    class="sidebar"
+    :class="{ 'sidebar-hidden': !visible }"
+  >
     <el-menu :default-active="activeMenu" class="sidebar-menu" @select="handleSelect">
       <el-menu-item index="/dashboard">
         <i class="mdi mdi-view-dashboard"></i>
@@ -38,6 +42,12 @@ import { useI18n } from 'vue-i18n'
 
 export default {
   name: 'AppSidebar',
+  props: {
+    visible: {
+      type: Boolean,
+      default: true
+    }
+  },
   data() {
     const { t } = useI18n()
 
@@ -79,6 +89,11 @@ export default {
   z-index: 100;
   overflow-y: auto;
   border-right: 1px solid #e0e0e0;
+  transition: transform 0.3s ease;
+}
+
+.sidebar-hidden {
+  transform: translateX(-100%);
 }
 
 .dark .sidebar {
