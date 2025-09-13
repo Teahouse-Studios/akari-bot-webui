@@ -45,5 +45,6 @@ const initAxios = () => {
   return axios;
 };
 
-const axiosInstance = await initAxios();
+// const axiosInstance = await initAxios();
+const axiosInstance = initAxios();
 export default axiosInstance;
