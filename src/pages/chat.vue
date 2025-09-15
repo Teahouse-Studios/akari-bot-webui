@@ -72,6 +72,46 @@
           <div v-html="msg.html" @click="handleMarkdownClick"></div>
           <div v-if="debug" class="debug-uuid">{{ msg.id }}</div>
         </div>
+        <div class="chat-reactions">
+          <el-button
+            v-for="(count, emoji) in msg.reactions"
+            :key="emoji"
+            class="reaction-button"
+            size="small"
+            :class="{ active: userReacted(msg, emoji) }"
+            @click="toggleReaction(msg, emoji)"
+          >
+            {{ emoji }} {{ count }}
+          </el-button>
+
+          <el-popover
+            :placement="msg.from === 'bot' ? 'bottom-end' : 'bottom-start'"
+            trigger="manual"
+            v-model:visible="msg.showEmojiPicker"
+            width="310"
+          >
+            <EmojiPicker
+             :key="emojiTheme"
+             @select="emoji => selectEmoji(msg, emoji)"
+             :native="true"
+             :disable-skin-tones="true"
+             :display-recent="true"
+             :theme="emojiTheme"
+             :group-names="groupNames"
+             :static-texts="{ placeholder: $t('emojipicker.placeholder')}" 
+            />
+            <template #reference>
+              <el-button
+                circle
+                size="small"
+                class="reaction-button"
+                @click="openEmojiPicker(msg)"
+              >
+                <i class="mdi mdi-plus"></i>
+              </el-button>
+            </template>
+          </el-popover>
+        </div>
         <div class="chat-actions" v-if="msg.text.replace(/\[image:[^\]]+\]/g, '').trim()">
           <i
             v-if="msg.typingStatus"
@@ -87,7 +127,7 @@
             ]"
             class="typing-status-icon"
           ></i>
-
+          
           <el-tooltip
             :content="
               msg.from === 'bot' && /\[image:[^\]]+\]/.test(msg.text)
@@ -156,9 +196,14 @@ import MarkdownIt from 'markdown-it'
 import linkAttributes from 'markdown-it-link-attributes'
 import { v4 as uuidv4 } from 'uuid'
 import { useI18n } from 'vue-i18n'
+import EmojiPicker from 'vue3-emoji-picker'
+import 'vue3-emoji-picker/css';
 
 export default {
   name: 'ChatPage',
+  components: {
+    EmojiPicker,
+  },
   data() {
     const { t } = useI18n()
     const md = new MarkdownIt('zero')
@@ -217,11 +262,31 @@ export default {
       imageDialogVisible: false,
       isMobileView: window.innerWidth < 1024,
       previewImageSrc: '',
+      activeReactionMsg: null,
       abortController: new AbortController(),
       // debug: process.env.VUE_APP_DEBUG === 'true',
-      debug: false,
+      debug: false, 
+      isDarkMode: localStorage.getItem('isDarkMode') === 'true',
       md,
       t,
+    }
+  },
+  computed: {
+    emojiTheme() {
+      return this.isDarkMode ? 'dark' : 'light'
+    },
+    groupNames() {
+      return {
+        smileys_people: this.t('emojipicker.group.smiles_people'),
+        animals_nature: this.t('emojipicker.group.animals_nature'),
+        food_drink: this.t('emojipicker.group.food_drink'),
+        activities: this.t('emojipicker.group.activities'),
+        travel_places: this.t('emojipicker.group.travel_places'),
+        objects: this.t('emojipicker.group.objects'),
+        symbols: this.t('emojipicker.group.symbols'),
+        flags: this.t('emojipicker.group.flags'),
+        recent: this.t('emojipicker.group.recent'),
+      }
     }
   },
   methods: {
@@ -240,6 +305,9 @@ export default {
                 text: parsed.message[0].content,
                 html: this.renderMarkdown(parsed.message[0].content),
                 id: uuid,
+                showEmojiPicker: false,
+                reactions: {},
+                userReactions: [],
               })
               this.scrollToBottom()
             }
@@ -305,6 +373,25 @@ export default {
             return
           }
 
+          if (data.action === 'reaction') {
+            const msg = this.messages.find(m => m.id === data.id)
+            if (msg) {
+              if (!msg.reactions) msg.reactions = {}
+
+              if (data.add) {
+                msg.reactions[data.emoji] = (msg.reactions[data.emoji] || 0) + 1
+              } else {
+                if (msg.reactions[data.emoji]) {
+                  msg.reactions[data.emoji]--
+                  if (msg.reactions[data.emoji] <= 0) {
+                    delete msg.reactions[data.emoji]
+                  }
+                }
+              }
+            }
+            return
+          }
+
           if (data.action === 'send') {
             this.messages.push({
               from: 'bot',
@@ -312,6 +399,9 @@ export default {
               html: this.renderMarkdown(this.renderResponse(data.message)),
               id: data.id || uuidv4(),
               typingStatus: null,
+              showEmojiPicker: false,
+              reactions: {},
+              userReactions: [],
             })
 
             this.scrollToBottom()
@@ -447,6 +537,9 @@ export default {
         text,
         html: this.renderMarkdown(text),
         id: uuid,
+        showEmojiPicker: false,
+        reactions: {},
+        userReactions: [],
       })
 
       if (!IS_DEMO) {
@@ -556,6 +649,85 @@ export default {
       return data
     },
 
+    openEmojiPicker(msg) {
+      this.messages.forEach(m => m.showEmojiPicker = false)
+      this.activeReactionMsg = msg
+      msg.showEmojiPicker = true
+    },
+
+    selectEmoji(msg, emoji) {
+      const selected = emoji.i;
+      if (!msg) return;
+
+      if (!msg.reactions) msg.reactions = {};
+      if (!msg.userReactions) msg.userReactions = [];
+
+      const hasReaction = msg.userReactions.includes(selected);
+
+      if (hasReaction) {
+        msg.reactions[selected]--;
+
+        if (msg.reactions[selected] <= 0) {
+          delete msg.reactions[selected];
+        }
+
+        msg.userReactions = msg.userReactions.filter(e => e !== selected);
+
+        this.websocket?.send(JSON.stringify({
+          action: 'reaction',
+          emoji: selected,
+          id: msg.id,
+          add: false
+        }));
+      } else {
+        msg.reactions[selected] = (msg.reactions[selected] || 0) + 1;
+        msg.userReactions.push(selected);
+
+        this.websocket?.send(JSON.stringify({
+          action: 'reaction',
+          emoji: selected,
+          id: msg.id,
+          add: true
+        }));
+      }
+
+      msg.showEmojiPicker = false;
+    },
+
+    userReacted(msg, emoji) {
+      return msg.userReactions && msg.userReactions.includes(emoji)
+    },
+
+    toggleReaction(msg, emoji) {
+      if (!msg.reactions) msg.reactions = {}
+      if (!msg.userReactions) msg.userReactions = []
+
+      const hasReaction = msg.userReactions.includes(emoji)
+
+      if (hasReaction) {
+        msg.reactions[emoji]--
+        if (msg.reactions[emoji] <= 0) delete msg.reactions[emoji]
+        msg.userReactions = msg.userReactions.filter(e => e !== emoji)
+
+        this.websocket?.send(JSON.stringify({
+          action: 'reaction',
+          emoji,
+          id: msg.id,
+          add: false
+        }))
+      } else {
+        msg.reactions[emoji] = (msg.reactions[emoji] || 0) + 1
+        msg.userReactions.push(emoji)
+
+        this.websocket?.send(JSON.stringify({
+          action: 'reaction',
+          emoji,
+          id: msg.id,
+          add: true
+        }))
+      }
+    },
+
     async copyMessage(msg) {
       try {
         const textWithoutImages = msg.text.replace(/\[image:[^\]]+\]/g, '').trim();
@@ -592,6 +764,15 @@ export default {
     this.chatBox = this.$refs.chatBox
     this.authenticateToken()
     window.addEventListener('resize', this.handleResize)
+    
+    const html = document.documentElement
+    this.isDarkMode = html.classList.contains('dark')
+
+    this.observer = new MutationObserver(() => {
+      this.isDarkMode = html.classList.contains('dark')
+    })
+
+    this.observer.observe(html, { attributes: true, attributeFilter: ['class'] })
   },
 
   beforeUnmount() {
@@ -822,6 +1003,45 @@ export default {
 .chat-message-wrapper.bot .chat-actions {
   align-self: flex-start;
   text-align: left;
+}
+
+.chat-reactions {
+  margin: 4px 20px 0 20px;
+  align-self: flex-start;
+  text-align: left;
+}
+
+.chat-message-wrapper.user .chat-reactions {
+  align-self: flex-end;
+  text-align: right;
+}
+
+.reaction-button {
+  background: white;
+  border-radius: 16px;
+  padding: 0 8px;
+  font-size: 14px;
+  line-height: 20px;
+  cursor: pointer;
+}
+
+.reaction-button + .reaction-button {
+  margin-left: 6px;
+}
+
+.reaction-button.active {
+  background-color: var(--el-color-primary);
+  color: white;
+}
+
+.dark .reaction-button {
+  background: #444;
+  color: #fff;
+}
+
+.dark .reaction-button.active {
+  background-color: var(--el-color-primary);
+  color: white;
 }
 
 .typing-status-icon {
