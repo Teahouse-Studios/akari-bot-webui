@@ -64,41 +64,44 @@
             {{ $t('dashboard.analytics.platform.title') }}
           </h3>
         </div>
-        <div class="proportion-bar">
-          <div
-            v-for="item in commandStats"
-            :key="item.prefix"
-            class="proportion-segment"
-            :style="{
-              width: Math.round((item.count / count) * 100 * 100) / 100 + '%',
-              backgroundColor: getColorByIndex(item.prefix),
-            }"
-            :title="`${item.prefix}: ${item.count} (${Math.round((item.count / count) * 100 * 100) / 100}%)`"
-          ></div>
-        </div>
-        <div class="ranking-total-label">
-          <strong>{{ $t('dashboard.analytics.command.label.total') }}</strong>
-          <span>{{ count || 0 }}</span>
-        </div>
-        <el-scrollbar height="260px">
-          <div v-for="(item, index) in commandStats" :key="item.prefix" class="ranking-item">
-            <span
+        <div v-if="commandStats.length > 0">
+          <div class="proportion-bar">
+            <div
+              v-for="item in commandStats"
+              :key="item.prefix"
+              class="proportion-segment"
               :style="{
+                width: Math.round((item.count / count) * 100 * 100) / 100 + '%',
                 backgroundColor: getColorByIndex(item.prefix),
-                color: '#fff',
-                borderRadius: '100%',
-                padding: '6px 10px',
-                display: 'inline-block',
-                marginRight: '8px',
               }"
-              >{{ index + 1 }}
-            </span>
-            <div class="ranking-label">
-              <strong>{{ item.prefix }}</strong>
-              <span>{{ item.count }}</span>
-            </div>
+              :title="`${item.prefix}: ${item.count} (${Math.round((item.count / count) * 100 * 100) / 100}%)`"
+            ></div>
           </div>
-        </el-scrollbar>
+          <div class="ranking-total-label">
+            <strong>{{ $t('dashboard.analytics.command.label.total') }}</strong>
+            <span>{{ count || 0 }}</span>
+          </div>
+          <el-scrollbar height="260px">
+            <div v-for="(item, index) in commandStats" :key="item.prefix" class="ranking-item">
+              <span
+                :style="{
+                  backgroundColor: getColorByIndex(item.prefix),
+                  color: '#fff',
+                  borderRadius: '100%',
+                  padding: '6px 10px',
+                  display: 'inline-block',
+                  marginRight: '8px',
+                }"
+                >{{ index + 1 }}
+              </span>
+              <div class="ranking-label">
+                <strong>{{ item.prefix }}</strong>
+                <span>{{ item.count }}</span>
+              </div>
+            </div>
+          </el-scrollbar>
+        </div>
+        <el-empty v-else />
       </el-card>
     </el-col>
   </el-row>
