@@ -1,7 +1,7 @@
 <template>
   <el-row :gutter="20">
     <el-col :span="16" :xs="24">
-      <el-card :body-style="{ height: '400px' }" shadow="never" v-loading="loading">
+      <el-card :body-style="{ height: '360px' }" shadow="never" v-loading="loading">
         <div class="card-header">
           <h3>
             <i class="mdi mdi-chart-line"></i>
@@ -57,7 +57,7 @@
       </el-card>
     </el-col>
     <el-col :span="8" :xs="24">
-      <el-card :body-style="{ height: '400px' }" shadow="never" v-loading="loading">
+      <el-card :body-style="{ height: '360px' }" shadow="never" v-loading="loading">
         <div class="card-header">
           <h3>
             <i class="mdi mdi-format-list-numbered"></i>
