@@ -47,8 +47,11 @@
           <el-input
             v-model="platformIdPart"
             :placeholder="$t('data.user.input.sender_id')"
-            @input="debouncedRefresh"
-          />
+            @input="debouncedRefresh">
+          <template #prefix>
+              <i class="mdi mdi-magnify"></i>
+          </template>
+          </el-input>
         </div>
       </div>
 
@@ -92,7 +95,7 @@
             </el-popover>
           </template>
         </el-table-column>
-        <el-table-column :label="$t('data.session.table.operation')" min-width="240">
+        <el-table-column :label="$t('data.table.operation')" min-width="240">
           <template #default="{ row }">
             <el-button size="small" type="warning" @click="editSender(row)"
               ><i class="mdi mdi-pencil"></i> {{ $t('button.edit') }}</el-button
@@ -103,16 +106,18 @@
           </template>
         </el-table-column>
       </el-table>
-      <el-pagination
-        v-if="totalItems > 0"
-        background
-        layout="prev, pager, next"
-        v-model:current-page="currentPage"
-        :page-size="pageSize"
-        :total="totalItems"
-        style="margin-top: 20px"
-        @current-change="handlePageChange"
-      />
+      <div class="pagination-wrapper">
+        <el-pagination
+          v-if="totalItems > 0"
+          background
+          layout="prev, pager, next"
+          v-model:current-page="currentPage"
+          :page-size="pageSize"
+          :total="totalItems"
+          style="margin-top: 20px"
+          @current-change="handlePageChange"
+        />
+      </div>
     </el-card>
 
     <el-dialog
@@ -375,5 +380,12 @@ pre {
 .filter-item {
   flex: 1 1 0;
   min-width: 200px;
+}
+
+.pagination-wrapper {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  white-space: nowrap;
+  width: 100%;
 }
 </style>

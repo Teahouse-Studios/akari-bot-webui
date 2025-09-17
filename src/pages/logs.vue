@@ -8,8 +8,11 @@
             :placeholder="$t('logs.input.search')"
             class="log-search-input"
             @input="handleSearch"
-            clearable
-          />
+            clearable>
+        <template #prefix>
+            <i class="mdi mdi-magnify"></i>
+        </template>
+        </el-input>
         </div>
         <div class="right-controls">
           <el-tooltip :content="$t('logs.button.refresh')" placement="bottom">

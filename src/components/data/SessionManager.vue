@@ -8,8 +8,7 @@
           type="primary"
           size="small"
           style="float: right; margin-left: 10px"
-          ><i class="mdi mdi-refresh"></i> {{ $t('data.button.refresh') }}</el-button
-        >
+          ><i class="mdi mdi-refresh"></i> {{ $t('data.button.refresh') }}</el-button>
       </div>
 
       <div class="filter-container">
@@ -46,8 +45,11 @@
           <el-input
             v-model="platformIdPart"
             :placeholder="$t('data.session.input.target_id')"
-            @input="debouncedRefresh"
-          />
+            @input="debouncedRefresh">
+        <template #prefix>
+            <i class="mdi mdi-magnify"></i>
+        </template>
+        </el-input>
         </div>
       </div>
 
@@ -121,7 +123,7 @@
             </el-popover>
           </template>
         </el-table-column>
-        <el-table-column :label="$t('data.session.table.operation')" min-width="240">
+        <el-table-column :label="$t('data.table.operation')" min-width="240">
           <template #default="{ row }">
             <el-button size="small" type="warning" @click="editTarget(row)"
               ><i class="mdi mdi-pencil"></i> {{ $t('button.edit') }}</el-button
@@ -132,16 +134,18 @@
           </template>
         </el-table-column>
       </el-table>
-      <el-pagination
-        v-if="totalItems > 0"
-        background
-        layout="prev, pager, next"
-        v-model:current-page="currentPage"
-        :page-size="pageSize"
-        :total="totalItems"
-        style="margin-top: 20px"
-        @current-change="handlePageChange"
-      />
+      <div class="pagination-wrapper">
+        <el-pagination
+          v-if="totalItems > 0"
+          background
+          layout="prev, pager, next"
+          v-model:current-page="currentPage"
+          :page-size="pageSize"
+          :total="totalItems"
+          style="margin-top: 20px"
+          @current-change="handlePageChange"
+        />
+      </div>
 
       <el-dialog v-model="moduleDialogVisible" :title="$t('data.session.table.modules')">
         <div class="tag-container">
@@ -531,5 +535,12 @@ pre {
   max-height: 200px;
   padding: 10px 0;
   max-width: 100%;
+}
+
+.pagination-wrapper {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  white-space: nowrap;
+  width: 100%;
 }
 </style>

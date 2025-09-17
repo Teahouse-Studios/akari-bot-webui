@@ -21,6 +21,10 @@
         <i class="mdi mdi-cog"></i>
         <span>{{ $t('sidebar.item.config') }}</span>
       </el-menu-item>
+      <el-menu-item index="/modules">
+        <i class="mdi mdi-puzzle"></i>
+        <span>{{ $t('sidebar.item.modules') }}</span>
+      </el-menu-item>
       <el-menu-item index="/data">
         <i class="mdi mdi-database"></i>
         <span>{{ $t('sidebar.item.data') }}</span>
