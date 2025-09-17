@@ -189,7 +189,7 @@ export default {
       if (related.length === 0) {
         msg = this.t('data.modules.confirm.message.reload')
       } else {
-        msg = t('data.modules.confirm.message.reload.extra', {
+        msg = this.t('data.modules.confirm.message.reload.extra', {
           modules: related.map((m) => `"${m}"`).join('、'),
         })
       }
@@ -221,9 +221,9 @@ export default {
       const related = await this.getRelatedModules(row.name)
       let msg = ''
       if (related.length === 0) {
-        msg = this.t('data.modules.confirm.message.unload')
+        msg = this.$t('data.modules.confirm.message.unload')
       } else {
-        msg = t('data.modules.confirm.message.unload.extra', {
+        msg = this.$t('data.modules.confirm.message.unload.extra', {
           modules: related.map((m) => `"${m}"`).join('、'),
         })
       }
@@ -244,7 +244,7 @@ export default {
           return
         }
         if (error.response?.status === 422) {
-          ElMessage.error(this.t('data.modules.message.unload.error.failed'))
+          ElMessage.error(this.$t('data.modules.message.unload.error.failed'))
         } else {
           ElMessage.error(this.$t('message.error.fetch') + error.message)
         }
