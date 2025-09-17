@@ -8,7 +8,8 @@
           type="primary"
           size="small"
           style="float: right; margin-left: 10px"
-          ><i class="mdi mdi-refresh"></i> {{ $t('data.button.refresh') }}</el-button>
+          ><i class="mdi mdi-refresh"></i> {{ $t('data.button.refresh') }}</el-button
+        >
       </div>
 
       <div class="filter-container">
@@ -19,7 +20,8 @@
               :placeholder="$t('data.modules.input.module_name')"
               clearable
               @input="debouncedRefresh"
-            :prefix-icon="Search">
+              :prefix-icon="Search"
+            >
               <template #prefix>
                 <i class="mdi mdi-magnify"></i>
               </template>
@@ -29,32 +31,24 @@
       </div>
 
       <el-table v-loading="loading" :data="pagedModules" style="width: 100%" stripe>
-        <el-table-column 
-          :label="$t('data.modules.table.name')"
-          min-width="140">
+        <el-table-column :label="$t('data.modules.table.name')" min-width="140">
           <template #default="{ row }">
             <span :class="{ unloaded: !row.loaded }">{{ row.bind_prefix }}</span>
           </template>
         </el-table-column>
-        <el-table-column 
-          :label="$t('data.modules.table.desc')"
-          min-width="800">
+        <el-table-column :label="$t('data.modules.table.desc')" min-width="800">
           <template #default="{ row }">
             {{ row.desc || '-' }}
           </template>
         </el-table-column>
-        <el-table-column 
-          :label="$t('data.modules.table.developers')"
-          min-width="400">
+        <el-table-column :label="$t('data.modules.table.developers')" min-width="400">
           <template #default="{ row }">
             <el-tag v-for="dev in row.developers" :key="dev" type="info" style="margin: 2px">
               {{ dev }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column
-         :label="$t('data.table.status')"
-         min-width="100">
+        <el-table-column :label="$t('data.table.status')" min-width="100">
           <template #default="{ row }">
             <el-tag :type="row.loaded ? 'success' : 'danger'">
               {{ row.loaded ? $t('data.modules.tag.loaded') : $t('data.modules.tag.unloaded') }}
@@ -63,12 +57,7 @@
         </el-table-column>
         <el-table-column :label="$t('data.table.operation')" min-width="240">
           <template #default="{ row }">
-            <el-button
-              v-if="row.loaded"
-              size="small"
-              type="warning"
-              @click="handleReload(row)"
-            >
+            <el-button v-if="row.loaded" size="small" type="warning" @click="handleReload(row)">
               <i class="mdi mdi-reload"></i> {{ $t('data.modules.button.reload') }}
             </el-button>
 
@@ -82,12 +71,7 @@
               <i class="mdi mdi-puzzle-remove"></i> {{ $t('data.modules.button.unload') }}
             </el-button>
 
-            <el-button
-              v-else
-              size="small"
-              type="success"
-              @click="handleLoad(row)"
-            >
+            <el-button v-else size="small" type="success" @click="handleLoad(row)">
               <i class="mdi mdi-puzzle-plus"></i> {{ $t('data.modules.button.load') }}
             </el-button>
           </template>
@@ -113,7 +97,6 @@
 <script>
 import axios from '@/axios.mjs'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Search } from '@element-plus/icons-vue'
 import { useI18n } from 'vue-i18n'
 
 export default {
@@ -134,8 +117,8 @@ export default {
     filteredModules() {
       let result = this.modules
       if (this.searchKeyword) {
-        result = result.filter(mod =>
-          mod.bind_prefix.toLowerCase().includes(this.searchKeyword.toLowerCase())
+        result = result.filter((mod) =>
+          mod.bind_prefix.toLowerCase().includes(this.searchKeyword.toLowerCase()),
         )
       }
       return result
@@ -147,7 +130,7 @@ export default {
     },
     totalModules() {
       return this.filteredModules.length
-    }
+    },
   },
   mounted() {
     this.refreshData()
@@ -206,7 +189,9 @@ export default {
       if (related.length === 0) {
         msg = this.t('data.modules.confirm.message.reload')
       } else {
-        msg = t('data.modules.confirm.message.reload.extra', { modules: related.map(m => `"${m}"`).join('、') })
+        msg = t('data.modules.confirm.message.reload.extra', {
+          modules: related.map((m) => `"${m}"`).join('、'),
+        })
       }
 
       try {
@@ -238,7 +223,9 @@ export default {
       if (related.length === 0) {
         msg = this.t('data.modules.confirm.message.unload')
       } else {
-        msg = t('data.modules.confirm.message.unload.extra', { modules: related.map(m => `"${m}"`).join('、') })
+        msg = t('data.modules.confirm.message.unload.extra', {
+          modules: related.map((m) => `"${m}"`).join('、'),
+        })
       }
 
       try {
@@ -248,7 +235,7 @@ export default {
           type: 'warning',
         })
         const res = await axios.post(`/api/module/${row.name}/unload`)
-         if (res.status === 204) {
+        if (res.status === 204) {
           ElMessage.success(this.t('data.modules.message.unload.success'))
           this.refreshData()
         }
@@ -278,7 +265,7 @@ export default {
           ElMessage.error(this.$t('message.error.fetch') + error.message)
         }
       }
-    }
+    },
   },
 }
 </script>
@@ -323,4 +310,3 @@ export default {
   width: 100%;
 }
 </style>
-

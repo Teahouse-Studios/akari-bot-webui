@@ -2,26 +2,23 @@
   <el-config-provider :locale="elementLocale.lang">
     <div id="app">
       <DemoWatermark />
-      <div class="loading-overlay" v-if="userVerified === null" v-loading="userVerified === null"></div>
-      <AppHeader
-       :userVerified="userVerified"
-       @toggle-sidebar="toggleSidebar" />
+      <div
+        class="loading-overlay"
+        v-if="userVerified === null"
+        v-loading="userVerified === null"
+      ></div>
+      <AppHeader :userVerified="userVerified" @toggle-sidebar="toggleSidebar" />
       <LoginModal v-if="isPromptLogin" />
       <div v-if="!isLoading">
         <SuggestSetPasswordModal v-model="showSuggestPasswordModal" />
-        <AppSidebar
-          :visible="windowWidth > 1024"
-          @menuSelect="handleMenuSelect"
-        />
+        <AppSidebar :visible="windowWidth > 1024" @menuSelect="handleMenuSelect" />
         <AppSidebarDrawer
           v-if="windowWidth <= 1024"
           v-model="isSidebarVisible"
-          @menuSelect="handleMenuSelect" />
+          @menuSelect="handleMenuSelect"
+        />
         <el-container :style="{ marginTop: '60px' }">
-          <el-main
-            class="content"
-            :style="{ marginLeft: sidebarMarginLeft }"
-          >
+          <el-main class="content" :style="{ marginLeft: sidebarMarginLeft }">
             <RouterView v-if="userVerified" />
           </el-main>
         </el-container>
@@ -81,7 +78,7 @@ export default {
     this.observeThemeChange()
   },
   async beforeMount() {
-    if (!localStorage.getItem("language")) {
+    if (!localStorage.getItem('language')) {
       await fetch('/api/init')
         .then((res) => res.json())
         .then((config) => {
@@ -98,7 +95,7 @@ export default {
   },
   methods: {
     async initializeUserVerification() {
-      if (!localStorage.getItem("token")) { 
+      if (!localStorage.getItem('token')) {
         this.checkPassword()
       } else {
         try {
@@ -118,7 +115,7 @@ export default {
           }
         } catch (error) {
           this.checkPassword()
-          localStorage.removeItem("token")
+          localStorage.removeItem('token')
         }
       }
     },
@@ -127,7 +124,7 @@ export default {
         const response = await axios.post('/api/login', {})
         if (response.status === 200) {
           this.userVerified = true
-          localStorage.setItem("token", response.data.data)
+          localStorage.setItem('token', response.data.data)
           const promptDisabled = localStorage.getItem('noPasswordPromptDisabled') === 'true'
           if (!promptDisabled) {
             this.showSuggestPasswordModal = true
@@ -172,9 +169,15 @@ export default {
         const col1 = _color.slice(1)
         const col2 = mixWith.slice(1)
 
-        const red = Math.round(h2d(col1.slice(0, 2)) * (1 - weight) + h2d(col2.slice(0, 2)) * weight)
-        const green = Math.round(h2d(col1.slice(2, 4)) * (1 - weight) + h2d(col2.slice(2, 4)) * weight)
-        const blue = Math.round(h2d(col1.slice(4, 6)) * (1 - weight) + h2d(col2.slice(4, 6)) * weight)
+        const red = Math.round(
+          h2d(col1.slice(0, 2)) * (1 - weight) + h2d(col2.slice(0, 2)) * weight,
+        )
+        const green = Math.round(
+          h2d(col1.slice(2, 4)) * (1 - weight) + h2d(col2.slice(2, 4)) * weight,
+        )
+        const blue = Math.round(
+          h2d(col1.slice(4, 6)) * (1 - weight) + h2d(col2.slice(4, 6)) * weight,
+        )
 
         return `#${d2h(red)}${d2h(green)}${d2h(blue)}`
       }
@@ -242,5 +245,4 @@ export default {
 .content-with-sidebar {
   margin-left: 200px;
 }
-
 </style>

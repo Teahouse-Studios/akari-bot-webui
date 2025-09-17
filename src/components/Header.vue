@@ -28,8 +28,8 @@ export default {
   props: {
     userVerified: {
       type: Boolean,
-      default: false
-    }
+      default: false,
+    },
   },
   data() {
     const { t } = useI18n()
@@ -62,7 +62,7 @@ export default {
       localStorage.setItem('isDarkMode', JSON.stringify(this.isDarkMode))
     },
     switchSidebar() {
-      if (!this.userVerified) return;
+      if (!this.userVerified) return
       this.$emit('toggle-sidebar')
     },
   },

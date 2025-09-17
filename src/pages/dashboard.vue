@@ -3,7 +3,7 @@
     <ServerInfoCard ref="serverInfoCard" />
     <AnalyticsCard ref="analyticsCard" />
     <el-tooltip
-      :content="$t('dashboard.update_time.title', {time: formatTime(lastUpdateTime)})"
+      :content="$t('dashboard.update_time.title', { time: formatTime(lastUpdateTime) })"
       placement="left"
     >
       <el-button class="refresh-button" circle size="large" type="primary" @click="refreshData">

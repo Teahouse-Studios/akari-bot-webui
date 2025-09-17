@@ -1,9 +1,5 @@
 <template>
-  <el-aside
-    width="200px"
-    class="sidebar"
-    :class="{ 'sidebar-hidden': !visible }"
-  >
+  <el-aside width="200px" class="sidebar" :class="{ 'sidebar-hidden': !visible }">
     <el-menu :default-active="activeMenu" class="sidebar-menu" @select="handleSelect">
       <el-menu-item index="/dashboard">
         <i class="mdi mdi-view-dashboard"></i>
@@ -49,8 +45,8 @@ export default {
   props: {
     visible: {
       type: Boolean,
-      default: true
-    }
+      default: true,
+    },
   },
   data() {
     const { t } = useI18n()
@@ -76,7 +72,7 @@ export default {
     },
   },
   watch: {
-    '$route.name' () {
+    '$route.name'() {
       this.activeMenu = this.getActiveMenuFromRoute()
     },
   },

@@ -1,5 +1,5 @@
 <template>
-  <el-result 
+  <el-result
     icon="error"
     :title="$t('not_found.result.title')"
     :sub-title="$t('not_found.result.subtitle')"

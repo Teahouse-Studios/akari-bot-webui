@@ -91,22 +91,17 @@
             width="310"
           >
             <EmojiPicker
-             :key="emojiTheme"
-             @select="emoji => selectEmoji(msg, emoji)"
-             :native="true"
-             :disable-skin-tones="true"
-             :display-recent="true"
-             :theme="emojiTheme"
-             :group-names="groupNames"
-             :static-texts="{ placeholder: $t('emojipicker.placeholder')}" 
+              :key="emojiTheme"
+              @select="(emoji) => selectEmoji(msg, emoji)"
+              :native="true"
+              :disable-skin-tones="true"
+              :display-recent="true"
+              :theme="emojiTheme"
+              :group-names="groupNames"
+              :static-texts="{ placeholder: $t('emojipicker.placeholder') }"
             />
             <template #reference>
-              <el-button
-                circle
-                size="small"
-                class="reaction-button"
-                @click="openEmojiPicker(msg)"
-              >
+              <el-button circle size="small" class="reaction-button" @click="openEmojiPicker(msg)">
                 <i class="mdi mdi-plus"></i>
               </el-button>
             </template>
@@ -123,11 +118,11 @@
                   ? 'mdi-message-check-outline'
                   : msg.typingStatus === 'error'
                     ? 'mdi-message-alert-outline'
-                    : ''
+                    : '',
             ]"
             class="typing-status-icon"
           ></i>
-          
+
           <el-tooltip
             :content="
               msg.from === 'bot' && /\[image:[^\]]+\]/.test(msg.text)
@@ -136,12 +131,7 @@
             "
             placement="bottom"
           >
-            <el-button
-              class="copy-button"
-              circle
-              size="small"
-              @click="copyMessage(msg)"
-            >
+            <el-button class="copy-button" circle size="small" @click="copyMessage(msg)">
               <i :class="copiedId === msg.id ? 'mdi mdi-check' : 'mdi mdi-content-copy'"></i>
             </el-button>
           </el-tooltip>
@@ -197,7 +187,7 @@ import linkAttributes from 'markdown-it-link-attributes'
 import { v4 as uuidv4 } from 'uuid'
 import { useI18n } from 'vue-i18n'
 import EmojiPicker from 'vue3-emoji-picker'
-import 'vue3-emoji-picker/css';
+import 'vue3-emoji-picker/css'
 
 export default {
   name: 'ChatPage',
@@ -265,7 +255,7 @@ export default {
       activeReactionMsg: null,
       abortController: new AbortController(),
       // debug: process.env.VUE_APP_DEBUG === 'true',
-      debug: false, 
+      debug: false,
       isDarkMode: localStorage.getItem('isDarkMode') === 'true',
       md,
       t,
@@ -287,7 +277,7 @@ export default {
         flags: this.t('emojipicker.group.flags'),
         recent: this.t('emojipicker.group.recent'),
       }
-    }
+    },
   },
   methods: {
     async connectWebSocket() {
@@ -374,7 +364,7 @@ export default {
           }
 
           if (data.action === 'reaction') {
-            const msg = this.messages.find(m => m.id === data.id)
+            const msg = this.messages.find((m) => m.id === data.id)
             if (msg) {
               if (!msg.reactions) msg.reactions = {}
 
@@ -418,7 +408,6 @@ export default {
                 msg.typingStatus = data.status
               }
             }
-            return
           }
         }
 
@@ -504,7 +493,7 @@ export default {
     },
 
     authenticateToken() {
-    // async authenticateToken() {
+      // async authenticateToken() {
       // TODO 需要重新验证?
       // try {
       //   const response = await axios.get('/api/verify', {
@@ -512,7 +501,7 @@ export default {
       //   })
 
       //   if (response.status === 200) {
-          this.connectWebSocket()
+      this.connectWebSocket()
       //   } else {
       //     this.connectionStatus = 'disconnected'
       //     ElMessage.error(this.t('message.error.connect.auth'))
@@ -650,52 +639,58 @@ export default {
     },
 
     openEmojiPicker(msg) {
-      this.messages.forEach(m => m.showEmojiPicker = false)
+      this.messages.forEach((m) => {
+        m.showEmojiPicker = false // 明确执行赋值
+      })
       this.activeReactionMsg = msg
       msg.showEmojiPicker = true
     },
 
     selectEmoji(msg, emoji) {
-      const selected = emoji.i;
-      if (!msg) return;
+      const selected = emoji.i
+      if (!msg) return
 
-      if (!msg.reactions) msg.reactions = {};
-      if (!msg.userReactions) msg.userReactions = [];
+      if (!msg.reactions) msg.reactions = {}
+      if (!msg.userReactions) msg.userReactions = []
 
-      const hasReaction = msg.userReactions.includes(selected);
+      const hasReaction = msg.userReactions.includes(selected)
 
       if (hasReaction) {
-        msg.reactions[selected]--;
+        msg.reactions[selected]--
 
         if (msg.reactions[selected] <= 0) {
-          delete msg.reactions[selected];
+          delete msg.reactions[selected]
         }
 
-        msg.userReactions = msg.userReactions.filter(e => e !== selected);
+        msg.userReactions = msg.userReactions.filter((e) => e !== selected)
 
-        this.websocket?.send(JSON.stringify({
-          action: 'reaction',
-          emoji: selected,
-          id: msg.id,
-          add: false
-        }));
+        this.websocket?.send(
+          JSON.stringify({
+            action: 'reaction',
+            emoji: selected,
+            id: msg.id,
+            add: false,
+          }),
+        )
       } else {
-        msg.reactions[selected] = (msg.reactions[selected] || 0) + 1;
-        msg.userReactions.push(selected);
+        msg.reactions[selected] = (msg.reactions[selected] || 0) + 1
+        msg.userReactions.push(selected)
 
-        this.websocket?.send(JSON.stringify({
-          action: 'reaction',
-          emoji: selected,
-          id: msg.id,
-          add: true
-        }));
+        this.websocket?.send(
+          JSON.stringify({
+            action: 'reaction',
+            emoji: selected,
+            id: msg.id,
+            add: true,
+          }),
+        )
       }
 
-      msg.showEmojiPicker = false;
+      msg.showEmojiPicker = false
     },
 
     userReacted(msg, emoji) {
-      return msg.userReactions && msg.userReactions.includes(emoji)
+      return msg.userReactions?.includes(emoji)
     },
 
     toggleReaction(msg, emoji) {
@@ -707,33 +702,37 @@ export default {
       if (hasReaction) {
         msg.reactions[emoji]--
         if (msg.reactions[emoji] <= 0) delete msg.reactions[emoji]
-        msg.userReactions = msg.userReactions.filter(e => e !== emoji)
+        msg.userReactions = msg.userReactions.filter((e) => e !== emoji)
 
-        this.websocket?.send(JSON.stringify({
-          action: 'reaction',
-          emoji,
-          id: msg.id,
-          add: false
-        }))
+        this.websocket?.send(
+          JSON.stringify({
+            action: 'reaction',
+            emoji,
+            id: msg.id,
+            add: false,
+          }),
+        )
       } else {
         msg.reactions[emoji] = (msg.reactions[emoji] || 0) + 1
         msg.userReactions.push(emoji)
 
-        this.websocket?.send(JSON.stringify({
-          action: 'reaction',
-          emoji,
-          id: msg.id,
-          add: true
-        }))
+        this.websocket?.send(
+          JSON.stringify({
+            action: 'reaction',
+            emoji,
+            id: msg.id,
+            add: true,
+          }),
+        )
       }
     },
 
     async copyMessage(msg) {
       try {
-        const textWithoutImages = msg.text.replace(/\[image:[^\]]+\]/g, '').trim();
+        const textWithoutImages = msg.text.replace(/\[image:[^\]]+\]/g, '').trim()
         if (!textWithoutImages) {
-          ElMessage.warning(this.t('chat.message.warning.nothing_to_copy'));
-          return;
+          ElMessage.warning(this.t('chat.message.warning.nothing_to_copy'))
+          return
         }
 
         await navigator.clipboard.writeText(textWithoutImages)
@@ -764,7 +763,7 @@ export default {
     this.chatBox = this.$refs.chatBox
     this.authenticateToken()
     window.addEventListener('resize', this.handleResize)
-    
+
     const html = document.documentElement
     this.isDarkMode = html.classList.contains('dark')
 

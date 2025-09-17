@@ -11,18 +11,22 @@ export default function setupMock() {
     locale: 'zh_cn',
     heartbeat_interval: 5,
     heartbeat_timeout: 30,
-    heartbeat_attempt: 3
+    heartbeat_attempt: 3,
   })
 
   mock.onGet('/api/verify').reply(200, {
     payload: {
       exp: Math.floor(Date.now() / 1000) + 24 * 60 * 60,
       iat: Math.floor(Date.now() / 1000),
-      iss: 'auth-api'
+      iss: 'auth-api',
     },
   })
 
-  mock.onGet('/api/login').reply(205, { data: 'eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiSm9obiIsImFkbWluIjp0cnVlLCJpc3MiOiJhdXRoLWFwaSJ9.l6piMCKreZU-gjum6VXafyknIUdO8r1NdMP-kcemyJXxD32Chv5LsRDHnD3oUow0qX8vTPeujNgTu6iKLgHe8Q' })
+  mock
+    .onGet('/api/login')
+    .reply(205, {
+      data: 'eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiSm9obiIsImFkbWluIjp0cnVlLCJpc3MiOiJhdXRoLWFwaSJ9.l6piMCKreZU-gjum6VXafyknIUdO8r1NdMP-kcemyJXxD32Chv5LsRDHnD3oUow0qX8vTPeujNgTu6iKLgHe8Q',
+    })
 
   mock.onPost('/api/change-password').reply(205, {})
 

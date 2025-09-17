@@ -47,10 +47,11 @@
           <el-input
             v-model="platformIdPart"
             :placeholder="$t('data.user.input.sender_id')"
-            @input="debouncedRefresh">
-          <template #prefix>
+            @input="debouncedRefresh"
+          >
+            <template #prefix>
               <i class="mdi mdi-magnify"></i>
-          </template>
+            </template>
           </el-input>
         </div>
       </div>

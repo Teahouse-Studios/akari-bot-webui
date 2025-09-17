@@ -8,19 +8,16 @@
             :placeholder="$t('logs.input.search')"
             class="log-search-input"
             @input="handleSearch"
-            clearable>
-        <template #prefix>
-            <i class="mdi mdi-magnify"></i>
-        </template>
-        </el-input>
+            clearable
+          >
+            <template #prefix>
+              <i class="mdi mdi-magnify"></i>
+            </template>
+          </el-input>
         </div>
         <div class="right-controls">
           <el-tooltip :content="$t('logs.button.refresh')" placement="bottom">
-            <el-button
-              class="log-refresh-button"
-              @click="refreshLog"
-              circle
-            >
+            <el-button class="log-refresh-button" @click="refreshLog" circle>
               <i class="mdi mdi-refresh"></i>
             </el-button>
           </el-tooltip>
@@ -87,7 +84,7 @@ export default {
   },
   methods: {
     authenticateToken() {
-    // async authenticateToken() {
+      // async authenticateToken() {
       // TODO 需要重新验证?
       // try {
       //   const response = await axios.get('/api/verify-token', {
@@ -95,7 +92,7 @@ export default {
       //   })
 
       //   if (response.status === 200) {
-          this.connectWebSocket()
+      this.connectWebSocket()
       //   } else {
       //     ElMessage.error(this.t('message.error.connect.auth'))
       //   }

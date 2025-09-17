@@ -121,10 +121,10 @@ export default {
   props: {
     modelValue: {
       type: String,
-      default: ''
+      default: '',
     },
   },
-    components: {
+  components: {
     ElInput,
     ElSwitch,
     ElInputNumber,

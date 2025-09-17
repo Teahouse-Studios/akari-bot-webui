@@ -109,7 +109,7 @@ export default {
     }
   },
   async mounted() {
-    const {data} = await axios.get("/api/have-password")
+    const { data } = await axios.get('/api/have-password')
     this.noPassword = !data.data
     this.isLoading = false
   },

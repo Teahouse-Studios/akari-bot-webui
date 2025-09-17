@@ -8,7 +8,8 @@
           type="primary"
           size="small"
           style="float: right; margin-left: 10px"
-          ><i class="mdi mdi-refresh"></i> {{ $t('data.button.refresh') }}</el-button>
+          ><i class="mdi mdi-refresh"></i> {{ $t('data.button.refresh') }}</el-button
+        >
       </div>
 
       <div class="filter-container">
@@ -45,11 +46,12 @@
           <el-input
             v-model="platformIdPart"
             :placeholder="$t('data.session.input.target_id')"
-            @input="debouncedRefresh">
-        <template #prefix>
-            <i class="mdi mdi-magnify"></i>
-        </template>
-        </el-input>
+            @input="debouncedRefresh"
+          >
+            <template #prefix>
+              <i class="mdi mdi-magnify"></i>
+            </template>
+          </el-input>
         </div>
       </div>
 

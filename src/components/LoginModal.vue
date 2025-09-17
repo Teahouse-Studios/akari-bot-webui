@@ -10,10 +10,7 @@
       ></el-input>
 
       <div class="remember-device-container">
-        <el-tooltip
-          :content="$t('login.forgot_password.tooltip')"
-          placement="top-start"
-        >
+        <el-tooltip :content="$t('login.forgot_password.tooltip')" placement="top-start">
           <span class="forgot-password">{{ $t('login.forgot_password.text') }}</span>
         </el-tooltip>
       </div>
@@ -43,10 +40,10 @@ export default {
   },
   methods: {
     async checkPassword() {
-    if (!this.password || !this.password.trim()) {
-      ElMessage.warning(this.t('login.message.warning.empty'))
-      return
-    }
+      if (!this.password || !this.password.trim()) {
+        ElMessage.warning(this.t('login.message.warning.empty'))
+        return
+      }
 
       this.loading = true
       try {
@@ -56,7 +53,7 @@ export default {
         })
         if (response.status === 200) {
           ElMessage.success(this.t('login.message.success'))
-          localStorage.setItem("token", response.data.data)
+          localStorage.setItem('token', response.data.data)
           location.reload()
         }
       } catch (error) {

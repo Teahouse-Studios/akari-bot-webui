@@ -118,11 +118,11 @@ import {
   GridComponent,
   DatasetComponent,
   TransformComponent,
-  DataZoomComponent
-} from 'echarts/components';
+  DataZoomComponent,
+} from 'echarts/components'
 import { init, use } from 'echarts/core'
-import { LabelLayout, UniversalTransition } from 'echarts/features';
-import { CanvasRenderer } from 'echarts/renderers';
+import { LabelLayout, UniversalTransition } from 'echarts/features'
+import { CanvasRenderer } from 'echarts/renderers'
 
 export default {
   name: 'AnalyticsCard',
@@ -161,7 +161,7 @@ export default {
       LabelLayout,
       UniversalTransition,
       CanvasRenderer,
-      DataZoomComponent
+      DataZoomComponent,
     ])
   },
   beforeUnmount() {

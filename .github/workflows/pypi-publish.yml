@@ -24,11 +24,11 @@ jobs:
 
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.13"
+          python-version: '3.13'
 
       - name: Install poetry
         uses: abatilo/actions-poetry@v4
-        
+
       - name: Setup a local virtual environment (if no poetry.toml file)
         run: |
           poetry config virtualenvs.create true --local
@@ -38,7 +38,7 @@ jobs:
         with:
           path: ./.venv
           key: venv-${{ hashFiles('poetry.lock') }}
-          
+
       - name: Install the project dependencies
         run: poetry install
 
@@ -46,7 +46,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
-
 
       - name: Build release distributions
         run: |
@@ -61,7 +60,6 @@ jobs:
           ls akari_bot_webui
           ls akari_bot_webui/dist
           poetry build -o py_dist
-          
 
       - name: Upload distributions
         uses: actions/upload-artifact@v4

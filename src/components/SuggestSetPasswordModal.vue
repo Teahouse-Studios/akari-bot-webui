@@ -25,8 +25,8 @@ export default {
   name: 'SuggestSetPasswordModal',
   props: {
     modelValue: {
-      type: Boolean
-    }
+      type: Boolean,
+    },
   },
   emits: ['update:modelValue'],
   data() {

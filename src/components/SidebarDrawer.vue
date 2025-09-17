@@ -1,53 +1,48 @@
 <template>
-  <el-drawer
-    v-model="isSidebarVisible"
-    direction="ltr"
-    :with-header="false"
-    size="200px"
-  >
-  <el-aside width="200px" class="sidebar">
-    <div class="header-drawer">
+  <el-drawer v-model="isSidebarVisible" direction="ltr" :with-header="false" size="200px">
+    <el-aside width="200px" class="sidebar">
+      <div class="header-drawer">
         <div class="logo">
-        <img src="@/assets/akaribot_logo.png" alt="Logo" class="logo-image" />
-        <span class="web-ui-text">WebUI</span>
+          <img src="@/assets/akaribot_logo.png" alt="Logo" class="logo-image" />
+          <span class="web-ui-text">WebUI</span>
         </div>
-    </div>
-    <el-menu :default-active="activeMenu" class="sidebar-menu" @select="handleSelect">
-      <el-menu-item index="/dashboard">
-        <i class="mdi mdi-view-dashboard"></i>
-        <span>{{ $t('sidebar.item.dashboard') }}</span>
-      </el-menu-item>
-      <el-menu-item index="/config">
-        <i class="mdi mdi-cog"></i>
-        <span>{{ $t('sidebar.item.config') }}</span>
-      </el-menu-item>
-      <el-menu-item index="/modules">
-        <i class="mdi mdi-puzzle"></i>
-        <span>{{ $t('sidebar.item.modules') }}</span>
-      </el-menu-item>
-      <el-menu-item index="/data">
-        <i class="mdi mdi-database"></i>
-        <span>{{ $t('sidebar.item.data') }}</span>
-      </el-menu-item>
-      <el-menu-item index="/logs">
-        <i class="mdi mdi-console"></i>
-        <span>{{ $t('sidebar.item.logs') }}</span>
-      </el-menu-item>
-      <el-menu-item index="/chat">
-        <i class="mdi mdi-chat"></i>
-        <span>{{ $t('sidebar.item.chat') }}</span>
-      </el-menu-item>
-      <el-menu-item index="/setting">
-        <i class="mdi mdi-tune"></i>
-        <span>{{ $t('sidebar.item.setting') }}</span>
-      </el-menu-item>
-      <el-menu-item index="/about">
-        <i class="mdi mdi-information-outline"></i>
-        <span>{{ $t('sidebar.item.about') }}</span>
-      </el-menu-item>
-    </el-menu>
-  </el-aside>
-</el-drawer>
+      </div>
+      <el-menu :default-active="activeMenu" class="sidebar-menu" @select="handleSelect">
+        <el-menu-item index="/dashboard">
+          <i class="mdi mdi-view-dashboard"></i>
+          <span>{{ $t('sidebar.item.dashboard') }}</span>
+        </el-menu-item>
+        <el-menu-item index="/config">
+          <i class="mdi mdi-cog"></i>
+          <span>{{ $t('sidebar.item.config') }}</span>
+        </el-menu-item>
+        <el-menu-item index="/modules">
+          <i class="mdi mdi-puzzle"></i>
+          <span>{{ $t('sidebar.item.modules') }}</span>
+        </el-menu-item>
+        <el-menu-item index="/data">
+          <i class="mdi mdi-database"></i>
+          <span>{{ $t('sidebar.item.data') }}</span>
+        </el-menu-item>
+        <el-menu-item index="/logs">
+          <i class="mdi mdi-console"></i>
+          <span>{{ $t('sidebar.item.logs') }}</span>
+        </el-menu-item>
+        <el-menu-item index="/chat">
+          <i class="mdi mdi-chat"></i>
+          <span>{{ $t('sidebar.item.chat') }}</span>
+        </el-menu-item>
+        <el-menu-item index="/setting">
+          <i class="mdi mdi-tune"></i>
+          <span>{{ $t('sidebar.item.setting') }}</span>
+        </el-menu-item>
+        <el-menu-item index="/about">
+          <i class="mdi mdi-information-outline"></i>
+          <span>{{ $t('sidebar.item.about') }}</span>
+        </el-menu-item>
+      </el-menu>
+    </el-aside>
+  </el-drawer>
 </template>
 
 <script>
@@ -57,8 +52,8 @@ export default {
   name: 'AppSidebarDrawer',
   props: {
     modelValue: {
-      type: Boolean
-    }
+      type: Boolean,
+    },
   },
   emits: ['update:modelValue'],
   data() {
@@ -96,7 +91,7 @@ export default {
     },
   },
   watch: {
-    '$route.name' () {
+    '$route.name'() {
       this.activeMenu = this.getActiveMenuFromRoute()
     },
   },
