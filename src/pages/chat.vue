@@ -277,7 +277,7 @@ export default {
     },
     groupNames() {
       return {
-        smileys_people: this.t('emojipicker.group.smiles_people'),
+        smileys_people: this.t('emojipicker.group.smileys_people'),
         animals_nature: this.t('emojipicker.group.animals_nature'),
         food_drink: this.t('emojipicker.group.food_drink'),
         activities: this.t('emojipicker.group.activities'),

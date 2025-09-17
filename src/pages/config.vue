@@ -188,8 +188,34 @@ export default {
   flex-wrap: nowrap;
 }
 
+.editor-actions {
+  display: flex;
+  align-items: center;
+}
+
 .unsaved-warning {
-  margin-top: 12px;
+  margin-left: 16px;
+}
+
+@media (max-width: 399px) {
+  .editor-footer {
+    display: wrap;
+  }
+
+  .editor-actions {
+    flex-wrap: wrap;
+  }
+
+  .unsaved-warning {
+    margin-top: 12px;
+    margin-left: 0;
+  }
+}
+
+::v-deep(.unsaved-warning .el-alert__title) {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .editor-actions .el-button i {

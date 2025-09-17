@@ -1,7 +1,7 @@
 <template>
   <el-row :gutter="20">
     <el-col :span="10" :xs="24">
-      <el-card :body-style="{ height: '180px' }" shadow="never" v-loading="loading">
+      <el-card :body-style="{ height: '190px' }" shadow="never" v-loading="loading">
         <h3>
           <i class="mdi mdi-robot-outline"></i>
           {{ $t('dashboard.server_info.bot.title') }}
@@ -29,7 +29,7 @@
           ><span class="data-text">{{ formatRunningTime(bot.running_time || 0) }}</span>
         </p>
       </el-card>
-      <el-card :body-style="{ height: '180px' }" shadow="never" v-loading="loading">
+      <el-card :body-style="{ height: '190px' }" shadow="never" v-loading="loading">
         <h3>
           <i class="mdi mdi-laptop"></i>
           {{ $t('dashboard.server_info.system.title') }}
@@ -54,7 +54,7 @@
     </el-col>
 
     <el-col :span="14" :xs="24">
-      <el-card :body-style="{ height: '420px' }" shadow="never" v-loading="loading">
+      <el-card :body-style="{ height: '440px' }" shadow="never" v-loading="loading">
         <h3>
           <i class="mdi mdi-memory"></i>
           {{ $t('dashboard.server_info.cpu.title') }}
