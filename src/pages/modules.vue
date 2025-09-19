@@ -2,7 +2,7 @@
   <div>
     <el-card class="module-card" shadow="never">
       <div class="header-container">
-        <h3><i class="mdi mdi-puzzle"></i> {{ $t('data.modules.title') }}</h3>
+        <h3><i class="mdi mdi-puzzle"></i> {{ $t('modules.title') }}</h3>
         <el-button
           @click="refreshData"
           type="primary"
@@ -17,7 +17,7 @@
           <div class="filter-item">
             <el-input
               v-model="searchKeyword"
-              :placeholder="$t('data.modules.input.module_name')"
+              :placeholder="$t('modules.input.module_name')"
               clearable
               @input="debouncedRefresh"
               :prefix-icon="Search"
@@ -30,18 +30,25 @@
         </el-col>
       </div>
 
+      <div style="margin-bottom: 15px">
+        <el-button type="info" size="small" @click="showBaseModules = !showBaseModules">
+          <i :class="showBaseModules ? 'mdi mdi-eye-off-outline' : 'mdi mdi-eye-outline'"></i>
+          {{ showBaseModules ? $t('modules.button.hide_base') : $t('modules.button.show_base') }}
+        </el-button>
+      </div>
+
       <el-table v-loading="loading" :data="pagedModules" style="width: 100%" stripe>
-        <el-table-column :label="$t('data.modules.table.name')" min-width="140">
+        <el-table-column :label="$t('modules.table.name')" min-width="140">
           <template #default="{ row }">
             <span :class="{ unloaded: !row.loaded }">{{ row.bind_prefix }}</span>
           </template>
         </el-table-column>
-        <el-table-column :label="$t('data.modules.table.desc')" min-width="800">
+        <el-table-column :label="$t('modules.table.desc')" min-width="800">
           <template #default="{ row }">
             {{ row.desc || '-' }}
           </template>
         </el-table-column>
-        <el-table-column :label="$t('data.modules.table.developers')" min-width="400">
+        <el-table-column :label="$t('modules.table.developers')" min-width="400">
           <template #default="{ row }">
             <el-tag v-for="dev in row.developers" :key="dev" type="info" style="margin: 2px">
               {{ dev }}
@@ -50,31 +57,36 @@
         </el-table-column>
         <el-table-column :label="$t('data.table.status')" min-width="100">
           <template #default="{ row }">
-            <el-tag :type="row.loaded ? 'success' : 'danger'">
-              {{ row.loaded ? $t('data.modules.tag.loaded') : $t('data.modules.tag.unloaded') }}
+            <el-tag 
+              :type="row.base ? 'warning' : (row.loaded ? 'success' : 'danger')"
+            >
+              {{ row.base ? $t('modules.tag.base') : (row.loaded ? $t('modules.tag.loaded') : $t('modules.tag.unloaded')) }}
             </el-tag>
           </template>
         </el-table-column>
         <el-table-column :label="$t('data.table.operation')" min-width="240">
           <template #default="{ row }">
-            <el-button v-if="row.loaded" size="small" type="warning" @click="handleReload(row)">
-              <i class="mdi mdi-reload"></i> {{ $t('data.modules.button.reload') }}
-            </el-button>
+              <el-button size="small" type="warning" @click="handleReload(row)">
+                <i class="mdi mdi-reload"></i> {{ $t('modules.button.reload') }}
+              </el-button>
 
-            <el-button
-              v-if="row.loaded"
-              size="small"
-              type="danger"
-              style="margin-left: 5px"
-              @click="handleUnload(row)"
-            >
-              <i class="mdi mdi-puzzle-remove"></i> {{ $t('data.modules.button.unload') }}
-            </el-button>
+              <el-button
+                v-if="!row.base && row.loaded"
+                size="small"
+                type="danger"
+                @click="handleUnload(row)"
+              >
+                <i class="mdi mdi-puzzle-remove"></i> {{ $t('modules.button.unload') }}
+              </el-button>
 
-            <el-button v-else size="small" type="success" @click="handleLoad(row)">
-              <i class="mdi mdi-puzzle-plus"></i> {{ $t('data.modules.button.load') }}
-            </el-button>
-          </template>
+              <el-button
+                v-if="!row.base && !row.loaded"
+                size="small"
+                type="success"
+                @click="handleLoad(row)">
+                <i class="mdi mdi-puzzle-plus"></i> {{ $t('modules.button.load') }}
+              </el-button>
+            </template>
         </el-table-column>
       </el-table>
 
@@ -107,9 +119,10 @@ export default {
       modules: [],
       searchKeyword: '',
       loading: false,
-      debounceTimer: null,
+      showBaseModules: false,
       currentPage: 1,
       pageSize: 10,
+      debounceTimer: null,
       t,
     }
   },
@@ -121,6 +134,11 @@ export default {
           mod.bind_prefix.toLowerCase().includes(this.searchKeyword.toLowerCase()),
         )
       }
+
+      if (!this.showBaseModules) {
+        result = result.filter((mod) => !mod.base)
+      }
+
       return result
     },
     pagedModules() {
@@ -150,17 +168,23 @@ export default {
     async refreshData() {
       this.loading = true
       try {
-        const response = await axios.get('/api/modules')
+        const language = localStorage.getItem('language') || 'zh_cn'
+        const response = await axios.get('/api/modules', {
+          params: {
+            locale: language
+          }
+        })
         if (response.status === 200 && response.data.modules) {
           this.modules = Object.entries(response.data.modules)
             .map(([name, info]) => {
-              const isLoaded = Object.keys(info).length > 0
+              const isLoaded = info?._db_load !== false
               return {
                 name,
                 bind_prefix: info?.bind_prefix || name,
                 desc: info?.desc || '',
                 developers: info?.developers || [],
                 loaded: isLoaded,
+                base: info?.base === true,
                 ...info,
               }
             })
@@ -184,15 +208,20 @@ export default {
     },
 
     async handleReload(row) {
-      const related = await this.getRelatedModules(row.name)
       let msg = ''
-      if (related.length === 0) {
-        msg = this.t('data.modules.confirm.message.reload')
+      if (row.base) {
+        msg = this.t('modules.confirm.message.reload.base')
       } else {
-        msg = this.t('data.modules.confirm.message.reload.extra', {
-          modules: related.map((m) => `"${m}"`).join('、'),
-        })
+        const related = await this.getRelatedModules(row.name)
+        if (related.length === 0) {
+          msg = this.t('modules.confirm.message.reload')
+        } else {
+          msg = this.t('modules.confirm.message.reload.extra', {
+            modules: related.map((m) => `"${m}"`).join('、'),
+          })
+        }
       }
+
 
       try {
         await ElMessageBox.confirm(msg, this.t('confirm.warning'), {
@@ -202,7 +231,7 @@ export default {
         })
         const res = await axios.post(`/api/module/${row.name}/reload`)
         if (res.status === 204) {
-          ElMessage.success(this.t('data.modules.message.reload.success'))
+          ElMessage.success(this.t('modules.message.reload.success'))
           this.refreshData()
         }
       } catch (error) {
@@ -210,7 +239,8 @@ export default {
           return
         }
         if (error.response?.status === 422) {
-          ElMessage.error(this.t('data.modules.message.reload.error.failed'))
+          ElMessage.error(this.t('modules.message.reload.error.failed'))
+          this.refreshData()
         } else {
           ElMessage.error(this.$t('message.error.fetch') + error.message)
         }
@@ -218,33 +248,16 @@ export default {
     },
 
     async handleUnload(row) {
-      const related = await this.getRelatedModules(row.name)
-      let msg = ''
-      if (related.length === 0) {
-        msg = this.$t('data.modules.confirm.message.unload')
-      } else {
-        msg = this.$t('data.modules.confirm.message.unload.extra', {
-          modules: related.map((m) => `"${m}"`).join('、'),
-        })
-      }
-
       try {
-        await ElMessageBox.confirm(msg, this.t('confirm.warning'), {
-          confirmButtonText: this.t('button.confirm'),
-          cancelButtonText: this.t('button.cancel'),
-          type: 'warning',
-        })
         const res = await axios.post(`/api/module/${row.name}/unload`)
         if (res.status === 204) {
-          ElMessage.success(this.t('data.modules.message.unload.success'))
+          ElMessage.success(this.t('modules.message.unload.success'))
           this.refreshData()
         }
       } catch (error) {
-        if (error === 'cancel' || error?.message === 'cancel') {
-          return
-        }
         if (error.response?.status === 422) {
-          ElMessage.error(this.$t('data.modules.message.unload.error.failed'))
+          ElMessage.error(this.t('modules.message.unload.error.failed'))
+          this.refreshData()
         } else {
           ElMessage.error(this.$t('message.error.fetch') + error.message)
         }
@@ -255,12 +268,13 @@ export default {
       try {
         const res = await axios.post(`/api/module/${row.name}/load`)
         if (res.status === 204) {
-          ElMessage.success(this.t('data.modules.message.load.success'))
+          ElMessage.success(this.t('modules.message.load.success'))
           this.refreshData()
         }
       } catch (error) {
         if (error.response?.status === 422) {
-          ElMessage.error(this.t('data.modules.message.load.error.failed'))
+          ElMessage.error(this.t('modules.message.load.error.failed'))
+          this.refreshData()
         } else {
           ElMessage.error(this.$t('message.error.fetch') + error.message)
         }
