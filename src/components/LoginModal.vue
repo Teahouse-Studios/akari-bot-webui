@@ -9,7 +9,7 @@
         @keyup.enter="checkPassword"
       ></el-input>
 
-      <div class="remember-device-container">
+      <div class="tooltip-container">
         <el-tooltip :content="$t('login.forgot_password.tooltip')" placement="top-start">
           <span class="forgot-password">{{ $t('login.forgot_password.text') }}</span>
         </el-tooltip>
@@ -33,7 +33,6 @@ export default {
     const { t } = useI18n()
     return {
       password: '',
-      rememberDevice: false,
       loading: false,
       t,
     }
@@ -49,7 +48,6 @@ export default {
       try {
         const response = await axios.post('/api/login', {
           password: this.password,
-          remember: this.rememberDevice,
         })
         if (response.status === 200) {
           ElMessage.success(this.t('login.message.success'))
@@ -101,7 +99,7 @@ export default {
   color: white;
 }
 
-.remember-device-container {
+.tooltip-container {
   display: flex;
   justify-content: space-between;
   align-items: center;
