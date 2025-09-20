@@ -33,7 +33,7 @@
         <template v-if="!isMobileView">
           <div class="placeholder-sub">
             {{ $t('chat.chatbox.text.prompt1.prefix') }}
-            <code class="chat-code">~help</code>
+            <code class="chat-code">{{ commandPrefix }}help</code>
             {{ $t('chat.chatbox.text.prompt1.suffix') }}
           </div>
           <div class="placeholder-sub">
@@ -50,7 +50,7 @@
         <template v-else>
           <div class="placeholder-sub">
             {{ $t('chat.chatbox.text.prompt1.prefix') }}
-            <code class="chat-code">~help</code>
+            <code class="chat-code">{{ commandPrefix }}help</code>
             {{ $t('chat.chatbox.text.prompt1.suffix') }}
           </div>
           <div class="placeholder-sub">
@@ -237,6 +237,7 @@ export default {
         }
       })
     return {
+      commandPrefix: '~',
       inputText: '',
       messages: [],
       chatBox: null,
@@ -315,6 +316,7 @@ export default {
         const response = await fetch('/api/init')
         if (response.ok) {
           config = await response.json()
+          this.commandPrefix = config.command_prefix || '~'
         }
       } catch (e) {
         // empty

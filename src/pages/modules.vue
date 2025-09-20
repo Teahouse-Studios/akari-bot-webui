@@ -64,8 +64,16 @@
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column :label="$t('data.table.operation')" min-width="240">
+        <el-table-column :label="$t('data.table.operation')" min-width="360">
           <template #default="{ row }">
+            <el-button
+              size="small"
+              type="info"
+              @click="handleHelp(row)"
+            >
+              <i class="mdi mdi-help-circle-outline"></i> {{ $t('modules.button.helpdoc') }}
+            </el-button>
+
               <el-button size="small" type="warning" @click="handleReload(row)">
                 <i class="mdi mdi-reload"></i> {{ $t('modules.button.reload') }}
               </el-button>
@@ -103,6 +111,55 @@
         />
       </div>
     </el-card>
+    <el-dialog
+      v-model="helpDialogVisible"
+      :title="$t('modules.helpdoc.title', { module: helpDoc?.module_name })"
+      width="60%"
+    >
+      <div v-if="helpDoc">
+        <el-collapse v-if="hasAnyHelp" v-model="activeSections">
+          <template #title><b>{{ $t('modules.helpdoc.subtitle.desc') }}</b></template>
+          <p>{{ helpDoc.desc }}</p>
+
+          <el-collapse-item v-if="helpDoc.commands?.args?.length" name="commands">
+            <template #title><b>{{ $t('modules.helpdoc.subtitle.command') }}</b></template>
+            <ul>
+              <li v-for="cmd in helpDoc.commands.args" :key="cmd.args">
+                <code class="help-code">{{ cmd.args }}</code>
+                <span v-if="cmd.desc"> - {{ cmd.desc }}</span>
+              </li>
+            </ul>
+          </el-collapse-item>
+
+          <el-collapse-item v-if="helpDoc.commands?.options?.length" name="options">
+            <template #title><b>{{ $t('modules.helpdoc.subtitle.option') }}</b></template>
+            <ul>
+              <li v-for="opt in helpDoc.commands.options" :key="Object.keys(opt)[0]">
+                <code class="help-code">{{ Object.keys(opt)[0] }}</code>
+                <span v-if="Object.values(opt)[0]"> - {{ Object.values(opt)[0] }}</span>
+              </li>
+            </ul>
+          </el-collapse-item>
+
+          <el-collapse-item v-if="helpDoc.regexp?.length" name="regexp">
+            <template #title><b>{{ $t('modules.helpdoc.subtitle.regex') }}</b></template>
+            <ul>
+              <li v-for="r in helpDoc.regexp" :key="r.pattern">
+                <code class="help-code">{{ r.pattern }}</code>
+                <span v-if="r.desc"> - {{ r.desc }}</span>
+              </li>
+            </ul>
+          </el-collapse-item>
+        </el-collapse>
+
+        <!-- 全部为空 -->
+        <el-empty v-else :description="$t('modules.helpdoc.none')"></el-empty>
+      </div>
+
+      <template #footer>
+        <el-button @click="helpDialogVisible = false">{{ $t('button.close') }}</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -120,6 +177,9 @@ export default {
       searchKeyword: '',
       loading: false,
       showBaseModules: false,
+      helpDialogVisible: false,
+      helpDoc: null,
+      activeSections: ['commands', 'options', 'regexp'],
       currentPage: 1,
       pageSize: 10,
       debounceTimer: null,
@@ -148,6 +208,14 @@ export default {
     },
     totalModules() {
       return this.filteredModules.length
+    },
+    hasAnyHelp() {
+      return (
+        this.helpDoc?.desc ||
+        (this.helpDoc?.commands?.args?.length > 0) ||
+        (this.helpDoc?.commands?.options?.length > 0) ||
+        (this.helpDoc?.regexp?.length > 0)
+      )
     },
   },
   mounted() {
@@ -207,6 +275,23 @@ export default {
       }
     },
 
+    async handleHelp(row) {
+      try {
+        const language = localStorage.getItem('language') || 'zh_cn'
+        const res = await axios.get(`/api/module/${row.name}/helpdoc`, {
+          params: {
+            locale: language
+          }
+        })
+        if (res.status === 200) {
+          this.helpDoc = res.data
+          this.helpDialogVisible = true
+        }
+      } catch (error) {
+        ElMessage.error(this.$t('message.error.fetch') + error.message)
+      }
+    },
+
     async handleReload(row) {
       let msg = ''
       if (row.base) {
@@ -217,7 +302,7 @@ export default {
           msg = this.t('modules.confirm.message.reload')
         } else {
           msg = this.t('modules.confirm.message.reload.extra', {
-            modules: related.map((m) => `"${m}"`).join('、'),
+            modules: related.map((m) => this.t("format.quote", {msg: m})).join(this.t("format.delimiter")),
           })
         }
       }
@@ -283,6 +368,13 @@ export default {
   },
 }
 </script>
+
+<style>
+.help-code {
+  font-family: 'Consolas', 'Noto Sans Mono', 'Courier New', Courier, monospace;
+}
+</style>
+
 <style scoped>
 .module-card {
   margin-bottom: 20px;

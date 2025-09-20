@@ -8,6 +8,7 @@ export default function setupMock() {
 
   mock.onGet('/api/init').reply(200, {
     enable_https: false,
+    command_prefix: "~",
     locale: 'zh_cn',
     heartbeat_interval: 5,
     heartbeat_timeout: 30,
