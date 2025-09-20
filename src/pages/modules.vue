@@ -415,7 +415,7 @@ export default {
     },
 
     async openConfigEditor(row) {
-      this.configModuleName = row.name
+      this.configModuleName = row._py_module_name
       this.configDialogVisible = true
       this.unsavedConfigChanges = false
       this.configNotFound = false
