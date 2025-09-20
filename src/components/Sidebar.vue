@@ -26,7 +26,7 @@
         <span>{{ $t('sidebar.item.chat') }}</span>
       </el-menu-item>
       <el-menu-item index="/setting">
-        <i class="mdi mdi-tune"></i>
+        <i class="mdi mdi-wrench"></i>
         <span>{{ $t('sidebar.item.setting') }}</span>
       </el-menu-item>
       <el-menu-item index="/about">

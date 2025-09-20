@@ -64,7 +64,7 @@
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column :label="$t('data.table.operation')" min-width="360">
+        <el-table-column :label="$t('data.table.operation')" min-width="420">
           <template #default="{ row }">
             <el-button
               size="small"
@@ -74,27 +74,36 @@
               <i class="mdi mdi-help-circle-outline"></i> {{ $t('modules.button.helpdoc') }}
             </el-button>
 
-              <el-button size="small" type="warning" @click="handleReload(row)">
-                <i class="mdi mdi-reload"></i> {{ $t('modules.button.reload') }}
-              </el-button>
+            <el-button
+              v-if="!row.base"
+              size="small"
+              type="primary"
+              @click="openConfigEditor(row)"
+            >
+              <i class="mdi mdi-cog"></i> {{ $t('modules.button.config') }}
+            </el-button>
 
-              <el-button
-                v-if="!row.base && row.loaded"
-                size="small"
-                type="danger"
-                @click="handleUnload(row)"
-              >
-                <i class="mdi mdi-puzzle-remove"></i> {{ $t('modules.button.unload') }}
-              </el-button>
+            <el-button size="small" type="warning" @click="handleReload(row)">
+              <i class="mdi mdi-reload"></i> {{ $t('modules.button.reload') }}
+            </el-button>
 
-              <el-button
-                v-if="!row.base && !row.loaded"
-                size="small"
-                type="success"
-                @click="handleLoad(row)">
-                <i class="mdi mdi-puzzle-plus"></i> {{ $t('modules.button.load') }}
-              </el-button>
-            </template>
+            <el-button
+              v-if="!row.base && row.loaded"
+              size="small"
+              type="danger"
+              @click="handleUnload(row)"
+            >
+              <i class="mdi mdi-puzzle-remove"></i> {{ $t('modules.button.unload') }}
+            </el-button>
+
+            <el-button
+              v-if="!row.base && !row.loaded"
+              size="small"
+              type="success"
+              @click="handleLoad(row)">
+              <i class="mdi mdi-puzzle-plus"></i> {{ $t('modules.button.load') }}
+            </el-button>
+          </template>
         </el-table-column>
       </el-table>
 
@@ -114,7 +123,7 @@
     <el-dialog
       v-model="helpDialogVisible"
       :title="$t('modules.helpdoc.title', { module: helpDoc?.module_name })"
-      width="60%"
+      width="600px"
     >
       <div v-if="helpDoc">
         <el-collapse v-if="hasAnyHelp" v-model="activeSections">
@@ -160,6 +169,30 @@
         <el-button @click="helpDialogVisible = false">{{ $t('button.close') }}</el-button>
       </template>
     </el-dialog>
+
+    <el-dialog
+      v-model="configDialogVisible"
+      :title="$t('modules.config.title', { module: configModuleName })"
+      width="600px"
+      @close="resetConfigDialog"
+    >
+    <el-card 
+      v-if="configNotFound"
+      shadow="never">
+      <el-empty
+        :description="$t('modules.config.not_found')"
+      />
+    </el-card>
+      <VisibleEditor
+        v-else-if="configDialogVisible"
+        v-model="configContent"
+        ref="visibleEditor"
+      />
+      <template #footer>
+        <el-button @click="configDialogVisible = false">{{ $t('button.cancel') }}</el-button>
+        <el-button type="primary" @click="applyConfig" :disabled="!unsavedConfigChanges">{{ $t('button.apply') }}</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -167,9 +200,13 @@
 import axios from '@/axios.mjs'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useI18n } from 'vue-i18n'
+import VisibleEditor from '@/components/config/VisibleEditor.vue'
 
 export default {
   name: 'ModulesManager',
+  components: {
+    VisibleEditor,
+  },
   data() {
     const { t } = useI18n()
     return {
@@ -183,6 +220,12 @@ export default {
       currentPage: 1,
       pageSize: 10,
       debounceTimer: null,
+      configDialogVisible: false,
+      configModuleName: '',
+      configContent: '',
+      initialConfigContent: '',
+      unsavedConfigChanges: false,
+      configNotFound: false,
       t,
     }
   },
@@ -220,6 +263,11 @@ export default {
   },
   mounted() {
     this.refreshData()
+  },
+  watch: {
+    configContent(newVal) {
+      this.unsavedConfigChanges = newVal !== this.initialConfigContent
+    },
   },
   methods: {
     debouncedRefresh() {
@@ -364,6 +412,48 @@ export default {
           ElMessage.error(this.$t('message.error.fetch') + error.message)
         }
       }
+    },
+
+    async openConfigEditor(row) {
+      this.configModuleName = row.name
+      this.configDialogVisible = true
+      this.unsavedConfigChanges = false
+      this.configNotFound = false
+      try {
+        const res = await axios.get(`/api/config/module_${this.configModuleName}.toml`)
+        this.configContent = res.data.content
+        this.initialConfigContent = res.data.content
+      } catch (error) {
+        if (error.response?.status === 404) {
+          this.configNotFound = true
+        } else {
+          ElMessage.error(this.t('message.error.fetch') + error.message)
+          this.configDialogVisible = false
+        }
+      }
+    },
+
+    async applyConfig() {
+      try {
+        await axios.post(`/api/config/module_${this.configModuleName}.toml/edit`, {
+          content: this.configContent,
+        })
+        ElMessage.success(this.t('config.message.save.success'))
+        this.initialConfigContent = this.configContent
+        this.unsavedConfigChanges = false
+        this.configDialogVisible = false
+      } catch (error) {
+        ElMessage.error(this.t('message.error.fetch') + error.message)
+      }
+    },
+
+    resetConfigDialog() {
+      this.configDialogVisible = false
+      this.configModuleName = ''
+      this.configContent = ''
+      this.initialConfigContent = ''
+      this.unsavedConfigChanges = false
+      this.configNotFound = false
     },
   },
 }
