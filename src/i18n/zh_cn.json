@@ -160,7 +160,7 @@
   "modules.button.reload": "重载",
   "modules.button.show_base": "显示基础模块",
   "modules.button.unload": "卸载",
-  "modules.config.not_found": "此模块没有配置文件",
+  "modules.config.none": "此模块没有配置文件",
   "modules.config.title": "模块配置",
   "modules.confirm.message.reload": "你确定要重载此模块吗？",
   "modules.confirm.message.reload.base": "你正在重载基础模块，可能会产生不可预料的问题。是否继续？",

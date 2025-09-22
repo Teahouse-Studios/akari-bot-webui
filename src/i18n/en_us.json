@@ -160,7 +160,7 @@
   "modules.button.reload": "Reload",
   "modules.button.show_base": "Show Base",
   "modules.button.unload": "Unload",
-  "modules.config.not_found": "This module has no configuration files",
+  "modules.config.none": "This module has no configuration files",
   "modules.config.title": "Module Config",
   "modules.confirm.message.reload": "Are you sure you want to reload this module?",
   "modules.confirm.message.reload.base": "You are reloading the base modules; this may cause unexpected problems. Continue?",

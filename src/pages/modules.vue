@@ -180,7 +180,7 @@
       v-if="configNotFound"
       shadow="never">
       <el-empty
-        :description="$t('modules.config.not_found')"
+        :description="$t('modules.config.none')"
       />
     </el-card>
       <VisibleEditor

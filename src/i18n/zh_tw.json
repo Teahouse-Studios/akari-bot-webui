@@ -52,7 +52,7 @@
   "confirm.warning": "警告",
   "modules.button.config": "組態",
   "modules.config.title": "模組組態",
-  "modules.config.not_found": "此模組沒有組態檔",
+  "modules.config.none": "此模組沒有組態檔",
   "dashboard.analytics.command.chart.command": "指令數量",
   "dashboard.analytics.command.label.average": "平均指令數",
   "dashboard.analytics.command.label.change_rate": "變化率",
