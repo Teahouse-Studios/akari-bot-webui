@@ -150,11 +150,11 @@ export default {
     },
     async applyConfig() {
       try {
-        await axios.post(`/api/config/${this.activeTab}/edit`, {
+        await axios.put(`/api/config/${this.activeTab}`, {
           content: this.editorContent,
         })
         ElMessage.success(this.t('config.message.save.success'))
-        this.unsavedChanges = false
+        this.resetConfig()
       } catch (error) {
         if (error.response?.status === 403 && IS_DEMO) {
           ElMessage.error(this.t('message.error.demo'))

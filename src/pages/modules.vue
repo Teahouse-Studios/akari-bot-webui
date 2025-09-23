@@ -435,7 +435,7 @@ export default {
 
     async applyConfig() {
       try {
-        await axios.post(`/api/config/module_${this.configModuleName}.toml/edit`, {
+        await axios.put(`/api/config/module_${this.configModuleName}.toml`, {
           content: this.configContent,
         })
         ElMessage.success(this.t('config.message.save.success'))

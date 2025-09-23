@@ -442,7 +442,7 @@ export default {
       payload.target_data = parsedTargetData
 
       try {
-        await axios.post(`/api/target/${target_id}/edit`, payload)
+        await axios.patch(`/api/target/${target_id}`, payload)
         ElMessage.success(this.t('data.message.success.edit'))
         this.editDialogVisible = false
         this.fetchData()

@@ -109,8 +109,8 @@ export default {
     }
   },
   async mounted() {
-    const { data } = await axios.get('/api/have-password')
-    this.noPassword = !data.data
+    const { data } = await axios.get('/api/password')
+    this.noPassword = !data.have_password
     this.isLoading = false
   },
   methods: {
@@ -130,7 +130,7 @@ export default {
           requestData.password = this.form.old_password
         }
 
-        const response = await axios.post('/api/change-password', requestData)
+        const response = await axios.put('/api/password', requestData)
 
         if (response.status === 205) {
           location.reload()
@@ -176,7 +176,7 @@ export default {
           password: this.form.old_password,
         }
 
-        const response = await axios.post('/api/clear-password', requestData)
+        const response = await axios.delete('/api/password', requestData)
 
         if (response.status === 205) {
           ElMessage.success(this.$t('setting.change_password.message.success.clear'))

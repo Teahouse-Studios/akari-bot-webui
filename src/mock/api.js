@@ -29,9 +29,9 @@ export default function setupMock() {
       data: 'eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiSm9obiIsImFkbWluIjp0cnVlLCJpc3MiOiJhdXRoLWFwaSJ9.l6piMCKreZU-gjum6VXafyknIUdO8r1NdMP-kcemyJXxD32Chv5LsRDHnD3oUow0qX8vTPeujNgTu6iKLgHe8Q',
     })
 
-  mock.onPost('/api/change-password').reply(205, {})
+  mock.onPut('/api/password').reply(205, {})
 
-  mock.onGet('/api/have-password').reply(200, { data: false })
+  mock.onGet('/api/password').reply(200, { have_password: false })
 
   mock.onGet('/api/server-info').reply(200, {
     os: {
@@ -159,10 +159,10 @@ export default function setupMock() {
     ]
   })
 
-  mock.onPost('/api/target/Web|Console|0/edit').reply(403, {
+  mock.onPatch('/api/target/Web|Console|0').reply(403, {
     detail: 'Cannot edit data in demo mode',
   })
-  mock.onPost('/api/target/Web|Console|0/delete').reply(403, {
+  mock.onDelete('/api/target/Web|Console|0').reply(403, {
     detail: 'Cannot edit data in demo mode',
   })
 
@@ -208,10 +208,10 @@ export default function setupMock() {
     ]
   })
 
-  mock.onPost('/api/sender/Web|0/edit').reply(403, {
+  mock.onPatch('/api/sender/Web|0').reply(403, {
     detail: 'Cannot edit data in demo mode',
   })
-  mock.onPost('/api/sender/Web|0/delete').reply(403, {
+  mock.onDelete('/api/sender/Web|0').reply(403, {
     detail: 'Cannot edit data in demo mode',
   })
   mock.onGet('/api/modules_list').reply(200, {
