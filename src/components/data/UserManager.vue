@@ -7,6 +7,7 @@
           @click="refreshData"
           type="primary"
           size="small"
+          :disabled="loading"
           style="float: right; margin-left: 10px"
           ><i class="mdi mdi-refresh"></i> {{ $t('data.button.refresh') }}</el-button
         >

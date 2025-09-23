@@ -1,5 +1,5 @@
 <template>
-  <div v-loading="isLoading">
+  <div v-loading="loading">
     <h3><i class="mdi mdi-lock"></i> {{ $t('setting.change_password.title') }}</h3>
     <el-form :model="form" :rules="rules" ref="formRef" label-width="auto">
       <el-form-item
@@ -65,7 +65,7 @@ export default {
     const { t } = useI18n()
 
     return {
-      isLoading: true,
+      loading: true,
       form: {
         old_password: '',
         new_password: '',
@@ -111,7 +111,7 @@ export default {
   async mounted() {
     const { data } = await axios.get('/api/password')
     this.noPassword = !data.have_password
-    this.isLoading = false
+    this.loading = false
   },
   methods: {
     async handleUpdatePassword() {

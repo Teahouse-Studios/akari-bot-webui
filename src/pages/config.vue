@@ -4,21 +4,24 @@
       <el-button
         :type="activeCard === 'visible' ? 'primary' : 'default'"
         @click="activeCard = 'visible'"
-        ><i class="mdi mdi-text-box-edit-outline"></i
-      ></el-button>
+      >
+        <i class="mdi mdi-text-box-edit-outline"></i>
+      </el-button>
       <el-button
         :type="activeCard === 'source' ? 'primary' : 'default'"
         @click="activeCard = 'source'"
-        ><i class="mdi mdi-code-brackets"></i
-      ></el-button>
+      >
+        <i class="mdi mdi-code-brackets"></i>
+      </el-button>
     </el-button-group>
 
     <el-tabs v-model="activeTab" @tab-click="handleTabClick">
       <el-tab-pane v-for="file in configFiles" :key="file" :label="file" :name="file"></el-tab-pane>
     </el-tabs>
-    <VisibleEditor v-if="activeCard === 'visible'" ref="visibleEditor" v-model="editorContent" />
 
+    <VisibleEditor v-if="activeCard === 'visible'" ref="visibleEditor" v-model="editorContent" />
     <SourceEditor v-else ref="sourceEditor" v-model="editorContent" />
+
     <div class="editor-footer">
       <div class="editor-actions">
         <el-button type="warning" :disabled="!unsavedChanges" @click="resetConfig">
@@ -37,6 +40,17 @@
         </div>
       </div>
     </div>
+
+    <el-button
+      class="refresh-button"
+      circle
+      size="large"
+      type="primary"
+      @click="refreshConfig"
+      :disabled="loading"
+    >
+      <i class="mdi mdi-refresh"></i>
+    </el-button>
   </div>
 </template>
 
@@ -163,6 +177,11 @@ export default {
         }
       }
     },
+    refreshConfig() {
+      if (this.activeTab) {
+        this.fetchConfig(this.activeTab, true)
+      }
+    },
   },
 }
 </script>
@@ -179,6 +198,7 @@ export default {
 .editor-container {
   display: flex;
   flex-direction: column;
+  position: relative; /* 让固定按钮相对于容器定位 */
 }
 
 .editor-footer {
@@ -195,6 +215,14 @@ export default {
 
 .unsaved-warning {
   margin-left: 16px;
+}
+
+.refresh-button {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 9999;
+  font-size: 22px !important;
 }
 
 @media (max-width: 399px) {

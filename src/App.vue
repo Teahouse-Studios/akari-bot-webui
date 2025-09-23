@@ -9,7 +9,7 @@
       ></div>
       <AppHeader :userVerified="userVerified" @toggle-sidebar="toggleSidebar" />
       <LoginModal v-if="isPromptLogin" />
-      <div v-if="!isLoading">
+      <div v-if="!loading">
         <SuggestSetPasswordModal v-model="showSuggestPasswordModal" />
         <AppSidebar :visible="windowWidth > 1024" @menuSelect="handleMenuSelect" />
         <AppSidebarDrawer
@@ -56,7 +56,7 @@ export default {
     const { t } = useI18n()
 
     return {
-      isLoading: false,
+      loading: false,
       userVerified: false,
       isPromptLogin: false,
       isSidebarVisible: false,
@@ -88,7 +88,7 @@ export default {
         })
     }
     await this.initializeUserVerification()
-    this.isLoading = false
+    this.loading = false
   },
   beforeUnmount() {
     window.removeEventListener('resize', this.updateSidebarVisibility)

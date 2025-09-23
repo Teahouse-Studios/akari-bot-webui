@@ -162,7 +162,6 @@
     </div>
     <el-dialog
       v-model="imageDialogVisible"
-      class="image-preview-dialog"
       :show-close="false"
       :center="true"
     >

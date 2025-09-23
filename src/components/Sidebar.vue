@@ -25,6 +25,10 @@
         <i class="mdi mdi-chat"></i>
         <span>{{ $t('sidebar.item.chat') }}</span>
       </el-menu-item>
+      <el-menu-item index="/files">
+        <i class="mdi mdi-folder-outline"></i>
+        <span>{{ $t('sidebar.item.files') }}</span>
+      </el-menu-item>
       <el-menu-item index="/setting">
         <i class="mdi mdi-wrench"></i>
         <span>{{ $t('sidebar.item.setting') }}</span>
