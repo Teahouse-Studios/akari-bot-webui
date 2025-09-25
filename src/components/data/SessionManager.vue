@@ -9,7 +9,7 @@
           size="small"
           :disabled="loading"
           style="float: right; margin-left: 10px"
-          ><i class="mdi mdi-refresh"></i> {{ $t('data.button.refresh') }}</el-button
+          ><i class="mdi mdi-refresh"></i> {{ $t('button.refresh') }}</el-button
         >
       </div>
 
@@ -126,7 +126,7 @@
             </el-popover>
           </template>
         </el-table-column>
-        <el-table-column :label="$t('data.table.operation')" min-width="240">
+        <el-table-column :label="$t('table.operation')" min-width="240">
           <template #default="{ row }">
             <el-button size="small" type="warning" @click="editTarget(row)"
               ><i class="mdi mdi-pencil"></i> {{ $t('button.edit') }}</el-button

@@ -1,16 +1,8 @@
 <template>
   <div>
-    <el-breadcrumb separator="/">
-      <el-breadcrumb-item
-        v-for="(p, idx) in pathParts"
-        :key="idx"
-      >
-        {{ p }}
-      </el-breadcrumb-item>
-    </el-breadcrumb>
-
-      <div class="operation-button-container">
-      <el-tooltip content="返回上一级" placement="bottom" v-if="!isRoot">
+    <div class="breadcrumb-actions">
+    <div class="operation-button-container">
+      <el-tooltip :content="t('files.button.back')" placement="bottom" v-if="!isRoot">
         <el-button
           class="icon-button"
           type="primary"
@@ -20,7 +12,7 @@
         </el-button>
       </el-tooltip>
 
-      <el-tooltip content="刷新" placement="bottom">
+      <el-tooltip :content="t('button.refresh')" placement="bottom">
         <el-button
           class="icon-button"
           type="primary"
@@ -30,7 +22,7 @@
         </el-button>
       </el-tooltip>
 
-      <el-tooltip content="新建" placement="bottom">
+      <el-tooltip :content="t('files.button.create')" placement="bottom">
         <el-button
           class="icon-button"
           type="primary"
@@ -40,7 +32,7 @@
         </el-button>
       </el-tooltip>
 
-      <el-tooltip content="上传" placement="bottom">
+      <el-tooltip :content="t('files.button.upload')" placement="bottom">
         <el-button
           class="icon-button"
           type="primary"
@@ -50,6 +42,17 @@
         </el-button>
       </el-tooltip>
     </div>
+
+    <el-breadcrumb separator="/" class="breadcrumb-nav">
+      <el-breadcrumb-item
+        v-for="(p, idx) in pathParts"
+        :key="idx"
+        :class="{ active: idx === pathParts.length - 1 }"
+      >
+        {{ p }}
+      </el-breadcrumb-item>
+    </el-breadcrumb>
+  </div>
 
     <el-collapse-transition>
     <div v-show="showUpload" class="upload-area">
@@ -65,15 +68,18 @@
         @success="refresh"
       >
         <i class="el-icon-upload"></i>
-        <div class="el-upload__text">拖拽文件或目录到这里，或 <em>点击上传</em></div>
+        <div class="el-upload__text">
+          {{ t('files.upload.drag_text') }} <em>{{ t('files.upload.click_text') }}</em>
+        </div>
       </el-upload>
     </div>
     </el-collapse-transition>
 
+    <el-card class="files-card" shadow="never">
     <div style="margin-bottom: 15px">
       <el-button type="info" size="small" @click="toggleHiddenFiles">
         <i :class="showHiddenFiles ? 'mdi mdi-eye-off-outline' : 'mdi mdi-eye-outline'"></i>
-        {{ showHiddenFiles ? "隐藏文件" : "显示文件" }}
+        {{ showHiddenFiles ? t('files.button.hide_hidden') : t('files.button.show_hidden') }}
       </el-button>
     </div>
     <el-table
@@ -83,7 +89,7 @@
       v-loading="loading">
     <el-table-column
         prop="name"
-        label="名称"
+        :label="t('files.table.name')"
         min-width="240"
         sortable
     >
@@ -100,25 +106,31 @@
 
     <el-table-column
         prop="size"
-        label="大小"
+        :label="t('files.table.size')"
         min-width="100"
         sortable
         :formatter="formatSize"
     />
     <el-table-column
         prop="modified"
-        label="修改时间"
+        :label="t('files.table.modified')"
         min-width="160"
         sortable
         :formatter="formatDate"
     />
     <el-table-column
-        label="操作"
-        min-width="300">
+        :label="t('files.table.action')"
+        min-width="360">
         <template #default="{ row }">
-        <el-button size="small" type="info" @click="rename(row)"><i class="mdi mdi-rename"></i>重命名</el-button>
-        <el-button size="small" type="primary" @click="download(row)"><i class="mdi mdi-download"></i>下载</el-button>
-        <el-button size="small" type="danger" @click="remove(row)"><i class="mdi mdi-delete"></i> 删除</el-button>
+        <el-button size="small" type="info" @click="rename(row)">
+          <i class="mdi mdi-rename"></i>{{ t('files.button.rename') }}
+        </el-button>
+        <el-button size="small" type="primary" @click="download(row)">
+          <i class="mdi mdi-download"></i>{{ t('files.button.download') }}
+        </el-button>
+        <el-button size="small" type="danger" @click="remove(row)">
+          <i class="mdi mdi-delete"></i> {{ t('button.delete') }}
+        </el-button>
         </template>
     </el-table-column>
     </el-table>
@@ -135,16 +147,16 @@
         @current-change="handlePageChange"
       />
     </div>
-
-    <el-dialog v-model="showCreateDialog" title="新建">
+  </el-card>
+    <el-dialog v-model="showCreateDialog" :title="t('files.title.create')">
     <el-radio-group v-model="createType">
-        <el-radio label="dir">目录</el-radio>
-        <el-radio label="file">文件</el-radio>
+        <el-radio label="dir">{{ t('files.select.create.dir') }}</el-radio>
+        <el-radio label="file">{{ t('files.select.create.file') }}</el-radio>
     </el-radio-group>
-    <el-input v-model="createName" placeholder="请输入名称" style="margin-top:10px; margin-bottom: 10px;"></el-input>
+    <el-input v-model="createName" :placeholder="t('files.input.create.placeholder')" style="margin-top:10px; margin-bottom: 10px;"></el-input>
     <span slot="footer" class="dialog-footer">
-        <el-button @click="showCreateDialog = false">取消</el-button>
-        <el-button type="primary" @click="createItem">确定</el-button>
+        <el-button @click="showCreateDialog = false">{{ t('button.cancel') }}</el-button>
+        <el-button type="primary" @click="createItem">{{ t('button.confirm') }}</el-button>
     </span>
     </el-dialog>
 
@@ -164,15 +176,15 @@
 
     <el-dialog
       v-model="previewVisible"
-      title="编辑文件"
+      :title="t('files.title.edit')"
       v-if="isText"
       :before-close="closePreview"
     >
       <div>
         <div ref="textEditor" class="editor-body"></div>
         <span slot="footer">
-          <el-button @click="closePreview">取消</el-button>
-          <el-button type="primary" @click="saveFile">保存</el-button>
+          <el-button @click="closePreview">{{ t('button.cancel') }}</el-button>
+          <el-button type="primary" @click="saveFile">{{ t('button.save') }}</el-button>
         </span>
       </div>
     </el-dialog>
@@ -182,8 +194,9 @@
       v-else
       :show-close="false"
     >
-      <el-empty 
-        :description="emptyDescription"
+      <el-result
+        icon="error"
+        :sub-title="emptyDescription"
       />
     </el-dialog>
   </div>
@@ -353,34 +366,34 @@ export default {
     },
 
     async createItem() {
-    if (!this.createName) {
-      ElMessage.warning("请输入名称")
-      return
-    }
-
-    try {
-      await axios.post("/api/files/create", null, {
-        params: {
-          current_path: this.currentPath,
-          name: this.createName,
-          type: this.createType
-        },
-        headers: this.uploadHeaders,
-      })
-      ElMessage.success("创建成功")
-      this.showCreateDialog = false
-      this.createName = ""
-      this.fetchFiles()
-    } catch (e) {
-      if (e.response.status === 403) {
-        ElMessage.error("无效的路径")
-      } else if (e.response.status === 400) {
-        ElMessage.error("创建失败")
-      } else {
-      ElMessage.error(this.t('message.error.fetch') + e.message)
+      if (!this.createName) {
+        ElMessage.warning(this.t('files.message.warning.input_name'))
+        return
       }
-    }
-  },
+
+      try {
+        await axios.post("/api/files/create", null, {
+          params: {
+            current_path: this.currentPath,
+            name: this.createName,
+            type: this.createType
+          },
+          headers: this.uploadHeaders,
+        })
+        ElMessage.success(this.t('files.message.create.success'))
+        this.showCreateDialog = false
+        this.createName = ""
+        this.fetchFiles()
+      } catch (e) {
+        if (e.response.status === 403) {
+          ElMessage.error(this.t('files.message.create.error.invalid_path'))
+        } else if (e.response.status === 400) {
+          ElMessage.error(this.t('files.message.create.error.failed'))
+        } else {
+          ElMessage.error(this.t('message.error.fetch') + e.message)
+        }
+      }
+    },
 
     toggleUpload() {
       this.showUpload = !this.showUpload;
@@ -435,8 +448,7 @@ async previewFile(name) {
   const path = this.currentPath ? this.currentPath + "/" + name : name;
 
   this.isText = false;
-  this.emptyDescription = "无法预览此文件";
-
+  this.emptyDescription = this.t('files.preview.unsupported');
   try {
     const res = await axios.get("/api/files/preview", {
       params: { path },
@@ -461,15 +473,15 @@ async previewFile(name) {
       this.$nextTick(this.initTextPreview);
       this.previewVisible = true;
     } else {
-      this.emptyDescription = "无法预览此文件";
+      this.emptyDescription = this.t('files.preview.unsupported');
       this.previewVisible = true;
     }
   } catch (e) {
     if (e.response?.status === 408) {
-      this.emptyDescription = "文件过大，无法预览";
+      this.emptyDescription = this.t('files.preview.too_large');
       this.previewVisible = true;
     } else if (e.response?.status === 400) {
-      this.emptyDescription = "预览失败";
+      this.emptyDescription = this.t('files.preview.failed');
       this.previewVisible = true;
     } else {
       ElMessage.error(this.t('message.error.fetch') + e.message)
@@ -528,17 +540,16 @@ async saveFile() {
         ...this.uploadHeaders
       }
     });
-    ElMessage.success("保存成功");
+    ElMessage.success(this.t('files.message.save.success'));
     this.previewVisible = false;
     this.closePreview();
     this.fetchFiles();
   } catch (e) {
     if (e.response.status === 400) {
-        ElMessage.error("保存失败")
-      } else {
+      ElMessage.error(this.t('files.message.save.error.failed'))
+    } else {
       ElMessage.error(this.t('message.error.fetch') + e.message)
-      }
-    
+    }
   }
 },
 
@@ -547,9 +558,9 @@ async saveFile() {
     if (exists) {
       try {
         await ElMessageBox.confirm(
-          `文件 "${file.name}" 已存在，是否替换？`,
-          '文件已存在',
-          { confirmButtonText: '替换', cancelButtonText: '取消', type: 'warning' }
+          this.t('files.confirm.file_exists', { name: file.name }),
+          this.t('files.title.file_exists'),
+          { confirmButtonText: this.t('files.button.replace'), cancelButtonText: this.t('button.cancel'), type: 'warning' }
         )
         return true
       } catch {
@@ -561,17 +572,17 @@ async saveFile() {
 
     async rename(row) {
     try {
-        const { value: newName } = await ElMessageBox.prompt('', '重命名', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        inputValue: row.name,
-        beforeClose: (action, instance, done) => {
-          if (action === 'confirm' && !instance.inputValue.trim()) {
-            ElMessage.warning('请输入新名称');
-            return;
+        const { value: newName } = await ElMessageBox.prompt('', this.t('files.title.rename'), {
+          confirmButtonText: this.t('button.confirm'),
+          cancelButtonText: this.t('button.cancel'),
+          inputValue: row.name,
+          beforeClose: (action, instance, done) => {
+            if (action === 'confirm' && !instance.inputValue.trim()) {
+              ElMessage.warning(this.t('files.message.warning.input_new_name'));
+              return;
+            }
+            done();
           }
-          done();
-        }
         })
         
         const path = this.currentPath
@@ -584,29 +595,29 @@ async saveFile() {
         })
     
         this.fetchFiles()
-        ElMessage.success('重命名成功')
+        ElMessage.success(this.t('files.message.rename.success'))
     } catch (error) {
         if (error === 'cancel') {
         return
         }
         if (error.response?.status === 409) {
-        ElMessage.error('文件已存在')
+          ElMessage.error(this.t('files.message.rename.error.exists'))
         } else if (error.response?.status === 404) {
-        ElMessage.error('文件不存在')
+          ElMessage.error(this.t('files.message.rename.error.not_found'))
         } else if (error.response?.status === 400) {
-        ElMessage.error('重命名失败')
+          ElMessage.error(this.t('files.message.rename.error.failed'))
         } else {
-      ElMessage.error(this.t('message.error.fetch') + error.message)
+          ElMessage.error(this.t('message.error.fetch') + error.message)
         }
     }
     },
 
     async remove(row) {
     try {
-        await ElMessageBox.confirm('你确定要删除吗？', '警告', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
+        await ElMessageBox.confirm(this.t('files.confirm.delete'), this.t('files.title.delete'), {
+          confirmButtonText: this.t('button.confirm'),
+          cancelButtonText: this.t('button.cancel'),
+          type: 'warning'
         })
         
         const path = this.currentPath
@@ -616,15 +627,15 @@ async saveFile() {
         await axios.delete('/api/files/delete', { params: { path } })
         
         this.fetchFiles()
-        ElMessage.success('删除成功')
+        ElMessage.success(this.t('files.message.delete.success'))
     } catch (error) {
         if (error === 'cancel') {
         return
         }
         if (error.response?.status === 404) {
-          ElMessage.error('文件不存在')
+          ElMessage.error(this.t('files.message.delete.error.not_found'))
         } else if (error.response?.status === 400) {
-          ElMessage.error('删除失败')
+          ElMessage.error(this.t('files.message.delete.error.failed'))
         } else {
           ElMessage.error(this.t('message.error.fetch') + error.message)
         }
@@ -659,12 +670,33 @@ async saveFile() {
 </script>
 
 <style scoped>
+.breadcrumb-actions {
+  display: flex;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
 .operation-button-container {
+  display: flex;
   margin: 15px 0;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-  white-space: nowrap;
-  width: 100%;
+  order: 1;
+}
+
+.breadcrumb-nav {
+  flex: 1;
+  order: 2;
+  margin-left: 12px;
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: #f4f4f4;
+  border: 1px solid #e0e0e0;
+}
+
+.dark .breadcrumb-nav {
+  background: #1f1f1f;
+  border: 1px solid #4d4d4d;
 }
 
 .icon-button {
@@ -693,6 +725,12 @@ async saveFile() {
   border: 1px dashed #4d4d4d;
 }
 
+.files-card {
+  margin-bottom: 20px;
+  line-height: 1;
+  white-space: nowrap;
+}
+
 .pagination-wrapper {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
@@ -705,7 +743,7 @@ async saveFile() {
   top: 60px;
   left: 0;
   width: 100vw;
-  height: 100vh;
+  height: calc(100vh - 60px);
   background-color: rgba(0,0,0,0);
   display: flex;
   justify-content: center;
