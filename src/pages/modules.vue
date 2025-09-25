@@ -174,7 +174,9 @@
     <el-dialog
       v-model="configDialogVisible"
       :title="$t('modules.config.title', { module: configModuleName })"
-      width="600px"
+      :width="moduleConfigDialogWidth"
+      :close-on-press-escape="false"
+      :close-on-click-modal="false"
       @close="resetConfigDialog"
     >
     <el-card 
@@ -220,6 +222,7 @@ export default {
       activeSections: ['commands', 'options', 'regexp'],
       currentPage: 1,
       pageSize: 10,
+      moduleConfigDialogWidth: '90%',
       debounceTimer: null,
       configDialogVisible: false,
       configModuleName: '',
@@ -264,6 +267,11 @@ export default {
   },
   mounted() {
     this.refreshData()
+    window.addEventListener('resize', this.updateModuleConfigDialogWidth);
+    this.updateModuleConfigDialogWidth();
+  },
+  beforeUnmount() {
+    window.removeEventListener('resize', this.updateModuleConfigDialogWidth);
   },
   watch: {
     configContent(newVal) {
@@ -355,8 +363,6 @@ export default {
           })
         }
       }
-
-
       try {
         await ElMessageBox.confirm(msg, this.t('confirm.warning'), {
           confirmButtonText: this.t('button.confirm'),
@@ -412,6 +418,16 @@ export default {
         } else {
           ElMessage.error(this.$t('message.error.fetch') + error.message)
         }
+      }
+    },
+
+    updateModuleConfigDialogWidth() {
+      const screenWidth = window.innerWidth;
+      if (screenWidth < 1024) {
+        this.moduleConfigDialogWidth = '90%';
+      } else {
+        const newWidth = screenWidth * 0.9 - 400;
+        this.moduleConfigDialogWidth = `${newWidth}px`;
       }
     },
 

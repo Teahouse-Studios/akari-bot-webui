@@ -43,15 +43,17 @@
       </el-tooltip>
     </div>
 
-    <el-breadcrumb separator="/" class="breadcrumb-nav">
-      <el-breadcrumb-item
-        v-for="(p, idx) in pathParts"
-        :key="idx"
-        :class="{ active: idx === pathParts.length - 1 }"
-      >
-        {{ p }}
-      </el-breadcrumb-item>
-    </el-breadcrumb>
+    <div class="breadcrumb-wrapper" ref="breadcrumbWrapper">
+      <el-breadcrumb separator="/" class="breadcrumb-nav">
+        <el-breadcrumb-item
+          v-for="(p, idx) in pathParts"
+          :key="idx"
+          :class="{ active: idx === pathParts.length - 1 }"
+        >
+          {{ p }}
+        </el-breadcrumb-item>
+      </el-breadcrumb>
+    </div>
   </div>
 
     <el-collapse-transition>
@@ -177,16 +179,17 @@
     <el-dialog
       v-model="previewVisible"
       :title="t('files.title.edit')"
+      :width="previewTextDialogWidth"
+      :close-on-press-escape="false"
+      :close-on-click-modal="false"
       v-if="isText"
       :before-close="closePreview"
     >
-      <div>
-        <div ref="textEditor" class="editor-body"></div>
-        <span slot="footer">
-          <el-button @click="closePreview">{{ t('button.cancel') }}</el-button>
-          <el-button type="primary" @click="saveFile">{{ t('button.save') }}</el-button>
-        </span>
-      </div>
+      <div ref="textEditor" class="editor-body"></div>
+      <template #footer>
+        <el-button @click="closePreview">{{ t('button.cancel') }}</el-button>
+        <el-button type="primary" @click="saveFile">{{ t('button.save') }}</el-button>
+      </template>
     </el-dialog>
 
     <el-dialog
@@ -229,14 +232,15 @@ export default {
       currentPage: 1,
       pageSize: 20,
       totalFiles: 0,
-    showCreateDialog: false,
-    createType: "dir",
-    createName: "",
+      showCreateDialog: false,
+      createType: "dir",
+      createName: "",
       previewVisible: false,
       showUpload: false,
       previewUrl: "",
       previewContent: "",
       previewName: "",
+      previewTextDialogWidth: '90%',
       fullscreenPreviewVisible: false,
       showFullscreenPreviewAnim: false,
       isText: false,
@@ -273,6 +277,11 @@ export default {
     },
   },
   watch: {
+    currentPath() {
+      this.$nextTick(() => {
+        this.scrollBreadcrumbToEnd();
+      });
+    },
     previewContent(newVal) {
       if (this.editorView && this.editorView.state.doc.toString() !== newVal) {
         this.editorView.dispatch({
@@ -302,6 +311,13 @@ export default {
       }
     },
 
+    scrollBreadcrumbToEnd() {
+      const wrapper = this.$refs.breadcrumbWrapper;
+      if (wrapper) {
+        wrapper.scrollLeft = wrapper.scrollWidth;
+      }
+    },
+  
     updateFiles() {
       let filtered = this.showHiddenFiles
         ? this.allFiles
@@ -397,6 +413,16 @@ export default {
 
     toggleUpload() {
       this.showUpload = !this.showUpload;
+    },
+
+    updatePreviewTextDialogWidth() {
+      const screenWidth = window.innerWidth;
+      if (screenWidth < 1024) {
+        this.previewTextDialogWidth = '90%';
+      } else {
+        const newWidth = screenWidth * 0.9 - 400;
+        this.previewTextDialogWidth = `${newWidth}px`;
+      }
     },
 
     getLanguageExtension(filename) {
@@ -660,11 +686,14 @@ async saveFile() {
   mounted() {
     this.fetchFiles();
     window.addEventListener('resize', this.updateFullscreenLeft);
+    window.addEventListener('resize', this.updatePreviewTextDialogWidth);
     this.updateFullscreenLeft();
+    this.updatePreviewTextDialogWidth();
   },
 
   beforeUnmount() {
     window.removeEventListener('resize', this.updateFullscreenLeft);
+    window.removeEventListener('resize', this.updatePreviewTextDialogWidth);
   },
 };
 </script>
@@ -682,21 +711,26 @@ async saveFile() {
   order: 1;
 }
 
-.breadcrumb-nav {
+.breadcrumb-wrapper {
   flex: 1;
   order: 2;
   margin-left: 12px;
-  display: flex;
-  align-items: center;
-  padding: 8px 12px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  white-space: nowrap;
   border-radius: 8px;
   background: #f4f4f4;
   border: 1px solid #e0e0e0;
+  padding: 8px 12px;
 }
 
-.dark .breadcrumb-nav {
+.dark .breadcrumb-wrapper {
   background: #1f1f1f;
   border: 1px solid #4d4d4d;
+}
+
+.breadcrumb-nav {
+  display: inline-flex;
 }
 
 .icon-button {
