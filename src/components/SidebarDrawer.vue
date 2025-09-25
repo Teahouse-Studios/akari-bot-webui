@@ -33,7 +33,7 @@
           <span>{{ $t('sidebar.item.chat') }}</span>
         </el-menu-item>
       <el-menu-item index="/files">
-        <i class="mdi mdi-folder-outline"></i>
+        <i class="mdi mdi-folder"></i>
         <span>{{ $t('sidebar.item.files') }}</span>
       </el-menu-item>
         <el-menu-item index="/setting">

@@ -1,6 +1,5 @@
 <template>
   <div>
-    <!-- 顶部操作 -->
     <el-breadcrumb separator="/">
       <el-breadcrumb-item
         v-for="(p, idx) in pathParts"
@@ -10,16 +9,50 @@
       </el-breadcrumb-item>
     </el-breadcrumb>
 
-    <div style="margin:10px 0">
-      <el-button @click="goUp">上一级</el-button>
-      <el-button @click="refresh">刷新</el-button>
-      <el-button @click="showCreateDialog = true">新建</el-button>
-      <el-button @click="toggleUpload">
-        {{ "上传" }}
-      </el-button>
+      <div class="operation-button-container">
+      <el-tooltip content="返回上一级" placement="bottom" v-if="!isRoot">
+        <el-button
+          class="icon-button"
+          type="primary"
+          @click="goUp"
+          :disabled="loading">
+          <i class="mdi mdi-arrow-left-top"></i>
+        </el-button>
+      </el-tooltip>
+
+      <el-tooltip content="刷新" placement="bottom">
+        <el-button
+          class="icon-button"
+          type="primary"
+          @click="refresh"
+          :disabled="loading">
+          <i class="mdi mdi-refresh"></i>
+        </el-button>
+      </el-tooltip>
+
+      <el-tooltip content="新建" placement="bottom">
+        <el-button
+          class="icon-button"
+          type="primary"
+          @click="showCreateDialog = true"
+          :disabled="loading">
+          <i class="mdi mdi-plus"></i>
+        </el-button>
+      </el-tooltip>
+
+      <el-tooltip content="上传" placement="bottom">
+        <el-button
+          class="icon-button"
+          type="primary"
+          @click="toggleUpload"
+          :disabled="loading">
+          <i class="mdi mdi-upload"></i>
+        </el-button>
+      </el-tooltip>
     </div>
 
-    <div v-if="showUpload" class="upload-area">
+    <el-collapse-transition>
+    <div v-show="showUpload" class="upload-area">
       <el-upload
         drag
         multiple
@@ -35,7 +68,14 @@
         <div class="el-upload__text">拖拽文件或目录到这里，或 <em>点击上传</em></div>
       </el-upload>
     </div>
-    <div class="table-wrapper">
+    </el-collapse-transition>
+
+    <div style="margin-bottom: 15px">
+      <el-button type="info" size="small" @click="toggleHiddenFiles">
+        <i :class="showHiddenFiles ? 'mdi mdi-eye-off-outline' : 'mdi mdi-eye-outline'"></i>
+        {{ showHiddenFiles ? "隐藏文件" : "显示文件" }}
+      </el-button>
+    </div>
     <el-table
       :data="files"
       style="width: 100%"
@@ -44,11 +84,11 @@
     <el-table-column
         prop="name"
         label="名称"
-        min-width="60"
+        min-width="240"
         sortable
     >
         <template #default="{ row }">
-        <i :class="row.is_dir ? 'mdi mdi-folder' : 'mdi mdi-file'" style="margin-right:6px"></i>
+        <i :class="row.is_dir ? 'mdi mdi-folder-outline' : 'mdi mdi-file-outline'" style="margin-right:6px"></i>
         <span
             style="cursor:pointer; color:gray"
             @click="row.is_dir ? openDir(row.name) : previewFile(row.name)"
@@ -61,25 +101,39 @@
     <el-table-column
         prop="size"
         label="大小"
-        min-width="60"
+        min-width="100"
+        sortable
         :formatter="formatSize"
     />
     <el-table-column
         prop="modified"
-        label="修改日期"
-        min-width="80"
+        label="修改时间"
+        min-width="160"
+        sortable
         :formatter="formatDate"
     />
     <el-table-column
         label="操作"
-        min-width="120">
+        min-width="300">
         <template #default="{ row }">
-        <el-button size="small" @click="rename(row)">重命名</el-button>
-        <el-button size="small" type="primary" @click="download(row)">下载</el-button>
-        <el-button size="small" type="danger" @click="remove(row)">删除</el-button>
+        <el-button size="small" type="info" @click="rename(row)"><i class="mdi mdi-rename"></i>重命名</el-button>
+        <el-button size="small" type="primary" @click="download(row)"><i class="mdi mdi-download"></i>下载</el-button>
+        <el-button size="small" type="danger" @click="remove(row)"><i class="mdi mdi-delete"></i> 删除</el-button>
         </template>
     </el-table-column>
     </el-table>
+
+    <div class="pagination-wrapper">
+      <el-pagination
+        v-if="totalFiles> 0"
+        background
+        layout="prev, pager, next"
+        v-model:current-page="currentPage"
+        :page-size="pageSize"
+        :total="totalFiles"
+        style="margin-top: 20px"
+        @current-change="handlePageChange"
+      />
     </div>
 
     <el-dialog v-model="showCreateDialog" title="新建">
@@ -93,30 +147,45 @@
         <el-button type="primary" @click="createItem">确定</el-button>
     </span>
     </el-dialog>
-    
+
+    <div 
+      v-if="fullscreenPreviewVisible" 
+      class="fullscreen-preview" 
+      @click="closeFullscreenPreview"
+      :class="{ 'show': showFullscreenPreviewAnim }"
+    >
+      <img 
+        :src="previewUrl" 
+        class="fullscreen-image"
+        @click.stop
+        ref="fullscreenImage"
+      />
+    </div>
+
     <el-dialog
       v-model="previewVisible"
-      :show-close="false"
-      :center="true"
+      title="编辑文件"
+      v-if="isText"
+      :before-close="closePreview"
     >
-        <div v-if="isImage">
-    <img
-      :src="previewUrl"
-      style="width: 100%; height: 100%"
-    />
-  </div>
-  <div v-else-if="isText">
-    <div ref="textEditor" class="editor-body"></div>
-    <span slot="footer">
-      <el-button @click="closePreview">关闭</el-button>
-      <el-button type="primary" @click="saveFile">保存</el-button>
-    </span>
-  </div>
-  <el-empty 
-    v-else
-    :description="emptyDescription"
-  />
-</el-dialog>
+      <div>
+        <div ref="textEditor" class="editor-body"></div>
+        <span slot="footer">
+          <el-button @click="closePreview">取消</el-button>
+          <el-button type="primary" @click="saveFile">保存</el-button>
+        </span>
+      </div>
+    </el-dialog>
+
+    <el-dialog
+      v-model="previewVisible"
+      v-else
+      :show-close="false"
+    >
+      <el-empty 
+        :description="emptyDescription"
+      />
+    </el-dialog>
   </div>
 </template>
 
@@ -126,6 +195,11 @@ import { ElMessageBox, ElMessage } from 'element-plus'
 import { basicSetup } from 'codemirror'
 import { EditorView } from '@codemirror/view'
 import { EditorState } from '@codemirror/state'
+import { html } from "@codemirror/lang-html"
+import { json } from "@codemirror/lang-json"
+import { markdown } from "@codemirror/lang-markdown"
+import { python } from "@codemirror/lang-python"
+import { yaml } from "@codemirror/lang-yaml"
 import { oneDark } from '@codemirror/theme-one-dark'
 import { useI18n } from 'vue-i18n'
 
@@ -135,8 +209,13 @@ export default {
     const { t } = useI18n()
     return {
       loading: false,
-      currentPath: " ",
+      currentPath: "",
+      isRoot: true,
       files: [],
+      showHiddenFiles: false,
+      currentPage: 1,
+      pageSize: 20,
+      totalFiles: 0,
     showCreateDialog: false,
     createType: "dir",
     createName: "",
@@ -145,7 +224,8 @@ export default {
       previewUrl: "",
       previewContent: "",
       previewName: "",
-      isImage: false,
+      fullscreenPreviewVisible: false,
+      showFullscreenPreviewAnim: false,
       isText: false,
       emptyDescription: "无法预览此文件",
       editorView: null,
@@ -157,11 +237,23 @@ export default {
   },
   computed: {
     pathParts() {
-        const fullPath = '.' + this.currentPath;
-        return fullPath.split('/');
+      const fullPath = this.currentPath ? './' + this.currentPath : '.';
+      return fullPath.split('/');
+    },
+    isRoot() {
+      return !this.currentPath || this.currentPath === '.';
+    },
+    fullscreenImageStyle() {
+      if (!this.previewUrl) return {};
+      return {
+        maxWidth: '90vw',
+        maxHeight: '90vh',
+        display: 'block',
+        margin: 'auto',
+      }
     },
     uploadHeaders() {
-        const token = localStorage.getItem('token'); // 假设你把 JWT 存在 localStorage
+        const token = localStorage.getItem('token');
         return {
         Authorization: `Bearer ${token}`
         }
@@ -175,6 +267,13 @@ export default {
         })
       }
     },
+    fullscreenPreviewVisible(val) {
+      if (val) {
+        document.body.style.overflow = 'hidden';
+      } else {
+        document.body.style.overflow = '';
+      }
+    },
   },
   methods: {
     async fetchFiles() {
@@ -183,10 +282,24 @@ export default {
         const res = await axios.get("/api/files/list", {
           params: { path: this.currentPath },
         });
-        this.files = res.data.files;
+        this.allFiles = res.data.files || [];
+        this.updateFiles();
       } finally {
         this.loading = false;
       }
+    },
+
+    updateFiles() {
+      let filtered = this.showHiddenFiles
+        ? this.allFiles
+        : this.allFiles.filter(f => !f.name.startsWith('.'));
+
+      this.totalFiles = filtered.length;
+
+      const start = (this.currentPage - 1) * this.pageSize;
+      const end = start + this.pageSize;
+
+      this.files = filtered.slice(start, end);
     },
 
     formatSize(row) {
@@ -202,6 +315,23 @@ export default {
       const d = new Date(row.modified);
       const pad = (n) => String(n).padStart(2, '0');
       return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+    },
+
+    handlePageChange(page) {
+      this.currentPage = page;
+      this.fetchFiles();
+    },
+
+    handleSizeChange(size) {
+      this.pageSize = size;
+      this.currentPage = 1;
+      this.fetchFiles();
+    },
+
+    toggleHiddenFiles() {
+      this.showHiddenFiles = !this.showHiddenFiles;
+      this.currentPage = 1;
+      this.updateFiles();
     },
 
     openDir(name) {
@@ -242,7 +372,13 @@ export default {
       this.createName = ""
       this.fetchFiles()
     } catch (e) {
-      ElMessage.error("创建失败：" + e)
+      if (e.response.status === 403) {
+        ElMessage.error("无效的路径")
+      } else if (e.response.status === 400) {
+        ElMessage.error("创建失败")
+      } else {
+      ElMessage.error(this.t('message.error.fetch') + e.message)
+      }
     }
   },
 
@@ -250,16 +386,45 @@ export default {
       this.showUpload = !this.showUpload;
     },
 
+    getLanguageExtension(filename) {
+      const ext = filename.split('.').pop().toLowerCase()
+      switch (ext) {
+        case 'html':
+        case 'htm':
+          return html()
+        case 'json':
+          return json()
+        case 'md':
+        case 'markdown':
+          return markdown()
+        case 'py':
+          return python()
+        case 'yml':
+        case 'yaml':
+          return yaml()
+        default:
+          return null
+      }
+    },
+
     initTextPreview() {
       if (!this.isText) return
+
+      const langExt = this.getLanguageExtension(this.previewName)
+      const extensions = [
+        basicSetup,
+        oneDark,
+        EditorView.lineWrapping,
+      ]
+      if (langExt) {
+        extensions.push(langExt)
+      }
+
       const state = EditorState.create({
         doc: this.previewContent,
-        extensions: [
-          basicSetup,
-          oneDark,
-          EditorView.lineWrapping,
-        ],
+        extensions,
       })
+
       this.editorView = new EditorView({
         state,
         parent: this.$refs.textEditor,
@@ -269,7 +434,6 @@ export default {
 async previewFile(name) {
   const path = this.currentPath ? this.currentPath + "/" + name : name;
 
-  this.isImage = false;
   this.isText = false;
   this.emptyDescription = "无法预览此文件";
 
@@ -282,24 +446,30 @@ async previewFile(name) {
     const contentType = res.data.type || res.headers["content-type"];
 
     if (contentType.startsWith("image")) {
-      this.isImage = true;
       this.previewUrl = URL.createObjectURL(res.data);
+      this.fullscreenPreviewVisible = true;
+      this.showFullscreenPreviewAnim = false;
+      this.$nextTick(() => {
+          setTimeout(() => {
+            this.showFullscreenPreviewAnim = true;
+          }, 10);
+        });
     } else if (contentType.startsWith("text")) {
       this.isText = true;
+      this.previewName = name;
       this.previewContent = await res.data.text();
       this.$nextTick(this.initTextPreview);
+      this.previewVisible = true;
     } else {
       this.emptyDescription = "无法预览此文件";
+      this.previewVisible = true;
     }
-
-    this.previewVisible = true;
   } catch (e) {
-    if (e.response) {
-      if (e.response.status === 408) {
-        this.emptyDescription = "文件太大，无法预览";
-      } else {
-        this.emptyDescription = "预览失败";
-      }
+    if (e.response?.status === 408) {
+      this.emptyDescription = "文件过大，无法预览";
+      this.previewVisible = true;
+    } else if (e.response?.status === 400) {
+      this.emptyDescription = "预览失败";
       this.previewVisible = true;
     } else {
       ElMessage.error(this.t('message.error.fetch') + e.message)
@@ -307,6 +477,27 @@ async previewFile(name) {
   }
 },
 
+  closeFullscreenPreview() {
+    const imgEl = this.$refs.fullscreenImage;
+    const wrapper = document.querySelector('.fullscreen-preview');
+
+    if (imgEl && wrapper) {
+      this.showFullscreenPreviewAnim = false;
+      setTimeout(() => {
+        this.fullscreenPreviewVisible = false;
+        this.previewUrl = '';
+      }, 300);
+    } else {
+      this.fullscreenPreviewVisible = false;
+      this.previewUrl = '';
+    }
+  },
+
+  updateFullscreenLeft() {
+    const el = document.querySelector('.fullscreen-preview');
+    if (!el) return;
+    el.style.left = window.innerWidth >= 1024 ? '60px' : '0';
+  },
 
 closePreview() {
   this.previewVisible = false;
@@ -318,7 +509,6 @@ closePreview() {
   this.previewContent = '';
   this.previewName = '';
   this.isText = true;
-  this.isImage = false;
   this.previewUrl = '';
 },
 
@@ -342,7 +532,12 @@ async saveFile() {
     this.previewVisible = false;
     this.fetchFiles();
   } catch (e) {
-    ElMessage.error("保存失败：" + e);
+    if (e.response.status === 400) {
+        ElMessage.error("保存失败")
+      } else {
+      ElMessage.error(this.t('message.error.fetch') + e.message)
+      }
+    
   }
 },
 
@@ -397,8 +592,10 @@ async saveFile() {
         ElMessage.error('文件已存在')
         } else if (error.response?.status === 404) {
         ElMessage.error('文件不存在')
+        } else if (error.response?.status === 400) {
+        ElMessage.error('重命名失败')
         } else {
-        ElMessage.error('重命名失败：' + error)
+      ElMessage.error(this.t('message.error.fetch') + error.message)
         }
     }
     },
@@ -424,11 +621,13 @@ async saveFile() {
         return
         }
         if (error.response?.status === 404) {
-        ElMessage.error('文件不存在')
+          ElMessage.error('文件不存在')
+        } else if (error.response?.status === 400) {
+          ElMessage.error('删除失败')
         } else {
-        ElMessage.error('删除失败：' + error)
+          ElMessage.error(this.t('message.error.fetch') + error.message)
         }
-    }
+      }
     },
 
     async download(row) {
@@ -448,23 +647,95 @@ async saveFile() {
 
   mounted() {
     this.fetchFiles();
+    window.addEventListener('resize', this.updateFullscreenLeft);
+    this.updateFullscreenLeft();
+  },
+
+  beforeUnmount() {
+    window.removeEventListener('resize', this.updateFullscreenLeft);
   },
 };
 </script>
 
 <style scoped>
-.table-wrapper {
-  overflow-x: auto;          /* 横向滚动 */
-  -webkit-overflow-scrolling: touch; /* 移动端平滑滚动 */
+.operation-button-container {
+  margin: 15px 0;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  white-space: nowrap;
   width: 100%;
+}
+
+.icon-button {
+  font-size: 16px;
+  padding: 8px;
+}
+
+.icon-button i {
+  margin-right: 0 !important;
+}
+
+.el-button i {
+  margin-right: 8px;
 }
 
 .upload-area {
   margin-bottom: 15px;
-  border: 1px dashed #d9d9d9;
   padding: 20px;
   border-radius: 4px;
-  background: #fafafa;
+  background: #f4f4f4;
+  border: 1px dashed #e0e0e0;
+}
+
+.dark .upload-area {
+  background: #1f1f1f;
+  border: 1px dashed #4d4d4d;
+}
+
+.pagination-wrapper {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  white-space: nowrap;
+  width: 100%;
+}
+
+.fullscreen-preview {
+  position: fixed;
+  top: 60px;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0,0,0,0);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.fullscreen-preview.show {
+  opacity: 1;
+  background-color: rgba(0,0,0,0.85);
+}
+
+.fullscreen-image {
+  max-width: 90vw;
+  max-height: 90vh;
+  display: block;
+  transform: scale(0.8);
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  opacity: 0;
+}
+
+.fullscreen-preview.show .fullscreen-image {
+  transform: scale(1);
+  opacity: 1;
+}
+
+.fullscreen-preview img {
+  cursor: auto;
+  object-fit: contain;
 }
 
 .editor-body {
@@ -476,6 +747,10 @@ async saveFile() {
 
 ::v-deep(.cm-editor) {
   height: 100%;
+}
+
+::v-deep(.cm-gutters) {
+  font-family: 'Consolas', 'Noto Sans Mono', 'Courier New', Courier, monospace;
 }
 
 ::v-deep(.cm-content) {

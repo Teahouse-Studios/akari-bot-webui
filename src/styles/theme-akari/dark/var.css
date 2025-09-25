@@ -67,7 +67,7 @@ html.dark {
   --el-fill-color-light: #262727;
   --el-fill-color-lighter: #1d1d1d;
   --el-fill-color-extra-light: #191919;
-  --el-fill-color-blank: transparent;
+  --el-fill-color-blank: #1c1b22;
   --el-mask-color: rgba(0, 0, 0, 0.8);
   --el-mask-color-extra-light: rgba(0, 0, 0, 0.3);
 }
