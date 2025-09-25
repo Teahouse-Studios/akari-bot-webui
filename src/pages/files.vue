@@ -530,6 +530,7 @@ async saveFile() {
     });
     ElMessage.success("保存成功");
     this.previewVisible = false;
+    this.closePreview();
     this.fetchFiles();
   } catch (e) {
     if (e.response.status === 400) {
