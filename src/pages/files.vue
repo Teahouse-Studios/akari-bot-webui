@@ -449,6 +449,7 @@ export default {
     initTextPreview() {
       if (!this.isText) return
 
+      const docContent = this.previewContent || " ";
       const langExt = this.getLanguageExtension(this.previewName)
       const extensions = [
         basicSetup,
@@ -457,6 +458,11 @@ export default {
       ]
       if (langExt) {
         extensions.push(langExt)
+      }
+
+      if (this.editorView) {
+        this.editorView.destroy();
+        this.editorView = null;
       }
 
       const state = EditorState.create({
@@ -468,6 +474,11 @@ export default {
         state,
         parent: this.$refs.textEditor,
       })
+
+      if (!this.previewContent) {
+        this.editorView.dispatch({
+        changes: { from: 0, to: 1, insert: "" }
+      });
     },
 
 async previewFile(name) {
