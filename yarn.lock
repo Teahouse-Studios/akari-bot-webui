@@ -1187,7 +1187,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/lodash-es@npm:^4.17.6":
+"@types/lodash-es@npm:^4.17.12":
   version: 4.17.12
   resolution: "@types/lodash-es@npm:4.17.12"
   dependencies:
@@ -1196,7 +1196,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/lodash@npm:*, @types/lodash@npm:^4.14.182":
+"@types/lodash@npm:*, @types/lodash@npm:^4.17.20":
   version: 4.17.20
   resolution: "@types/lodash@npm:4.17.20"
   checksum: 10c0/98cdd0faae22cbb8079a01a3bb65aa8f8c41143367486c1cbf5adc83f16c9272a2a5d2c1f541f61d0d73da543c16ee1d21cf2ef86cb93cd0cc0ac3bced6dd88f
@@ -2006,27 +2006,27 @@ __metadata:
   linkType: hard
 
 "element-plus@npm:^2.10.7":
-  version: 2.11.3
-  resolution: "element-plus@npm:2.11.3"
+  version: 2.11.4
+  resolution: "element-plus@npm:2.11.4"
   dependencies:
     "@ctrl/tinycolor": "npm:^3.4.1"
     "@element-plus/icons-vue": "npm:^2.3.1"
     "@floating-ui/dom": "npm:^1.0.1"
     "@popperjs/core": "npm:@sxzz/popperjs-es@^2.11.7"
-    "@types/lodash": "npm:^4.14.182"
-    "@types/lodash-es": "npm:^4.17.6"
+    "@types/lodash": "npm:^4.17.20"
+    "@types/lodash-es": "npm:^4.17.12"
     "@vueuse/core": "npm:^9.1.0"
     async-validator: "npm:^4.2.5"
     dayjs: "npm:^1.11.13"
     escape-html: "npm:^1.0.3"
     lodash: "npm:^4.17.21"
     lodash-es: "npm:^4.17.21"
-    lodash-unified: "npm:^1.0.2"
+    lodash-unified: "npm:^1.0.3"
     memoize-one: "npm:^6.0.0"
     normalize-wheel-es: "npm:^1.2.0"
   peerDependencies:
     vue: ^3.2.0
-  checksum: 10c0/d942dfe7d6c24eb23a7fca22798f1f99ddd07002ee8963eaceff5ef4db292db4d6f185d2877d06ad60368663f9d972a33e6d877192a922613f7fe3478ce3a596
+  checksum: 10c0/7e3556c8ffba93f84ccba86835dab87a803951d9eced5323d9f7c390c30d5c4305783cccfb57c4231e5a914abc8554bf579ca32b71cd70bd65ef2fd3bfb84d9a
   languageName: node
   linkType: hard
 
@@ -3012,7 +3012,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lodash-unified@npm:^1.0.2":
+"lodash-unified@npm:^1.0.3":
   version: 1.0.3
   resolution: "lodash-unified@npm:1.0.3"
   peerDependencies:
