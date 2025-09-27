@@ -1,3 +1,3 @@
-import os
+from pathlib import Path
 
-dist_path = os.path.join(os.path.dirname(__file__), "dist")
+dist_path = Path(__file__).parent / "dist"
