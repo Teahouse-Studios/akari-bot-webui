@@ -125,6 +125,8 @@
     <el-dialog
       v-model="editDialogVisible"
       :title="$t('data.user.title.edit_sender_data')"
+      :close-on-press-escape="false"
+      :close-on-click-modal="false"
       width="600px"
     >
       <el-form :model="editForm" label-width="auto">

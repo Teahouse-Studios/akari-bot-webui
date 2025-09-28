@@ -150,7 +150,10 @@
       />
     </div>
   </el-card>
-    <el-dialog v-model="showCreateDialog" :title="t('files.title.create')">
+    <el-dialog 
+      v-model="showCreateDialog"
+      width="300px"
+      :title="t('files.title.create')">
     <el-radio-group v-model="createType">
         <el-radio label="dir">{{ t('files.select.create.dir') }}</el-radio>
         <el-radio label="file">{{ t('files.select.create.file') }}</el-radio>
@@ -244,10 +247,9 @@ export default {
       fullscreenPreviewVisible: false,
       showFullscreenPreviewAnim: false,
       isText: false,
-      emptyDescription: "无法预览此文件",
+      emptyDescription: t('files.preview.unsupported'),
       editorView: null,
       previewVisible: false,
-      previewContent: '',
       uploadUrl: "/api/files/upload",
       t
     };
@@ -278,6 +280,7 @@ export default {
   },
   watch: {
     currentPath() {
+      this.showUpload = false;
       this.$nextTick(() => {
         this.scrollBreadcrumbToEnd();
       });
@@ -449,7 +452,10 @@ export default {
     initTextPreview() {
       if (!this.isText) return
 
-      const docContent = this.previewContent || " ";
+      if (this.previewContent === '\u200B') {
+        this.previewContent = '';
+      }
+      
       const langExt = this.getLanguageExtension(this.previewName)
       const extensions = [
         basicSetup,
@@ -474,11 +480,6 @@ export default {
         state,
         parent: this.$refs.textEditor,
       })
-
-      if (!this.previewContent) {
-        this.editorView.dispatch({
-        changes: { from: 0, to: 1, insert: "" }
-      });
     },
 
 async previewFile(name) {
@@ -506,7 +507,8 @@ async previewFile(name) {
     } else if (contentType.startsWith("text")) {
       this.isText = true;
       this.previewName = name;
-      this.previewContent = await res.data.text();
+      let text = await res.data.text();
+      this.previewContent = text || '\u200B';
       this.$nextTick(this.initTextPreview);
       this.previewVisible = true;
     } else {
