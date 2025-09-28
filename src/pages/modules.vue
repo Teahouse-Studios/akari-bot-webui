@@ -84,14 +84,14 @@
               <i class="mdi mdi-cog"></i> {{ $t('modules.button.config') }}
             </el-button>
 
-            <el-button size="small" type="warning" @click="handleReload(row)">
+            <el-button size="small" type="danger" @click="handleReload(row)">
               <i class="mdi mdi-reload"></i> {{ $t('modules.button.reload') }}
             </el-button>
 
             <el-button
               v-if="!row.base && row.loaded"
               size="small"
-              type="danger"
+              type="warning"
               @click="handleUnload(row)"
             >
               <i class="mdi mdi-puzzle-remove"></i> {{ $t('modules.button.unload') }}
@@ -162,7 +162,6 @@
           </el-collapse-item>
         </el-collapse>
 
-        <!-- 全部为空 -->
         <el-empty v-else :description="$t('modules.helpdoc.none')"></el-empty>
       </div>
 
