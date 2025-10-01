@@ -395,7 +395,7 @@ export default {
           params: {
             current_path: this.currentPath,
             name: this.createName,
-            type: this.createType
+            filetype: this.createType
           },
           headers: this.uploadHeaders,
         })
