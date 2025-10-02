@@ -84,10 +84,6 @@
               <i class="mdi mdi-cog"></i> {{ $t('modules.button.config') }}
             </el-button>
 
-            <el-button size="small" type="danger" @click="handleReload(row)">
-              <i class="mdi mdi-reload"></i> {{ $t('modules.button.reload') }}
-            </el-button>
-
             <el-button
               v-if="!row.base && row.loaded"
               size="small"
@@ -103,6 +99,10 @@
               type="success"
               @click="handleLoad(row)">
               <i class="mdi mdi-puzzle-plus"></i> {{ $t('modules.button.load') }}
+            </el-button>
+
+            <el-button size="small" type="danger" @click="handleReload(row)">
+              <i class="mdi mdi-reload"></i> {{ $t('modules.button.reload') }}
             </el-button>
           </template>
         </el-table-column>

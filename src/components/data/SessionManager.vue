@@ -445,7 +445,7 @@ export default {
       payload.target_data = parsedTargetData
 
       try {
-        await axios.patch(`/api/target/${target_id}`, payload)
+        await axios.patch(`target/${target_id}`, payload)
         ElMessage.success(this.t('data.message.success.edit'))
         this.editDialogVisible = false
         this.fetchData()
@@ -476,7 +476,7 @@ export default {
     },
     async deleteTarget(row) {
       try {
-        await axios.post(`/api/target/${row.target_id}/delete`)
+        await axios.delete(`/api/target/${row.target_id}`)
         ElMessage.success(this.t('data.message.success.delete'))
         this.fetchData()
       } catch (error) {

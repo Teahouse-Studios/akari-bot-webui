@@ -336,7 +336,7 @@ export default {
     },
     async deleteSender(row) {
       try {
-        await axios.post(`/api/sender/${row.sender_id}/delete`)
+        await axios.delete(`/api/sender/${row.sender_id}/delete`)
         ElMessage.success(this.t('data.message.success.delete'))
         this.fetchData()
       } catch (error) {
