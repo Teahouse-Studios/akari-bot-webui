@@ -56,7 +56,7 @@
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column :label="$t('data.table.status')" min-width="100">
+        <el-table-column :label="$t('session.table.status')" min-width="100">
           <template #default="{ row }">
             <el-tag 
               :type="row.base ? 'warning' : (row.loaded ? 'success' : 'danger')"

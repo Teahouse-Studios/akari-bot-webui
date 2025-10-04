@@ -1,60 +1,60 @@
 <template>
-  <div>
+  <div v-if="isDevelopMode">
     <div class="breadcrumb-actions">
-    <div class="operation-button-container">
-      <el-tooltip :content="t('files.button.back')" placement="bottom" v-if="!isRoot">
-        <el-button
-          class="icon-button"
-          type="primary"
-          @click="goUp"
-          :disabled="loading">
-          <i class="mdi mdi-arrow-left-top"></i>
-        </el-button>
-      </el-tooltip>
+      <div class="operation-button-container">
+        <el-tooltip :content="t('files.button.back')" placement="bottom" v-if="!isRoot">
+          <el-button
+            class="icon-button"
+            type="primary"
+            @click="goUp"
+            :disabled="loading">
+            <i class="mdi mdi-arrow-left-top"></i>
+          </el-button>
+        </el-tooltip>
 
-      <el-tooltip :content="t('button.refresh')" placement="bottom">
-        <el-button
-          class="icon-button"
-          type="primary"
-          @click="refresh"
-          :disabled="loading">
-          <i class="mdi mdi-refresh"></i>
-        </el-button>
-      </el-tooltip>
+        <el-tooltip :content="t('button.refresh')" placement="bottom">
+          <el-button
+            class="icon-button"
+            type="primary"
+            @click="refresh"
+            :disabled="loading">
+            <i class="mdi mdi-refresh"></i>
+          </el-button>
+        </el-tooltip>
 
-      <el-tooltip :content="t('files.button.create')" placement="bottom">
-        <el-button
-          class="icon-button"
-          type="primary"
-          @click="showCreateDialog = true"
-          :disabled="loading">
-          <i class="mdi mdi-plus"></i>
-        </el-button>
-      </el-tooltip>
+        <el-tooltip :content="t('files.button.create')" placement="bottom">
+          <el-button
+            class="icon-button"
+            type="primary"
+            @click="showCreateDialog = true"
+            :disabled="loading">
+            <i class="mdi mdi-plus"></i>
+          </el-button>
+        </el-tooltip>
 
-      <el-tooltip :content="t('files.button.upload')" placement="bottom">
-        <el-button
-          class="icon-button"
-          type="primary"
-          @click="toggleUpload"
-          :disabled="loading">
-          <i class="mdi mdi-upload"></i>
-        </el-button>
-      </el-tooltip>
+        <el-tooltip :content="t('files.button.upload')" placement="bottom">
+          <el-button
+            class="icon-button"
+            type="primary"
+            @click="toggleUpload"
+            :disabled="loading">
+            <i class="mdi mdi-upload"></i>
+          </el-button>
+        </el-tooltip>
+      </div>
+
+      <div class="breadcrumb-wrapper" ref="breadcrumbWrapper">
+        <el-breadcrumb separator="/" class="breadcrumb-nav">
+          <el-breadcrumb-item
+            v-for="(p, idx) in pathParts"
+            :key="idx"
+            :class="{ active: idx === pathParts.length - 1 }"
+          >
+            {{ p }}
+          </el-breadcrumb-item>
+        </el-breadcrumb>
+      </div>
     </div>
-
-    <div class="breadcrumb-wrapper" ref="breadcrumbWrapper">
-      <el-breadcrumb separator="/" class="breadcrumb-nav">
-        <el-breadcrumb-item
-          v-for="(p, idx) in pathParts"
-          :key="idx"
-          :class="{ active: idx === pathParts.length - 1 }"
-        >
-          {{ p }}
-        </el-breadcrumb-item>
-      </el-breadcrumb>
-    </div>
-  </div>
 
     <el-collapse-transition>
     <div v-show="showUpload" class="upload-area">
@@ -206,6 +206,8 @@
       />
     </el-dialog>
   </div>
+  <notFound v-else />
+
 </template>
 
 <script>
@@ -221,9 +223,13 @@ import { python } from "@codemirror/lang-python"
 import { yaml } from "@codemirror/lang-yaml"
 import { oneDark } from '@codemirror/theme-one-dark'
 import { useI18n } from 'vue-i18n'
+import notFound from "./notFound.vue";
 
 export default {
   name: "FilesPage",
+  components: {
+    notFound
+  },
   data() {
     const { t } = useI18n()
     return {
@@ -233,7 +239,7 @@ export default {
       files: [],
       showHiddenFiles: false,
       currentPage: 1,
-      pageSize: 20,
+      pageSize: 10,
       totalFiles: 0,
       showCreateDialog: false,
       createType: "dir",
@@ -251,6 +257,7 @@ export default {
       editorView: null,
       previewVisible: false,
       uploadUrl: "/api/files/upload",
+      isDevelopMode: localStorage.getItem('isDevelopMode') === 'true',
       t
     };
   },
@@ -393,7 +400,7 @@ export default {
       try {
         await axios.post("/api/files/create", null, {
           params: {
-            current_path: this.currentPath,
+            path: this.currentPath,
             name: this.createName,
             filetype: this.createType
           },
@@ -629,7 +636,7 @@ async saveFile() {
         : row.name
 
         await axios.post('/api/files/rename', { 
-        old_path: path, 
+        path: path, 
         new_name: newName 
         })
     
@@ -714,20 +721,16 @@ async saveFile() {
 <style scoped>
 .breadcrumb-actions {
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  margin-bottom: 15px;
-}
-
-.operation-button-container {
-  display: flex;
-  margin: 15px 0;
-  order: 1;
+  flex-wrap: wrap; /* 允许换行 */
 }
 
 .breadcrumb-wrapper {
   flex: 1;
   order: 2;
   margin-left: 12px;
+  margin-bottom: 15px;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   white-space: nowrap;
@@ -737,9 +740,27 @@ async saveFile() {
   padding: 8px 12px;
 }
 
+@media (max-width: 384px) {
+  .breadcrumb-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .breadcrumb-wrapper {
+    margin-left: 0;
+    order: -1;
+  }
+}
+
 .dark .breadcrumb-wrapper {
   background: #1f1f1f;
   border: 1px solid #4d4d4d;
+}
+
+.operation-button-container {
+  display: flex;
+  margin: 0 0 15px;
+  order: 1;
 }
 
 .breadcrumb-nav {

@@ -13,9 +13,9 @@
         <i class="mdi mdi-puzzle"></i>
         <span>{{ $t('sidebar.item.modules') }}</span>
       </el-menu-item>
-      <el-menu-item index="/data">
-        <i class="mdi mdi-database"></i>
-        <span>{{ $t('sidebar.item.data') }}</span>
+      <el-menu-item index="/session">
+        <i class="mdi mdi-forum"></i>
+        <span>{{ $t('sidebar.item.session') }}</span>
       </el-menu-item>
       <el-menu-item index="/logs">
         <i class="mdi mdi-console"></i>
@@ -25,7 +25,11 @@
         <i class="mdi mdi-chat"></i>
         <span>{{ $t('sidebar.item.chat') }}</span>
       </el-menu-item>
-      <el-menu-item index="/files">
+      <el-menu-item v-if="isDevelopMode" index="/database">
+        <i class="mdi mdi-database"></i>
+        <span>{{ $t('sidebar.item.database') }}</span>
+      </el-menu-item>
+      <el-menu-item v-if="isDevelopMode" index="/files">
         <i class="mdi mdi-folder"></i>
         <span>{{ $t('sidebar.item.files') }}</span>
       </el-menu-item>
@@ -56,8 +60,9 @@ export default {
     const { t } = useI18n()
 
     return {
-      t,
       activeMenu: this.getActiveMenuFromRoute(),
+      isDevelopMode: localStorage.getItem('isDevelopMode') === 'true',
+      t,
     }
   },
   methods: {

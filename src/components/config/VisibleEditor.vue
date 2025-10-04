@@ -468,7 +468,7 @@ export default {
           }
         case 'array':
           return {
-            placeholder: this.t('data.input.array'),
+            placeholder: this.t('session.input.array'),
             clearable: true,
             style: {
               width: '100%',

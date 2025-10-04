@@ -1,8 +1,8 @@
 <template>
   <div>
-    <el-card class="user-card" shadow="never">
+    <el-card class="sender-card" shadow="never">
       <div class="header-container">
-        <h3><i class="mdi mdi-account"></i> {{ $t('data.user.title') }}</h3>
+        <h3><i class="mdi mdi-account"></i> {{ $t('session.sender.title') }}</h3>
         <el-button
           @click="refreshData"
           type="primary"
@@ -18,7 +18,7 @@
           <el-select
             v-model="selectedPrefix"
             clearable
-            :placeholder="$t('data.select.prefix')"
+            :placeholder="$t('session.select.prefix')"
             @change="debouncedRefresh"
           >
             <el-option label="QQ" value="QQ" />
@@ -35,19 +35,19 @@
           <el-select
             v-model="selectedStatus"
             clearable
-            :placeholder="$t('data.select.status')"
+            :placeholder="$t('session.select.status')"
             @change="debouncedRefresh"
           >
-            <el-option :label="$t('data.user.tag.superuser')" value="superuser" />
-            <el-option :label="$t('data.user.tag.trusted')" value="trusted" />
-            <el-option :label="$t('data.user.tag.blocked')" value="blocked" />
+            <el-option :label="$t('session.sender.tag.superuser')" value="superuser" />
+            <el-option :label="$t('session.sender.tag.trusted')" value="trusted" />
+            <el-option :label="$t('session.sender.tag.blocked')" value="blocked" />
           </el-select>
         </div>
 
         <div class="filter-item">
           <el-input
             v-model="platformIdPart"
-            :placeholder="$t('data.user.input.sender_id')"
+            :placeholder="$t('session.sender.input.sender_id')"
             @input="debouncedRefresh"
           >
             <template #prefix>
@@ -60,39 +60,39 @@
       <el-table v-loading="loading" :data="senderList" style="width: 100%" stripe>
         <el-table-column
           prop="sender_id"
-          :label="$t('data.user.table.sender_id')"
+          :label="$t('session.sender.table.sender_id')"
           sortable
           min-width="140"
         />
         <el-table-column
           prop="warns"
-          :label="$t('data.user.table.warns')"
+          :label="$t('session.sender.table.warns')"
           sortable
           min-width="140"
         />
         <el-table-column
           prop="petal"
-          :label="$t('data.user.table.petal')"
+          :label="$t('session.sender.table.petal')"
           sortable
           min-width="140"
         />
-        <el-table-column :label="$t('data.table.status')" min-width="180">
+        <el-table-column :label="$t('session.table.status')" min-width="180">
           <template #default="{ row }">
-            <el-tag type="primary" v-if="row.superuser">{{ $t('data.user.tag.superuser') }}</el-tag>
+            <el-tag type="primary" v-if="row.superuser">{{ $t('session.sender.tag.superuser') }}</el-tag>
             <el-tag type="success" v-if="row.trusted" style="margin-left: 5px">{{
-              $t('data.user.tag.trusted')
+              $t('session.sender.tag.trusted')
             }}</el-tag>
             <el-tag type="danger" v-if="row.blocked" style="margin-left: 5px">{{
-              $t('data.user.tag.blocked')
+              $t('session.sender.tag.blocked')
             }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column :label="$t('data.user.table.sender_data')" min-width="140">
+        <el-table-column :label="$t('session.sender.table.sender_data')" min-width="140">
           <template #default="{ row }">
             <el-popover placement="top" width="300" :hide-after="0" :trigger="['hover', 'click']">
               <pre>{{ JSON.stringify(row.sender_data, null, 2) }}</pre>
               <template #reference>
-                <el-button size="mini" type="text">{{ $t('data.table.text.detail') }}</el-button>
+                <el-button size="mini" type="text">{{ $t('session.table.text.detail') }}</el-button>
               </template>
             </el-popover>
           </template>
@@ -124,7 +124,7 @@
 
     <el-dialog
       v-model="editDialogVisible"
-      :title="$t('data.user.title.edit_sender_data')"
+      :title="$t('session.sender.title.edit_sender_data')"
       :close-on-press-escape="false"
       :close-on-click-modal="false"
       width="600px"
@@ -132,38 +132,38 @@
       <el-form :model="editForm" label-width="auto">
         <el-row :gutter="24">
           <el-col :span="6">
-            <el-form-item :label="$t('data.user.table.superuser')">
+            <el-form-item :label="$t('session.sender.table.superuser')">
               <el-switch v-model="editForm.superuser" @change="handleSuperUserChange" />
             </el-form-item>
           </el-col>
           <el-col :span="6">
-            <el-form-item :label="$t('data.user.table.trust')">
+            <el-form-item :label="$t('session.sender.table.trust')">
               <el-switch v-model="editForm.trusted" @change="handleTrustedChange" />
             </el-form-item>
           </el-col>
           <el-col :span="6">
-            <el-form-item :label="$t('data.user.table.block')">
+            <el-form-item :label="$t('session.sender.table.block')">
               <el-switch v-model="editForm.blocked" @change="handleBlockedChange" />
             </el-form-item>
           </el-col>
           <el-col :span="18">
-            <el-form-item :label="$t('data.user.table.warns')">
+            <el-form-item :label="$t('session.sender.table.warns')">
               <el-input-number v-model="editForm.warns" :min="0" />
             </el-form-item>
           </el-col>
           <el-col :span="18">
-            <el-form-item :label="$t('data.user.table.petal')">
+            <el-form-item :label="$t('session.sender.table.petal')">
               <el-input-number v-model="editForm.petal" />
             </el-form-item>
           </el-col>
           <el-col :span="24">
-            <el-form-item :label="$t('data.user.table.sender_data')">
+            <el-form-item :label="$t('session.sender.table.sender_data')">
               <el-input
                 type="textarea"
                 resize="none"
                 v-model="senderDataString"
                 :rows="6"
-                :placeholder="$t('data.input.json_data')"
+                :placeholder="$t('session.input.json_data')"
               />
             </el-form-item>
           </el-col>
@@ -185,7 +185,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 
 export default {
-  name: 'UserManager',
+  name: 'SenderManager',
   data() {
     const { t } = useI18n()
     return {
@@ -298,7 +298,7 @@ export default {
       try {
         parsedSenderData = JSON.parse(this.senderDataString)
       } catch (e) {
-        ElMessage.error(this.t('data.message.invalid_json'))
+        ElMessage.error(this.t('session.message.invalid_json'))
       }
 
       const { sender_id, ...payload } = this.editForm
@@ -306,7 +306,7 @@ export default {
 
       try {
         await axios.patch(`/api/sender/${sender_id}`, payload)
-        ElMessage.success(this.t('data.message.success.edit'))
+        ElMessage.success(this.t('session.message.success.edit'))
         this.editDialogVisible = false
         this.fetchData()
       } catch (error) {
@@ -319,7 +319,7 @@ export default {
     },
     confirmDelete(row) {
       ElMessageBox.confirm(
-        this.t('data.user.confirm.message', { sender_id: row.sender_id }),
+        this.t('session.sender.confirm.message', { sender_id: row.sender_id }),
         this.t('confirm.warning'),
         {
           confirmButtonText: this.t('button.confirm'),
@@ -337,7 +337,7 @@ export default {
     async deleteSender(row) {
       try {
         await axios.delete(`/api/sender/${row.sender_id}`)
-        ElMessage.success(this.t('data.message.success.delete'))
+        ElMessage.success(this.t('session.message.success.delete'))
         this.fetchData()
       } catch (error) {
         if (error.response?.status === 403 && IS_DEMO) {
@@ -358,7 +358,7 @@ pre {
   white-space: pre-wrap;
 }
 
-.user-card {
+.sender-card {
   margin-bottom: 20px;
   line-height: 1;
   white-space: nowrap;

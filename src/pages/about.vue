@@ -3,11 +3,11 @@
     <!-- TODO: 压缩 -->
     <img width="300" src="@/assets/akaribot_logo.png" alt="Akaribot" />
     <h1 class="title">小可 · AkariBot</h1>
-    <span class="quote">{{ $t('about.quote') }}</span>
-    <span class="text"
-      >By <a href="https://github.com/OasisAkari">OasisAkari</a> via
-      <a href="https://teahouse.team">Teahouse Studios</a></span
-    >
+    <span class="quote">{{ $t('about.slogan') }}</span>
+    <span class="text">
+      By <a href="https://github.com/OasisAkari">OasisAkari</a> via
+      <a href="https://teahouse.team">Teahouse Studios</a>
+    </span>
 
     <!-- GitHub Repos -->
     <div class="repo-buttons">
@@ -45,25 +45,44 @@
         <span>{{ $t('about.button.sponsor') }}</span>
       </el-button>
     </div>
-    <span class="footer-text">Made with love❤️ and Python🐍.</span>
+
+    <span class="footer-text">
+      Made with love❤️ and 
+      <span 
+        class="python-text" 
+        :class="{ 'disabled': !showDevelopMode }" 
+        @click="handleDevClick"
+      >
+        Python🐍
+      </span>.
+    </span>
   </div>
 </template>
 
 <script>
 import { useI18n } from 'vue-i18n'
+import { ElMessage } from 'element-plus'
 
 export default {
   name: 'AboutPage',
   data() {
     const { t } = useI18n()
-
     return {
+      devClickCount: 0,
+      showDevelopMode: localStorage.getItem('showDevelopMode') === 'true',
       t,
     }
   },
   methods: {
-    updateScreenWidth() {
-      this.screenWidth = window.innerWidth
+    handleDevClick() {
+      if (this.showDevelopMode) return
+      this.devClickCount++
+      if (this.devClickCount >= 7) {
+        localStorage.setItem('showDevelopMode', 'true')
+        this.showDevelopMode = true
+        ElMessage.success(this.t('setting.develop_mode.message.success'))
+        this.devClickCount = 0
+      }
     },
     goToRepo() {
       window.open('https://github.com/Teahouse-Studios/akari-bot', '_blank')
@@ -113,6 +132,11 @@ export default {
   display: block;
   margin-top: 60px;
   font-size: 14px;
+}
+
+.python-text.disabled {
+  cursor: default;
+  user-select: none;
 }
 
 .repo-buttons {

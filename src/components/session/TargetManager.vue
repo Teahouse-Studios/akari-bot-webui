@@ -1,8 +1,8 @@
 <template>
   <div>
-    <el-card class="session-card" shadow="never">
+    <el-card class="target-card" shadow="never">
       <div class="header-container">
-        <h3><i class="mdi mdi-forum"></i> {{ $t('data.session.title') }}</h3>
+        <h3><i class="mdi mdi-forum"></i> {{ $t('session.target.title') }}</h3>
         <el-button
           @click="refreshData"
           type="primary"
@@ -18,7 +18,7 @@
           <el-select
             v-model="selectedPrefix"
             clearable
-            :placeholder="$t('data.select.prefix')"
+            :placeholder="$t('session.select.prefix')"
             @change="debouncedRefresh"
           >
             <el-option label="QQ" value="QQ" />
@@ -35,18 +35,18 @@
           <el-select
             v-model="selectedStatus"
             clearable
-            :placeholder="$t('data.select.status')"
+            :placeholder="$t('session.select.status')"
             @change="debouncedRefresh"
           >
-            <el-option :label="$t('data.session.tag.muted')" value="muted" />
-            <el-option :label="$t('data.session.tag.blocked')" value="blocked" />
+            <el-option :label="$t('session.target.tag.muted')" value="muted" />
+            <el-option :label="$t('session.target.tag.blocked')" value="blocked" />
           </el-select>
         </div>
 
         <div class="filter-item">
           <el-input
             v-model="platformIdPart"
-            :placeholder="$t('data.session.input.target_id')"
+            :placeholder="$t('session.target.input.target_id')"
             @input="debouncedRefresh"
           >
             <template #prefix>
@@ -59,17 +59,17 @@
       <el-table v-loading="loading" :data="targetList" style="width: 100%" stripe>
         <el-table-column
           prop="target_id"
-          :label="$t('data.session.table.target_id')"
+          :label="$t('session.target.table.target_id')"
           sortable
           min-width="140"
         />
         <el-table-column
           prop="locale"
-          :label="$t('data.session.table.locale')"
+          :label="$t('session.target.table.locale')"
           sortable
           min-width="100"
         />
-        <el-table-column prop="modules" :label="$t('data.session.table.modules')" min-width="160">
+        <el-table-column prop="modules" :label="$t('session.target.table.modules')" min-width="160">
           <template #default="{ row }">
             {{ row.modules.length }}
             <el-button
@@ -78,11 +78,11 @@
               type="primary"
               style="margin-left: 5px"
               @click="viewModules(row)"
-              ><i class="mdi mdi-eye"></i> {{ $t('data.button.view') }}</el-button
+              ><i class="mdi mdi-eye"></i> {{ $t('session.button.view') }}</el-button
             >
           </template>
         </el-table-column>
-        <el-table-column :label="$t('data.session.table.custom_admins')" min-width="160">
+        <el-table-column :label="$t('session.target.table.custom_admins')" min-width="160">
           <template #default="{ row }">
             {{ row.custom_admins.length }}
             <el-button
@@ -91,11 +91,11 @@
               type="primary"
               style="margin-left: 5px"
               @click="viewAdmins(row)"
-              ><i class="mdi mdi-eye"></i> {{ $t('data.button.view') }}</el-button
+              ><i class="mdi mdi-eye"></i> {{ $t('session.button.view') }}</el-button
             >
           </template>
         </el-table-column>
-        <el-table-column :label="$t('data.session.table.banned_users')" min-width="160">
+        <el-table-column :label="$t('session.target.table.banned_users')" min-width="160">
           <template #default="{ row }">
             {{ row.banned_users.length }}
             <el-button
@@ -104,24 +104,24 @@
               type="primary"
               style="margin-left: 5px"
               @click="viewBanned(row)"
-              ><i class="mdi mdi-eye"></i> {{ $t('data.button.view') }}</el-button
+              ><i class="mdi mdi-eye"></i> {{ $t('session.button.view') }}</el-button
             >
           </template>
         </el-table-column>
-        <el-table-column :label="$t('data.table.status')" min-width="220">
+        <el-table-column :label="$t('session.table.status')" min-width="220">
           <template #default="{ row }">
-            <el-tag type="warning" v-if="row.muted">{{ $t('data.session.tag.muted') }}</el-tag>
+            <el-tag type="warning" v-if="row.muted">{{ $t('session.target.tag.muted') }}</el-tag>
             <el-tag type="danger" v-if="row.blocked" style="margin-left: 5px">{{
-              $t('data.session.tag.blocked')
+              $t('session.target.tag.blocked')
             }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column :label="$t('data.session.table.target_data')" min-width="140">
+        <el-table-column :label="$t('session.target.table.target_data')" min-width="140">
           <template #default="{ row }">
             <el-popover placement="top" width="300" :hide-after="0" :trigger="['hover', 'click']">
               <pre>{{ JSON.stringify(row.target_data, null, 2) }}</pre>
               <template #reference>
-                <el-button size="mini" type="text">{{ $t('data.table.text.detail') }}</el-button>
+                <el-button size="mini" type="text">{{ $t('session.table.text.detail') }}</el-button>
               </template>
             </el-popover>
           </template>
@@ -150,7 +150,7 @@
         />
       </div>
 
-      <el-dialog v-model="moduleDialogVisible" :title="$t('data.session.table.modules')">
+      <el-dialog v-model="moduleDialogVisible" :title="$t('session.target.table.modules')">
         <div class="tag-container">
           <el-tag
             v-for="module in selectedModules"
@@ -163,7 +163,7 @@
           </el-tag>
         </div>
       </el-dialog>
-      <el-dialog v-model="adminDialogVisible" :title="$t('data.session.table.custom_admins')">
+      <el-dialog v-model="adminDialogVisible" :title="$t('session.target.table.custom_admins')">
         <div class="tag-container">
           <el-tag
             v-for="admin in selectedAdmins"
@@ -176,7 +176,7 @@
           </el-tag>
         </div>
       </el-dialog>
-      <el-dialog v-model="bannedDialogVisible" :title="$t('data.session.table.banned_users')">
+      <el-dialog v-model="bannedDialogVisible" :title="$t('session.target.table.banned_users')">
         <div class="tag-container">
           <el-tag
             v-for="banned in selectedBanned"
@@ -193,38 +193,38 @@
 
     <el-dialog
       v-model="editDialogVisible"
-      :title="$t('data.session.title.edit_target_data')"
+      :title="$t('session.target.title.edit_target_data')"
       :close-on-press-escape="false"
       :close-on-click-modal="false"
       width="600px"
     >
       <el-form :model="editForm" label-width="auto">
         <el-col :span="12">
-          <el-form-item :label="$t('data.session.table.locale')">
+          <el-form-item :label="$t('session.target.table.locale')">
             <el-input v-model="editForm.locale" />
           </el-form-item>
         </el-col>
         <el-row :gutter="24">
           <el-col :span="6">
-            <el-form-item :label="$t('data.session.table.mute')">
+            <el-form-item :label="$t('session.target.table.mute')">
               <el-switch v-model="editForm.muted" />
             </el-form-item>
           </el-col>
 
           <el-col :span="6">
-            <el-form-item :label="$t('data.session.table.block')">
+            <el-form-item :label="$t('session.target.table.block')">
               <el-switch v-model="editForm.blocked" />
             </el-form-item>
           </el-col>
 
           <el-col :span="24">
-            <el-form-item :label="$t('data.session.table.modules_list')">
+            <el-form-item :label="$t('session.target.table.modules_list')">
               <el-select
                 v-model="editForm.modules"
                 multiple
                 filterable
                 allow-create
-                :placeholder="$t('data.session.input.modules')"
+                :placeholder="$t('session.target.input.modules')"
                 style="width: 100%"
               >
                 <el-option v-for="mod in allModules" :key="mod" :label="mod" :value="mod" />
@@ -233,14 +233,14 @@
           </el-col>
 
           <el-col :span="24">
-            <el-form-item :label="$t('data.session.table.custom_admins')">
+            <el-form-item :label="$t('session.target.table.custom_admins')">
               <el-select
                 v-model="editForm.custom_admins"
                 multiple
                 filterable
                 allow-create
                 default-first-option
-                :placeholder="$t('data.session.input.custom_admins')"
+                :placeholder="$t('session.target.input.custom_admins')"
                 style="width: 100%"
               >
                 <el-option
@@ -254,14 +254,14 @@
           </el-col>
 
           <el-col :span="24">
-            <el-form-item :label="$t('data.session.table.banned_users')">
+            <el-form-item :label="$t('session.target.table.banned_users')">
               <el-select
                 v-model="editForm.banned_users"
                 multiple
                 filterable
                 allow-create
                 default-first-option
-                :placeholder="$t('data.session.input.banned_users')"
+                :placeholder="$t('session.target.input.banned_users')"
                 style="width: 100%"
               >
                 <el-option
@@ -275,13 +275,13 @@
           </el-col>
 
           <el-col :span="24">
-            <el-form-item :label="$t('data.session.table.target_data')">
+            <el-form-item :label="$t('session.target.table.target_data')">
               <el-input
                 type="textarea"
                 resize="none"
                 v-model="targetDataString"
                 :rows="6"
-                :placeholder="$t('data.input.json_data')"
+                :placeholder="$t('session.input.json_data')"
               />
             </el-form-item>
           </el-col>
@@ -303,7 +303,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 
 export default {
-  name: 'SessionManager',
+  name: 'TargetManager',
   data() {
     const { t } = useI18n()
     return {
@@ -438,7 +438,7 @@ export default {
       try {
         parsedTargetData = JSON.parse(this.targetDataString)
       } catch (e) {
-        ElMessage.error(this.t('data.message.invalid_json'))
+        ElMessage.error(this.t('session.message.invalid_json'))
       }
 
       const { target_id, ...payload } = this.editForm
@@ -446,7 +446,7 @@ export default {
 
       try {
         await axios.patch(`api/target/${target_id}`, payload)
-        ElMessage.success(this.t('data.message.success.edit'))
+        ElMessage.success(this.t('session.message.success.edit'))
         this.editDialogVisible = false
         this.fetchData()
       } catch (error) {
@@ -459,7 +459,7 @@ export default {
     },
     confirmDelete(row) {
       ElMessageBox.confirm(
-        this.t('data.session.confirm.message', { target_id: row.target_id }),
+        this.t('session.target.confirm.message', { target_id: row.target_id }),
         this.t('confirm.warning'),
         {
           confirmButtonText: this.t('button.confirm'),
@@ -477,7 +477,7 @@ export default {
     async deleteTarget(row) {
       try {
         await axios.delete(`/api/target/${row.target_id}`)
-        ElMessage.success(this.t('data.message.success.delete'))
+        ElMessage.success(this.t('session.message.success.delete'))
         this.fetchData()
       } catch (error) {
         if (error.response?.status === 403 && IS_DEMO) {
@@ -498,7 +498,7 @@ pre {
   white-space: pre-wrap;
 }
 
-.session-card {
+.target-card {
   margin-bottom: 20px;
   line-height: 1;
   white-space: nowrap;

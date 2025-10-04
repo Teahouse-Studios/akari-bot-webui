@@ -360,6 +360,7 @@ export default {
 
 .auto-scroll-label {
   margin-left: 5px;
+  cursor: default;
 }
 
 .right-controls {
