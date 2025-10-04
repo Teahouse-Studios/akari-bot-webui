@@ -2,10 +2,10 @@
   <div class="sql-console">
     <div class="button-toolbar">
       <el-button type="primary" :disabled="loading" @click="executeSQL">
-        <i class="mdi mdi-console-line"></i> 執行
+        <i class="mdi mdi-console-line"></i> {{ $t("database.button.execute") }}
       </el-button>
       <el-button :disabled="loading" @click="clearSQL">
-        <i class="mdi mdi-restart"></i> 清空
+        <i class="mdi mdi-restart"></i> {{ $t("database.button.clear") }}
       </el-button>
     </div>
 
@@ -14,7 +14,7 @@
         <el-input
           type="textarea"
           v-model="sql"
-          placeholder="请输入 SQL 语句"
+          :placeholder="$t('database.input.sql')"
           resize="none"
           rows="9"
           class="sql-input"
