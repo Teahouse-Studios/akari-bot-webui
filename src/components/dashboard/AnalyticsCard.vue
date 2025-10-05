@@ -366,6 +366,10 @@ export default {
 </script>
 
 <style scoped>
+h3 {
+  cursor: default; 
+}
+
 .el-card {
   margin-bottom: 20px;
   line-height: 1;
@@ -406,7 +410,9 @@ export default {
   flex: 1 1 100%;
   margin-bottom: 4px;
   color: #333;
+  cursor: default; 
 }
+
 .dark .data-title {
   color: white;
 }

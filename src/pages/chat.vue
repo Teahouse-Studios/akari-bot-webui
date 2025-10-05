@@ -881,6 +881,7 @@ export default {
   flex: 1;
   font-size: 18px;
   font-weight: bold;
+  cursor: default;
 }
 
 .reset-button {

@@ -50,7 +50,14 @@
             :key="idx"
             :class="{ active: idx === pathParts.length - 1 }"
           >
-            {{ p }}
+            <span
+              v-if="idx !== pathParts.length - 1"
+              class="breadcrumb-link"
+              @click="goToPath(idx)"
+            >
+              {{ p }}
+            </span>
+            <span v-else>{{ p }}</span>
           </el-breadcrumb-item>
         </el-breadcrumb>
       </div>
@@ -328,6 +335,14 @@ export default {
       }
     },
   
+    goToPath(idx) {
+    const parts = this.pathParts.slice(1, idx + 1);
+    const newPath = parts.join("/");
+
+    this.currentPath = newPath;
+    this.fetchFiles();
+  },
+
     updateFiles() {
       let filtered = this.showHiddenFiles
         ? this.allFiles
@@ -755,6 +770,15 @@ async saveFile() {
 .dark .breadcrumb-wrapper {
   background: #1f1f1f;
   border: 1px solid #4d4d4d;
+}
+
+.breadcrumb-link {
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.breadcrumb-link:hover {
+  color: var(--el-color-primary);
 }
 
 .operation-button-container {

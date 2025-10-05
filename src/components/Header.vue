@@ -149,6 +149,7 @@ export default {
   align-items: center;
   font-size: 16px;
   color: #666;
+  cursor: default;
   font-family:
     'Roboto',
     'Noto Sans SC',

@@ -1,10 +1,17 @@
 <template>
-  <div class="sql-console">
+  <el-card class="sql-console" shadow="never">
     <div class="button-toolbar">
-      <el-button type="primary" :disabled="loading" @click="executeSQL">
+      <el-button
+       type="primary"
+       size="small"
+       :disabled="loading"
+       @click="executeSQL">
         <i class="mdi mdi-console-line"></i> {{ $t("database.button.execute") }}
       </el-button>
-      <el-button :disabled="loading" @click="clearSQL">
+      <el-button
+       size="small"
+       :disabled="loading"
+       @click="clearSQL">
         <i class="mdi mdi-restart"></i> {{ $t("database.button.clear") }}
       </el-button>
     </div>
@@ -21,6 +28,7 @@
         ></el-input>
 
         <el-card class="history-area" shadow="never">
+        <span><i class="mdi mdi-history"></i> {{ $t("database.sql.history.title") }}</span>
           <div class="history">
             <div
               v-for="(item, index) in pagedHistory"
@@ -45,44 +53,48 @@
     </el-card>
 
     <el-card class="result-card" shadow="never" v-loading="loading">
-      
-      <div v-if="error" class="error">{{ error }}</div>
+      <h3><i class="mdi mdi-console-line"></i> {{ $t("database.sql.result.title") }}</h3>
+      <div class="result-area">
+        <div v-if="error" class="error">{{ error }}</div>
 
-      <div v-else-if="affectedRows !== null" class="affected-rows">
-        ({{ affectedRows }} row(s) affected)
-      </div>
+        <div v-else-if="affectedRows !== null" class="affected-rows">
+          ({{ affectedRows }} row(s) affected)
+        </div>
 
-      <el-empty v-else-if="show_result && !result.length" />
+        <el-empty v-else-if="show_result && !result.length" />
 
-      <div v-else class="table-wrapper">
-        <el-table
-          v-if="result.length"
-          :data="pagedResult"
-          stripe
-          width="100%"
-        >
-          <el-table-column
-            v-for="(value, key) in result[0]"
-            :key="key"
-            :prop="key"
-            :label="key"
-          />
-        </el-table>
-      </div>
+          <div v-else>
+            <div class="table-wrapper">
+              <el-table
+                v-if="result.length"
+                :data="pagedResult"
+                stripe
+                width="100%"
+              >
+                <el-table-column
+                  v-for="(value, key) in result[0]"
+                  :key="key"
+                  :prop="key"
+                  :label="key"
+                />
+              </el-table>
+            </div>
 
-      <div class="pagination-wrapper">
-        <el-pagination
-          v-if="result.length > resultPageSize"
-          background
-          layout="prev, pager, next"
-          :page-size="resultPageSize"
-          :total="result.length"
-          style="margin-top: 20px"
-          v-model:current-page="resultPage"
-        />
+            <div class="pagination-wrapper">
+              <el-pagination
+                v-if="result.length > resultPageSize"
+                background
+                layout="prev, pager, next"
+                :page-size="resultPageSize"
+                :total="result.length"
+                style="margin-top: 20px"
+                v-model:current-page="resultPage"
+              />
+          </div>
+        </div>
       </div>
     </el-card>
-  </div>
+  </el-card>
 </template>
 
 <script>
@@ -162,10 +174,15 @@ export default {
 </script>
 
 <style scoped>
-.sql-console {
+h3 {
+  cursor: default;
+}
+
+.sql-console ::v-deep(.el-card__body) {
   display: flex;
   flex-direction: column;
   gap: 16px;
+  height: 100%;
 }
 
 .button-toolbar {
@@ -188,6 +205,12 @@ export default {
   height: 100%;
 }
 
+.sql-input ::v-deep(.el-textarea__inner) {
+  font-family: 'Consolas', 'Noto Sans Mono', 'Courier New', Courier, monospace;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
 .history-area {
   flex: 1;
   height: 198px;
@@ -196,10 +219,13 @@ export default {
   flex-direction: column;
 }
 
+.history-area span {
+  cursor: default;
+}
+
 .history {
-  flex: 1;
   overflow-y: auto;
-  height: 120px;
+  height: 80px;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -211,6 +237,9 @@ export default {
   background-color: var(--el-fill-color-light);
   cursor: pointer;
   word-break: break-word;
+  font-family: 'Consolas', 'Noto Sans Mono', 'Courier New', Courier, monospace;
+  font-size: 14px;
+  line-height: 1.5;
 }
 
 @media (max-width: 384px) {
@@ -227,23 +256,25 @@ export default {
 }
 
 .affected-rows {
-  font-weight: bold;
   margin-bottom: 10px;
   color: #606266;
 }
 
 .error {
-  color: red;
   margin-bottom: 10px;
-  font-weight: bold;
+  color: red;
 }
 
 .result-card {
   min-height: 300px;
-  height: calc(100vh - 420px);
-  overflow-y: auto;
+  height: calc(100vh - 450px);
 }
 
+.result-area {
+  padding-bottom: 40px;
+  height: 100%;
+  overflow-y: auto;
+}
 
 .pagination-wrapper {
   overflow-x: auto;

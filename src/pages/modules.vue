@@ -475,13 +475,11 @@ export default {
 }
 </script>
 
-<style>
-.help-code {
-  font-family: 'Consolas', 'Noto Sans Mono', 'Courier New', Courier, monospace;
-}
-</style>
-
 <style scoped>
+h3 {
+  cursor: default; 
+}
+
 .module-card {
   margin-bottom: 20px;
   line-height: 1;
@@ -520,5 +518,9 @@ export default {
   -webkit-overflow-scrolling: touch;
   white-space: nowrap;
   width: 100%;
+}
+
+.help-code {
+  font-family: 'Consolas', 'Noto Sans Mono', 'Courier New', Courier, monospace;
 }
 </style>

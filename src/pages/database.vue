@@ -1,6 +1,13 @@
 <template>
   <div v-if="isDevelopMode">
-    <SQLConsole />
+    <el-row gutter="24">
+      <el-col :span="6" :xs="24">
+        <DataModels />
+      </el-col>
+      <el-col :span="18" :xs="24">
+        <SQLConsole />
+      </el-col>
+    </el-row>
   </div>
   
   <NotFound v-else />
@@ -8,11 +15,13 @@
 
 <script>
 import SQLConsole from '@/components/database/SQLConsole.vue';
+import DataModels from '@/components/database/DataModels.vue';
 import NotFound from './notFound.vue';
 
 export default {
   name: 'DatabasePage',
   components: {
+    DataModels,
     SQLConsole,
     NotFound
   },
@@ -23,3 +32,15 @@ export default {
   }
 }
 </script>
+
+<style scoped>
+h3 {
+  cursor: default;
+}
+
+@media (max-width: 768px) {
+  .el-row {
+    row-gap: 16px;
+  }
+}
+</style>

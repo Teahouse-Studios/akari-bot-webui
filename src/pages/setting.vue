@@ -26,3 +26,9 @@ export default {
   },
 }
 </script>
+
+<style>
+h3 {
+  cursor: default; 
+}
+</style>

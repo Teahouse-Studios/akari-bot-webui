@@ -358,6 +358,10 @@ pre {
   white-space: pre-wrap;
 }
 
+h3 {
+  cursor: default; 
+}
+
 .sender-card {
   margin-bottom: 20px;
   line-height: 1;
