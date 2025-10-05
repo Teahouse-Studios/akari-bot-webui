@@ -197,10 +197,9 @@ export default {
     },
 
     processData(data, days) {
-      const timeGroupedData = this.groupDataByTimeInterval(data.data)
-      this.fillMissingData(timeGroupedData, days)
+      const timeGroupedData = this.groupDataByTimeInterval(data.data, days)
 
-      this.trendData = timeGroupedData
+      this.trendData = this.fillMissingData(timeGroupedData, days)
         .map((item) => ({
           date: this.formatTimestamp(item.date),
           count: item.count,
@@ -225,16 +224,22 @@ export default {
     },
 
     fillMissingData(timeGroupedData, days) {
-      const allTimeIntervals = this.generateAllTimeIntervals(days)
-      const timeKeys = new Set(timeGroupedData.map((item) => item.date))
+      const intervalMinutes = 30
+      const now = new Date()
+      const totalIntervals = days * 24 * 60 / intervalMinutes
+      const baseTime = new Date(now.getTime() - intervalMinutes * 60 * 1000)
 
-      allTimeIntervals.forEach((time) => {
-        if (!timeKeys.has(time)) {
-          timeGroupedData.push({ date: time, count: 0 })
+      const existingKeys = new Set(timeGroupedData.map((item) => item.date.toISOString()))
+      const filledData = [...timeGroupedData]
+
+      for (let i = 0; i < totalIntervals; i++) {
+        const t = new Date(baseTime.getTime() - i * intervalMinutes * 60 * 1000)
+        if (!existingKeys.has(t.toISOString())) {
+          filledData.push({ date: t, count: 0 })
         }
-      })
+      }
 
-      timeGroupedData.sort((a, b) => new Date(a.date) - new Date(b.date))
+      return filledData.sort((a, b) => new Date(a.date) - new Date(b.date))
     },
 
     generateAllTimeIntervals(days) {
@@ -251,20 +256,21 @@ export default {
       return timeIntervals
     },
 
-    groupDataByTimeInterval(data) {
+    groupDataByTimeInterval(data, days) {
       const groupedData = {}
       const now = new Date()
-      const baseTime = new Date(now.getTime() - 30 * 60 * 1000)
+      const intervalMinutes = 30
+      const baseTime = new Date(now.getTime() - intervalMinutes * 60 * 1000) // 当前时间向前对齐半小时
 
       data.forEach((item) => {
         const timestamp = new Date(item.timestamp)
         const diff = baseTime.getTime() - timestamp.getTime()
-        const steps = Math.floor(diff / (30 * 60 * 1000))
-        const alignedTime = new Date(baseTime.getTime() - steps * 30 * 60 * 1000)
+        const steps = Math.floor(diff / (intervalMinutes * 60 * 1000))
+        const alignedTime = new Date(baseTime.getTime() - steps * intervalMinutes * 60 * 1000)
         const timeKey = alignedTime.toISOString()
 
         if (!groupedData[timeKey]) {
-          groupedData[timeKey] = { date: timeKey, count: 0 }
+          groupedData[timeKey] = { date: alignedTime, count: 0 }
         }
         groupedData[timeKey].count += 1
       })
