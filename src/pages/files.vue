@@ -331,12 +331,12 @@ export default {
     },
 
     handleUploadError(err, _file, _fileList) {
-      if (err?.response?.status === 413) {
+      if (err.status === 413) {
         ElMessage.error(this.t('files.message.upload.error.too_large'))
-      } else if (err?.response?.status === 403) {
+      } else if (err.status === 403) {
         ElMessage.error(this.t('files.message.error.invalid_path'))
       } else {
-        ElMessage.error(this.t('message.error.fetch') + err.message)
+        ElMessage.error(this.t('message.error.fetch') + err.responseText)
       }
     },
 
