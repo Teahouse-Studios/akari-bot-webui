@@ -336,7 +336,7 @@ export default {
       } else if (err.status === 403) {
         ElMessage.error(this.t('files.message.error.invalid_path'))
       } else {
-        ElMessage.error(this.t('message.error.fetch') + err.responseText)
+        ElMessage.error(this.t('message.error.fetch') + err.message)
       }
     },
 
