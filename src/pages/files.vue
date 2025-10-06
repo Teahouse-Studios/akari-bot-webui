@@ -64,6 +64,7 @@
           :before-upload="handleBeforeUpload"
           :headers="uploadHeaders"
           @success="refresh"
+          @error="handleUploadError"
         >
           <i class="el-icon-upload"></i>
           <div class="el-upload__text">
@@ -290,6 +291,12 @@ export default {
         })
         this.allFiles = res.data.files || []
         this.updateFiles()
+      } catch (e) {
+        if (e.response?.status === 403) {
+          ElMessage.error(this.t('files.message.error.invalid_path'))
+        } else {
+          ElMessage.error(this.t('message.error.fetch') + e.message)
+        }
       } finally {
         this.loading = false
       }
@@ -321,6 +328,16 @@ export default {
       const end = start + this.pageSize
 
       this.files = filtered.slice(start, end)
+    },
+
+    handleUploadError(err, _file, _fileList) {
+      if (err?.response?.status === 413) {
+        ElMessage.error(this.t('files.message.upload.error.too_large'))
+      } else if (err?.response?.status === 403) {
+        ElMessage.error(this.t('files.message.error.invalid_path'))
+      } else {
+        ElMessage.error(this.t('message.error.fetch') + err.message)
+      }
     },
 
     formatSize(row) {
@@ -391,9 +408,9 @@ export default {
         this.createName = ''
         this.fetchFiles()
       } catch (e) {
-        if (e.response.status === 403) {
-          ElMessage.error(this.t('files.message.create.error.invalid_path'))
-        } else if (e.response.status === 400) {
+        if (e.response?.status === 403) {
+          ElMessage.error(this.t('files.message.error.invalid_path'))
+        } else if (e.response?.status === 400) {
           ElMessage.error(this.t('files.message.create.error.failed'))
         } else {
           ElMessage.error(this.t('message.error.fetch') + e.message)
@@ -502,6 +519,8 @@ export default {
         if (e.response?.status === 408) {
           this.emptyDescription = this.t('files.preview.too_large')
           this.previewVisible = true
+        } else if (e.response?.status === 403) {
+          ElMessage.error(this.t('files.message.error.invalid_path'))
         } else if (e.response?.status === 400) {
           this.emptyDescription = this.t('files.preview.failed')
           this.previewVisible = true
@@ -620,18 +639,20 @@ export default {
 
         this.fetchFiles()
         ElMessage.success(this.t('files.message.rename.success'))
-      } catch (error) {
-        if (error === 'cancel') {
+      } catch (e) {
+        if (e === 'cancel') {
           return
         }
-        if (error.response?.status === 409) {
+        if (e.response?.status === 409) {
           ElMessage.error(this.t('files.message.rename.error.exists'))
-        } else if (error.response?.status === 404) {
+        } else if (e.response?.status === 404) {
           ElMessage.error(this.t('files.message.rename.error.not_found'))
-        } else if (error.response?.status === 400) {
+        } else if (e.response?.status === 403) {
+          ElMessage.error(this.t('files.message.error.invalid_path'))
+        } else if (e.response?.status === 400) {
           ElMessage.error(this.t('files.message.rename.error.failed'))
         } else {
-          ElMessage.error(this.t('message.error.fetch') + error.message)
+          ElMessage.error(this.t('message.error.fetch') + e.message)
         }
       }
     },
@@ -650,16 +671,18 @@ export default {
 
         this.fetchFiles()
         ElMessage.success(this.t('files.message.delete.success'))
-      } catch (error) {
-        if (error === 'cancel') {
+      } catch (e) {
+        if (e === 'cancel') {
           return
         }
-        if (error.response?.status === 404) {
+        if (e.response?.status === 404) {
           ElMessage.error(this.t('files.message.delete.error.not_found'))
-        } else if (error.response?.status === 400) {
+        } else if (e.response?.status === 403) {
+          ElMessage.error(this.t('files.message.error.invalid_path'))
+        } else if (e.response?.status === 400) {
           ElMessage.error(this.t('files.message.delete.error.failed'))
         } else {
-          ElMessage.error(this.t('message.error.fetch') + error.message)
+          ElMessage.error(this.t('message.error.fetch') + e.message)
         }
       }
     },
