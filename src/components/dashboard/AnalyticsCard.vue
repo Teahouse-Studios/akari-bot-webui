@@ -130,7 +130,6 @@ export default {
     const { t } = useI18n()
 
     return {
-      t,
       trendData: [],
       selectedDays: '1',
       count: 0,
@@ -141,6 +140,7 @@ export default {
       resizeObserver: null,
       abortController: new AbortController(),
       loading: false,
+      t,
     }
   },
   mounted() {
@@ -226,16 +226,16 @@ export default {
     fillMissingData(timeGroupedData, days) {
       const intervalMinutes = 30
       const now = new Date()
-      const totalIntervals = days * 24 * 60 / intervalMinutes
+      const totalIntervals = (days * 24 * 60) / intervalMinutes
       const baseTime = new Date(now.getTime() - intervalMinutes * 60 * 1000)
 
       const existingKeys = new Set(timeGroupedData.map((item) => item.date.toISOString()))
       const filledData = [...timeGroupedData]
 
       for (let i = 0; i < totalIntervals; i++) {
-        const t = new Date(baseTime.getTime() - i * intervalMinutes * 60 * 1000)
-        if (!existingKeys.has(t.toISOString())) {
-          filledData.push({ date: t, count: 0 })
+        const date = new Date(baseTime.getTime() - i * intervalMinutes * 60 * 1000)
+        if (!existingKeys.has(date.toISOString())) {
+          filledData.push({ date, count: 0 })
         }
       }
 
@@ -256,7 +256,7 @@ export default {
       return timeIntervals
     },
 
-    groupDataByTimeInterval(data, days) {
+    groupDataByTimeInterval(data, _days) {
       const groupedData = {}
       const now = new Date()
       const intervalMinutes = 30
@@ -373,7 +373,7 @@ export default {
 
 <style scoped>
 h3 {
-  cursor: default; 
+  cursor: default;
 }
 
 .el-card {
@@ -416,7 +416,7 @@ h3 {
   flex: 1 1 100%;
   margin-bottom: 4px;
   color: #333;
-  cursor: default; 
+  cursor: default;
 }
 
 .dark .data-title {

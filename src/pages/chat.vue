@@ -160,11 +160,7 @@
         {{ $t('chat.button.send') }}
       </el-button>
     </div>
-    <el-dialog
-      v-model="imageDialogVisible"
-      :show-close="false"
-      :center="true"
-    >
+    <el-dialog v-model="imageDialogVisible" :show-close="false" :center="true">
       <img
         :src="previewImageSrc"
         style="width: 100%; height: 100%; cursor: pointer"

@@ -29,6 +29,6 @@ export default {
 
 <style>
 h3 {
-  cursor: default; 
+  cursor: default;
 }
 </style>

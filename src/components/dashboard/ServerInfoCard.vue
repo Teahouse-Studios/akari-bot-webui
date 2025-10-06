@@ -278,7 +278,7 @@ export default {
 
 <style scoped>
 h3 {
-  cursor: default; 
+  cursor: default;
 }
 
 .el-card {
@@ -297,7 +297,7 @@ h3 {
 .data-title {
   margin-right: 3ex;
   color: #333;
-  cursor: default; 
+  cursor: default;
 }
 
 .dark .data-title {

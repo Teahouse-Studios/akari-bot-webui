@@ -58,29 +58,24 @@
         </el-table-column>
         <el-table-column :label="$t('session.table.status')" min-width="100">
           <template #default="{ row }">
-            <el-tag 
-              :type="row.base ? 'warning' : (row.loaded ? 'success' : 'danger')"
-            >
-              {{ row.base ? $t('modules.tag.base') : (row.loaded ? $t('modules.tag.loaded') : $t('modules.tag.unloaded')) }}
+            <el-tag :type="row.base ? 'warning' : row.loaded ? 'success' : 'danger'">
+              {{
+                row.base
+                  ? $t('modules.tag.base')
+                  : row.loaded
+                    ? $t('modules.tag.loaded')
+                    : $t('modules.tag.unloaded')
+              }}
             </el-tag>
           </template>
         </el-table-column>
         <el-table-column :label="$t('table.operation')" min-width="420">
           <template #default="{ row }">
-            <el-button
-              size="small"
-              type="info"
-              @click="handleHelp(row)"
-            >
+            <el-button size="small" type="info" @click="handleHelp(row)">
               <i class="mdi mdi-help-circle-outline"></i> {{ $t('modules.button.helpdoc') }}
             </el-button>
 
-            <el-button
-              v-if="!row.base"
-              size="small"
-              type="primary"
-              @click="openConfigEditor(row)"
-            >
+            <el-button v-if="!row.base" size="small" type="primary" @click="openConfigEditor(row)">
               <i class="mdi mdi-cog"></i> {{ $t('modules.button.config') }}
             </el-button>
 
@@ -97,7 +92,8 @@
               v-if="!row.base && !row.loaded"
               size="small"
               type="success"
-              @click="handleLoad(row)">
+              @click="handleLoad(row)"
+            >
               <i class="mdi mdi-puzzle-plus"></i> {{ $t('modules.button.load') }}
             </el-button>
 
@@ -128,11 +124,15 @@
     >
       <div v-if="helpDoc">
         <el-collapse v-if="hasAnyHelp" v-model="activeSections">
-          <template #title><b>{{ $t('modules.helpdoc.subtitle.desc') }}</b></template>
+          <template #title
+            ><b>{{ $t('modules.helpdoc.subtitle.desc') }}</b></template
+          >
           <p>{{ helpDoc.desc }}</p>
 
           <el-collapse-item v-if="helpDoc.commands?.args?.length" name="commands">
-            <template #title><b>{{ $t('modules.helpdoc.subtitle.command') }}</b></template>
+            <template #title
+              ><b>{{ $t('modules.helpdoc.subtitle.command') }}</b></template
+            >
             <ul>
               <li v-for="cmd in helpDoc.commands.args" :key="cmd.args">
                 <code class="help-code">{{ cmd.args }}</code>
@@ -142,7 +142,9 @@
           </el-collapse-item>
 
           <el-collapse-item v-if="helpDoc.commands?.options?.length" name="options">
-            <template #title><b>{{ $t('modules.helpdoc.subtitle.option') }}</b></template>
+            <template #title
+              ><b>{{ $t('modules.helpdoc.subtitle.option') }}</b></template
+            >
             <ul>
               <li v-for="opt in helpDoc.commands.options" :key="Object.keys(opt)[0]">
                 <code class="help-code">{{ Object.keys(opt)[0] }}</code>
@@ -152,7 +154,9 @@
           </el-collapse-item>
 
           <el-collapse-item v-if="helpDoc.regexp?.length" name="regexp">
-            <template #title><b>{{ $t('modules.helpdoc.subtitle.regex') }}</b></template>
+            <template #title
+              ><b>{{ $t('modules.helpdoc.subtitle.regex') }}</b></template
+            >
             <ul>
               <li v-for="r in helpDoc.regexp" :key="r.pattern">
                 <code class="help-code">{{ r.pattern }}</code>
@@ -178,21 +182,15 @@
       :close-on-click-modal="false"
       @close="resetConfigDialog"
     >
-    <el-card 
-      v-if="configNotFound"
-      shadow="never">
-      <el-empty
-        :description="$t('modules.config.none')"
-      />
-    </el-card>
-      <VisibleEditor
-        v-else-if="configDialogVisible"
-        v-model="configContent"
-        ref="visibleEditor"
-      />
+      <el-card v-if="configNotFound" shadow="never">
+        <el-empty :description="$t('modules.config.none')" />
+      </el-card>
+      <VisibleEditor v-else-if="configDialogVisible" v-model="configContent" ref="visibleEditor" />
       <template #footer>
         <el-button @click="configDialogVisible = false">{{ $t('button.cancel') }}</el-button>
-        <el-button type="primary" @click="applyConfig" :disabled="!unsavedConfigChanges">{{ $t('button.apply') }}</el-button>
+        <el-button type="primary" @click="applyConfig" :disabled="!unsavedConfigChanges">{{
+          $t('button.apply')
+        }}</el-button>
       </template>
     </el-dialog>
   </div>
@@ -258,19 +256,19 @@ export default {
     hasAnyHelp() {
       return (
         this.helpDoc?.desc ||
-        (this.helpDoc?.commands?.args?.length > 0) ||
-        (this.helpDoc?.commands?.options?.length > 0) ||
-        (this.helpDoc?.regexp?.length > 0)
+        this.helpDoc?.commands?.args?.length > 0 ||
+        this.helpDoc?.commands?.options?.length > 0 ||
+        this.helpDoc?.regexp?.length > 0
       )
     },
   },
   mounted() {
     this.refreshData()
-    window.addEventListener('resize', this.updateModuleConfigDialogWidth);
-    this.updateModuleConfigDialogWidth();
+    window.addEventListener('resize', this.updateModuleConfigDialogWidth)
+    this.updateModuleConfigDialogWidth()
   },
   beforeUnmount() {
-    window.removeEventListener('resize', this.updateModuleConfigDialogWidth);
+    window.removeEventListener('resize', this.updateModuleConfigDialogWidth)
   },
   watch: {
     configContent(newVal) {
@@ -295,8 +293,8 @@ export default {
         const language = localStorage.getItem('language') || 'zh_cn'
         const response = await axios.get('/api/modules', {
           params: {
-            locale: language
-          }
+            locale: language,
+          },
         })
         if (response.status === 200 && response.data.modules) {
           this.modules = Object.entries(response.data.modules)
@@ -336,8 +334,8 @@ export default {
         const language = localStorage.getItem('language') || 'zh_cn'
         const res = await axios.get(`/api/module/${row.name}/helpdoc`, {
           params: {
-            locale: language
-          }
+            locale: language,
+          },
         })
         if (res.status === 200) {
           this.helpDoc = res.data
@@ -358,7 +356,9 @@ export default {
           msg = this.t('modules.confirm.message.reload')
         } else {
           msg = this.t('modules.confirm.message.reload.extra', {
-            modules: related.map((m) => this.t("format.quote", {msg: m})).join(this.t("format.delimiter")),
+            modules: related
+              .map((m) => this.t('format.quote', { msg: m }))
+              .join(this.t('format.delimiter')),
           })
         }
       }
@@ -421,12 +421,12 @@ export default {
     },
 
     updateModuleConfigDialogWidth() {
-      const screenWidth = window.innerWidth;
+      const screenWidth = window.innerWidth
       if (screenWidth < 1024) {
-        this.moduleConfigDialogWidth = '90%';
+        this.moduleConfigDialogWidth = '90%'
       } else {
-        const newWidth = screenWidth * 0.9 - 400;
-        this.moduleConfigDialogWidth = `${newWidth}px`;
+        const newWidth = screenWidth * 0.9 - 400
+        this.moduleConfigDialogWidth = `${newWidth}px`
       }
     },
 
@@ -477,7 +477,7 @@ export default {
 
 <style scoped>
 h3 {
-  cursor: default; 
+  cursor: default;
 }
 
 .module-card {

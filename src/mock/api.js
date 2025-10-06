@@ -8,7 +8,7 @@ export default function setupMock() {
 
   mock.onGet('/api/init').reply(200, {
     enable_https: false,
-    command_prefix: "~",
+    command_prefix: '~',
     locale: 'zh_cn',
     heartbeat_interval: 5,
     heartbeat_timeout: 30,
@@ -23,11 +23,9 @@ export default function setupMock() {
     },
   })
 
-  mock
-    .onGet('/api/login')
-    .reply(205, {
-      data: 'eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiSm9obiIsImFkbWluIjp0cnVlLCJpc3MiOiJhdXRoLWFwaSJ9.l6piMCKreZU-gjum6VXafyknIUdO8r1NdMP-kcemyJXxD32Chv5LsRDHnD3oUow0qX8vTPeujNgTu6iKLgHe8Q',
-    })
+  mock.onGet('/api/login').reply(205, {
+    data: 'eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiSm9obiIsImFkbWluIjp0cnVlLCJpc3MiOiJhdXRoLWFwaSJ9.l6piMCKreZU-gjum6VXafyknIUdO8r1NdMP-kcemyJXxD32Chv5LsRDHnD3oUow0qX8vTPeujNgTu6iKLgHe8Q',
+  })
 
   mock.onPut('/api/password').reply(205, {})
 

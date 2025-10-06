@@ -6,12 +6,14 @@
       :content="$t('dashboard.update_time.title', { time: formatTime(lastUpdateTime) })"
       placement="left"
     >
-      <el-button class="refresh-button"
+      <el-button
+        class="refresh-button"
         circle
         size="large"
         type="primary"
         :disabled="loading"
-        @click="refreshData">
+        @click="refreshData"
+      >
         <i class="mdi mdi-refresh"></i>
       </el-button>
     </el-tooltip>

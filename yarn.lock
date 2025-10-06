@@ -2945,7 +2945,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lint-staged@npm:^16.1.5":
+"lint-staged@npm:^16.2.3":
   version: 16.2.3
   resolution: "lint-staged@npm:16.2.3"
   dependencies:
@@ -4701,7 +4701,7 @@ __metadata:
     eslint: "npm:^9.33.0"
     eslint-plugin-vue: "npm:^10.4.0"
     husky: "npm:^9.1.7"
-    lint-staged: "npm:^16.1.5"
+    lint-staged: "npm:^16.2.3"
     lodash: "npm:^4.17.21"
     markdown-it: "npm:^14.1.0"
     markdown-it-link-attributes: "npm:^4.0.1"

@@ -5,9 +5,11 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "lint": "eslint --ext .js,.vue,.ts --fix .",
-    "prepare": "husky"
+    "prepare": "husky",
+    "preview": "vite preview"
   },
   "dependencies": {
     "@codemirror/lang-html": "^6.4.10",
@@ -38,7 +40,7 @@
     "eslint": "^9.33.0",
     "eslint-plugin-vue": "^10.4.0",
     "husky": "^9.1.7",
-    "lint-staged": "^16.1.5",
+    "lint-staged": "^16.2.3",
     "prettier": "^3.6.2",
     "sass-embedded": "^1.90.0",
     "unplugin-auto-import": "^20.0.0",

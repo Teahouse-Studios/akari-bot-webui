@@ -47,14 +47,10 @@
     </div>
 
     <span class="footer-text">
-      Made with love❤️ and 
-      <span 
-        class="python-text" 
-        :class="{ 'disabled': !showDevelopMode }" 
-        @click="handleDevClick"
-      >
-        Python🐍
-      </span>.
+      Made with love❤️ and
+      <span class="python-text" :class="{ disabled: !showDevelopMode }" @click="handleDevClick">
+        Python🐍 </span
+      >.
     </span>
   </div>
 </template>
@@ -78,10 +74,12 @@ export default {
       if (this.showDevelopMode) return
       this.devClickCount++
 
-      const remainingClicks = 7 - this.devClickCount;
+      const remainingClicks = 7 - this.devClickCount
 
       if (remainingClicks > 0 && remainingClicks < 6) {
-        ElMessage.info(this.t('setting.develop_mode.message.info.remain', { remain: remainingClicks }))
+        ElMessage.info(
+          this.t('setting.develop_mode.message.info.remain', { remain: remainingClicks }),
+        )
       }
       if (this.devClickCount >= 7) {
         localStorage.setItem('showDevelopMode', 'true')

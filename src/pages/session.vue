@@ -6,7 +6,9 @@
         @click="activeCard = 'target'"
         ><i class="mdi mdi-forum"></i
       ></el-button>
-      <el-button :type="activeCard === 'sender' ? 'primary' : 'default'" @click="activeCard = 'sender'"
+      <el-button
+        :type="activeCard === 'sender' ? 'primary' : 'default'"
+        @click="activeCard = 'sender'"
         ><i class="mdi mdi-account"></i
       ></el-button>
     </el-button-group>

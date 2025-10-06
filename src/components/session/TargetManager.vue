@@ -499,7 +499,7 @@ pre {
 }
 
 h3 {
-  cursor: default; 
+  cursor: default;
 }
 
 .target-card {

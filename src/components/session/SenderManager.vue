@@ -78,7 +78,9 @@
         />
         <el-table-column :label="$t('session.table.status')" min-width="180">
           <template #default="{ row }">
-            <el-tag type="primary" v-if="row.superuser">{{ $t('session.sender.tag.superuser') }}</el-tag>
+            <el-tag type="primary" v-if="row.superuser">{{
+              $t('session.sender.tag.superuser')
+            }}</el-tag>
             <el-tag type="success" v-if="row.trusted" style="margin-left: 5px">{{
               $t('session.sender.tag.trusted')
             }}</el-tag>
@@ -359,7 +361,7 @@ pre {
 }
 
 h3 {
-  cursor: default; 
+  cursor: default;
 }
 
 .sender-card {

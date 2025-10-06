@@ -9,27 +9,27 @@
       </el-col>
     </el-row>
   </div>
-  
+
   <NotFound v-else />
 </template>
 
 <script>
-import SQLConsole from '@/components/database/SQLConsole.vue';
-import DataModels from '@/components/database/DataModels.vue';
-import NotFound from './notFound.vue';
+import SQLConsole from '@/components/database/SQLConsole.vue'
+import DataModels from '@/components/database/DataModels.vue'
+import NotFound from './notFound.vue'
 
 export default {
   name: 'DatabasePage',
   components: {
     DataModels,
     SQLConsole,
-    NotFound
+    NotFound,
   },
   data() {
     return {
       isDevelopMode: localStorage.getItem('isDevelopMode') === 'true',
     }
-  }
+  },
 }
 </script>
 

@@ -172,11 +172,11 @@ export default {
 
     async confirmClearPassword() {
       try {
-        const requestData = {
-          password: this.form.old_password,
-        }
-
-        const response = await axios.delete('/api/password', requestData)
+        const response = await axios.delete('/api/password', {
+          data: {
+            password: this.form.old_password,
+          },
+        })
 
         if (response.status === 205) {
           ElMessage.success(this.$t('setting.change_password.message.success.clear'))

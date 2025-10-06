@@ -1,18 +1,11 @@
 <template>
   <el-card class="sql-console" shadow="never">
     <div class="button-toolbar">
-      <el-button
-       type="primary"
-       size="small"
-       :disabled="loading"
-       @click="executeSQL">
-        <i class="mdi mdi-console-line"></i> {{ $t("database.button.execute") }}
+      <el-button type="primary" size="small" :disabled="loading" @click="executeSQL">
+        <i class="mdi mdi-console-line"></i> {{ $t('database.button.execute') }}
       </el-button>
-      <el-button
-       size="small"
-       :disabled="loading"
-       @click="clearSQL">
-        <i class="mdi mdi-restart"></i> {{ $t("database.button.clear") }}
+      <el-button size="small" :disabled="loading" @click="clearSQL">
+        <i class="mdi mdi-restart"></i> {{ $t('database.button.clear') }}
       </el-button>
     </div>
 
@@ -28,7 +21,7 @@
         ></el-input>
 
         <el-card class="history-area" shadow="never">
-        <span><i class="mdi mdi-history"></i> {{ $t("database.sql.history.title") }}</span>
+          <span><i class="mdi mdi-history"></i> {{ $t('database.sql.history.title') }}</span>
           <div class="history">
             <div
               v-for="(item, index) in pagedHistory"
@@ -53,7 +46,7 @@
     </el-card>
 
     <el-card class="result-card" shadow="never" v-loading="loading">
-      <h3><i class="mdi mdi-console-line"></i> {{ $t("database.sql.result.title") }}</h3>
+      <h3><i class="mdi mdi-console-line"></i> {{ $t('database.sql.result.title') }}</h3>
       <div class="result-area">
         <div v-if="error" class="error">{{ error }}</div>
 
@@ -63,33 +56,28 @@
 
         <el-empty v-else-if="show_result && !result.length" />
 
-          <div v-else>
-            <div class="table-wrapper">
-              <el-table
-                v-if="result.length"
-                :data="pagedResult"
-                stripe
-                width="100%"
-              >
-                <el-table-column
-                  v-for="(value, key) in result[0]"
-                  :key="key"
-                  :prop="key"
-                  :label="key"
-                />
-              </el-table>
-            </div>
-
-            <div class="pagination-wrapper">
-              <el-pagination
-                v-if="result.length > resultPageSize"
-                background
-                layout="prev, pager, next"
-                :page-size="resultPageSize"
-                :total="result.length"
-                style="margin-top: 20px"
-                v-model:current-page="resultPage"
+        <div v-else>
+          <div class="table-wrapper">
+            <el-table v-if="result.length" :data="pagedResult" stripe width="100%">
+              <el-table-column
+                v-for="(value, key) in result[0]"
+                :key="key"
+                :prop="key"
+                :label="key"
               />
+            </el-table>
+          </div>
+
+          <div class="pagination-wrapper">
+            <el-pagination
+              v-if="result.length > resultPageSize"
+              background
+              layout="prev, pager, next"
+              :page-size="resultPageSize"
+              :total="result.length"
+              style="margin-top: 20px"
+              v-model:current-page="resultPage"
+            />
           </div>
         </div>
       </div>
@@ -98,18 +86,19 @@
 </template>
 
 <script>
-import axios from "@/axios.mjs";
+import axios from '@/axios.mjs'
 import { ElMessage } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 
 export default {
+  name: 'SQLConsole',
   data() {
     const { t } = useI18n()
     return {
-      sql: "",
+      sql: '',
       show_result: false,
       result: [],
-      error: "",
+      error: '',
       affectedRows: null,
       history: [],
       historyPage: 1,
@@ -117,60 +106,60 @@ export default {
       historyPageSize: 5,
       resultPageSize: 10,
       loading: false,
-      t
-    };
+      t,
+    }
   },
   computed: {
     pagedResult() {
-      const start = (this.resultPage - 1) * this.resultPageSize;
-      return this.result.slice(start, start + this.resultPageSize);
+      const start = (this.resultPage - 1) * this.resultPageSize
+      return this.result.slice(start, start + this.resultPageSize)
     },
     pagedHistory() {
-      const start = (this.historyPage - 1) * this.historyPageSize;
-      return this.history.slice(start, start + this.historyPageSize);
+      const start = (this.historyPage - 1) * this.historyPageSize
+      return this.history.slice(start, start + this.historyPageSize)
     },
   },
   methods: {
     async executeSQL() {
-      if (!this.sql) return;
-      this.result = [];
-      this.error = "";
-      this.affectedRows = null;
-      this.show_result = false;
-      this.history.unshift(this.sql);
-      this.loading = true;
+      if (!this.sql) return
+      this.result = []
+      this.error = ''
+      this.affectedRows = null
+      this.show_result = false
+      this.history.unshift(this.sql)
+      this.loading = true
       try {
-        const res = await axios.post("/api/database/exec", { sql: this.sql });
-        this.show_result = true;
+        const res = await axios.post('/api/database/exec', { sql: this.sql })
+        this.show_result = true
         if (res.data.success) {
           if (res.data.affected_rows !== undefined) {
-            this.affectedRows = res.data.affected_rows;
+            this.affectedRows = res.data.affected_rows
           } else {
-            this.result = res.data.data || [];
+            this.result = res.data.data || []
           }
-          this.error = "";
+          this.error = ''
         } else {
-          this.result = [];
-          this.error = res.data.error;
+          this.result = []
+          this.error = res.data.error
         }
       } catch (e) {
         ElMessage.error(this.t('message.error.fetch') + e.message)
       } finally {
-        this.loading = false;
+        this.loading = false
       }
     },
     clearSQL() {
-      this.sql = "";
-      this.result = [];
-      this.error = "";
-      this.show_result = false;
-      this.resultPage = 1;
+      this.sql = ''
+      this.result = []
+      this.error = ''
+      this.show_result = false
+      this.resultPage = 1
     },
     setSQL(item) {
-      this.sql = item;
+      this.sql = item
     },
   },
-};
+}
 </script>
 
 <style scoped>
