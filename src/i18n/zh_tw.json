@@ -257,7 +257,7 @@
   "setting.change_password.validate.old_password": "請輸入舊密碼",
   "setting.develop_mode.label": "開發者模式",
   "setting.develop_mode.message.error.demo.1": "開發者選項在演示模式下不可用",
-  "setting.develop_mode.message.error.demo.2": "想法不錯，但在這裡行不通",
+  "setting.develop_mode.message.error.demo.2": "想得美，在這可行不通",
   "setting.develop_mode.message.error.demo.3": "眼力真棒！不過現在打不開呢 ;-)",
   "setting.develop_mode.message.error.demo.4": "這是一個彩蛋，不過現在還只是個彩蛋",
   "setting.develop_mode.message.error.demo.5": "抱歉，今天不行",
