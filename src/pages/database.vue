@@ -17,6 +17,7 @@
 import SQLConsole from '@/components/database/SQLConsole.vue'
 import DataModels from '@/components/database/DataModels.vue'
 import NotFound from './notFound.vue'
+import { IS_DEMO } from '@/const'
 
 export default {
   name: 'DatabasePage',
@@ -27,7 +28,7 @@ export default {
   },
   data() {
     return {
-      isDevelopMode: localStorage.getItem('isDevelopMode') === 'true',
+      isDevelopMode: localStorage.getItem('isDevelopMode') === 'true' && !IS_DEMO,
     }
   },
 }

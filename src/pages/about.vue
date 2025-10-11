@@ -58,6 +58,7 @@
 <script>
 import { useI18n } from 'vue-i18n'
 import { ElMessage } from 'element-plus'
+import { IS_DEMO } from '@/const'
 
 export default {
   name: 'AboutPage',
@@ -65,13 +66,33 @@ export default {
     const { t } = useI18n()
     return {
       devClickCount: 0,
-      showDevelopMode: localStorage.getItem('showDevelopMode') === 'true',
+      showDevelopMode: localStorage.getItem('showDevelopMode') === 'true' && !IS_DEMO,
+      demoErrorKey: '',
       t,
     }
   },
+  mounted() {
+    if (IS_DEMO) {
+      this.generateDemoErrorKey()
+    }
+  },
+  beforeUnmount() {
+    this.demoErrorKey = ''
+  },
   methods: {
+    generateDemoErrorKey() {
+      const demoErrorIndex = Math.floor(Math.random() * 7) + 1
+      this.demoErrorKey = `setting.develop_mode.message.error.demo.${demoErrorIndex}`
+    },
     handleDevClick() {
-      if (this.showDevelopMode) return
+      if (IS_DEMO) {
+        ElMessage.error(this.t(this.demoErrorKey))
+        return
+      }
+      if (this.showDevelopMode) {
+        ElMessage.info(this.t('setting.develop_mode.message.info.already'))
+        return
+      }
       this.devClickCount++
 
       const remainingClicks = 7 - this.devClickCount

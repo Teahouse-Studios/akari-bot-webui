@@ -7,13 +7,15 @@
 </template>
 
 <script>
+import { IS_DEMO } from '@/const'
+
 export default {
   name: 'SwitchDevelopMode',
   data() {
     return {
       value1: false,
       loading: false,
-      showDevelopMode: localStorage.getItem('showDevelopMode') === 'true',
+      showDevelopMode: localStorage.getItem('showDevelopMode') === 'true' && !IS_DEMO,
     }
   },
   mounted() {

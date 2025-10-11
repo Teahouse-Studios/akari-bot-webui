@@ -232,7 +232,7 @@ export default {
       editorView: null,
       previewVisible: false,
       uploadUrl: '/api/files/upload',
-      isDevelopMode: localStorage.getItem('isDevelopMode') === 'true',
+      isDevelopMode: localStorage.getItem('isDevelopMode') === 'true' && !IS_DEMO,
       t,
     }
   },
@@ -284,21 +284,23 @@ export default {
   },
   methods: {
     async fetchFiles() {
-      this.loading = true
-      try {
-        const res = await axios.get('/api/files/list', {
-          params: { path: this.currentPath },
-        })
-        this.allFiles = res.data.files || []
-        this.updateFiles()
-      } catch (e) {
-        if (e.response?.status === 403) {
-          ElMessage.error(this.t('files.message.error.invalid_path'))
-        } else {
-          ElMessage.error(this.t('message.error.fetch') + e.message)
+      if (this.isDevelopMode) {
+        this.loading = true
+        try {
+          const res = await axios.get('/api/files/list', {
+            params: { path: this.currentPath },
+          })
+          this.allFiles = res.data.files || []
+          this.updateFiles()
+        } catch (e) {
+          if (e.response?.status === 403) {
+            ElMessage.error(this.t('files.message.error.invalid_path'))
+          } else {
+            ElMessage.error(this.t('message.error.fetch') + e.message)
+          }
+        } finally {
+          this.loading = false
         }
-      } finally {
-        this.loading = false
       }
     },
 

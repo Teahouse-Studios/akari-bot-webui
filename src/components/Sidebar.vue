@@ -47,6 +47,7 @@
 
 <script>
 import { useI18n } from 'vue-i18n'
+import { IS_DEMO } from '@/const'
 
 export default {
   name: 'AppSidebar',
@@ -61,7 +62,7 @@ export default {
 
     return {
       activeMenu: this.getActiveMenuFromRoute(),
-      isDevelopMode: localStorage.getItem('isDevelopMode') === 'true',
+      isDevelopMode: localStorage.getItem('isDevelopMode') === 'true' && !IS_DEMO,
       t,
     }
   },

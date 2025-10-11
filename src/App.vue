@@ -105,7 +105,7 @@ export default {
           }
 
           if (IS_DEMO) {
-            // this.showSuggestPasswordModal = true
+            this.showSuggestPasswordModal = true  // Deliberate
           } else {
             const noPassword = response.data.no_password
             const promptDisabled = localStorage.getItem('noPasswordPromptDisabled') === 'true'
