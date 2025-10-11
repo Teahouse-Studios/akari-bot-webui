@@ -262,7 +262,7 @@
   "setting.develop_mode.message.error.demo.4": "イースターエッグを見つけたけど、まだただのエッグです",
   "setting.develop_mode.message.error.demo.5": "今日はやめておきます",
   "setting.develop_mode.message.error.demo.6": "シュー…すまんね……",
-  "setting.develop_mode.message.error.demo.7": "// TODO: 本番環境で実装予定",
+  "setting.develop_mode.message.error.demo.7": "// TODO: 開発環境で実装予定",
   "setting.develop_mode.message.info.already": "開発者向けオプションが有効になっています",
   "setting.develop_mode.message.info.remain": "さらに {remain} 回クリックして開発者向けオプションを有効にします",
   "setting.develop_mode.message.success": "開発者向けオプションが有効になりました",

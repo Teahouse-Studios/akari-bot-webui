@@ -262,7 +262,7 @@
   "setting.develop_mode.message.error.demo.4": "You found an Easter egg, but it's still just an egg",
   "setting.develop_mode.message.error.demo.5": "Not today, thank you",
   "setting.develop_mode.message.error.demo.6": "SSSSSssssorry...",
-  "setting.develop_mode.message.error.demo.7": "// TODO: Implement in production",
+  "setting.develop_mode.message.error.demo.7": "// TODO: implement in development",
   "setting.develop_mode.message.info.already": "Developer options are enabled",
   "setting.develop_mode.message.info.remain": "Click {remain} more time(s) to enable developer options",
   "setting.develop_mode.message.success": "Developer options enabled",

@@ -262,7 +262,7 @@
   "setting.develop_mode.message.error.demo.4": "你找到了彩蛋，不过现在还只是个彩蛋",
   "setting.develop_mode.message.error.demo.5": "不吃这套，谢谢",
   "setting.develop_mode.message.error.demo.6": "嘶嘶嘶……不好意思……",
-  "setting.develop_mode.message.error.demo.7": "// TODO: 在生产环境中实现",
+  "setting.develop_mode.message.error.demo.7": "// TODO: 在开发环境中实现",
   "setting.develop_mode.message.info.already": "开发者选项已开启",
   "setting.develop_mode.message.info.remain": "再点击 {remain} 下开启开发者选项",
   "setting.develop_mode.message.success": "已开启开发者选项",
