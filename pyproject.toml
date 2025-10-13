@@ -1,6 +1,6 @@
 [project]
 name = "akari-bot-webui"
-version = "0.2.11"
+version = "0.2.12"
 description = ""
 authors = [
     {name = "OasisAkari",email = "oasisakari@gmail.com"},
