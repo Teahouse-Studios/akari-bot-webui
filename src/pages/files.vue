@@ -200,6 +200,7 @@ import { python } from '@codemirror/lang-python'
 import { yaml } from '@codemirror/lang-yaml'
 import { oneDark } from '@codemirror/theme-one-dark'
 import { useI18n } from 'vue-i18n'
+import { IS_DEMO } from '@/const'
 import notFound from './notFound.vue'
 
 export default {
