@@ -53,59 +53,47 @@
   </el-drawer>
 </template>
 
-<script>
-import { useI18n } from 'vue-i18n'
+<script setup>
+import { ref, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { IS_DEMO } from '@/const'
 
-export default {
-  name: 'AppSidebarDrawer',
-  props: {
-    modelValue: {
-      type: Boolean,
-    },
+defineProps({
+  visible: {
+    type: Boolean,
+    default: true,
   },
-  emits: ['update:modelValue'],
-  data() {
-    const { t } = useI18n()
+})
+const emit = defineEmits(['update:modelValue'])
 
-    return {
-      activeMenu: this.getActiveMenuFromRoute(),
-      isDevelopMode: localStorage.getItem('isDevelopMode') === 'true' && !IS_DEMO,
-      t,
-    }
-  },
-  computed: {
-    isSidebarVisible: {
-      get() {
-        return this.modelValue
-      },
-      set(val) {
-        this.$emit('update:modelValue', val)
-      },
-    },
-  },
-  methods: {
-    getActiveMenuFromRoute() {
-      return this.$route.name
-      // const validPaths = ['dashboard', 'config', 'data', 'logs', 'chat', 'setting', 'about']
-      // const path = this.$route.name
-      // if (validPaths.includes(path)) {
-      //   return path
-      // }
-      // return ''
-    },
-    handleSelect(index) {
-      this.activeMenu = index
-      this.$router.push({ name: index })
-      this.$emit('update:modelValue', false)
-    },
-  },
-  watch: {
-    '$route.name'() {
-      this.activeMenu = this.getActiveMenuFromRoute()
-    },
-  },
+const route = useRoute()
+const router = useRouter()
+
+const activeMenu = ref(route.name)
+const isDevelopMode = ref(localStorage.getItem('isDevelopMode') === 'true' && !IS_DEMO)
+
+function getActiveMenuFromRoute() {
+  return route.name
+  // const validPaths = ['dashboard', 'config', 'data', 'logs', 'chat', 'setting', 'about']
+  // const path = route.name
+  // if (validPaths.includes(path)) {
+  //   return path
+  // }
+  // return ''
 }
+
+function handleSelect(index) {
+  activeMenu.value = index
+  router.push({ name: index })
+  emit('update:modelValue', false)
+}
+
+watch(
+  () => route.name,
+  () => {
+    activeMenu.value = getActiveMenuFromRoute()
+  },
+)
 </script>
 
 <style scoped>

@@ -23,44 +23,39 @@
   </el-card>
 </template>
 
-<script>
+<script setup>
+import { ref, onMounted } from 'vue'
 import axios from '@/axios.mjs'
 import { ElMessage } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 
-export default {
-  name: 'DataModels',
-  data() {
-    const { t } = useI18n()
-    return {
-      modelList: [],
-      expandedKeys: [],
-      t,
-    }
-  },
-  methods: {
-    async fetchModels() {
-      try {
-        const res = await axios.get('/api/database/list')
-        this.modelList = res.data.model_list.map((model) => ({ model, fields: [] }))
-      } catch (e) {
-        ElMessage.error(this.t('message.error.fetch') + e.message)
-      }
-    },
-    async fetchFields(model) {
-      if (model.fields.length) return
-      try {
-        const res = await axios.get(`/api/database/field/${model.model}`)
-        model.fields = res.data.model_fields
-      } catch (e) {
-        ElMessage.error(this.t('message.error.fetch') + e.message)
-      }
-    },
-  },
-  mounted() {
-    this.fetchModels()
-  },
+const { t } = useI18n()
+
+const modelList = ref([])
+const expandedKeys = ref([])
+
+const fetchModels = async () => {
+  try {
+    const res = await axios.get('/api/database/list')
+    modelList.value = res.data.model_list.map((model) => ({ model, fields: [] }))
+  } catch (e) {
+    ElMessage.error(t('message.error.fetch') + e.message)
+  }
 }
+
+const fetchFields = async (model) => {
+  if (model.fields.length) return
+  try {
+    const res = await axios.get(`/api/database/field/${model.model}`)
+    model.fields = res.data.model_fields
+  } catch (e) {
+    ElMessage.error(t('message.error.fetch') + e.message)
+  }
+}
+
+onMounted(() => {
+  fetchModels()
+})
 </script>
 
 <style scoped>

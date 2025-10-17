@@ -187,7 +187,9 @@
   <notFound v-else />
 </template>
 
-<script>
+<script setup>
+import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
+import { useI18n } from 'vue-i18n'
 import axios from '@/axios.mjs'
 import { ElMessageBox, ElMessage } from 'element-plus'
 import { basicSetup } from 'codemirror'
@@ -199,525 +201,506 @@ import { markdown } from '@codemirror/lang-markdown'
 import { python } from '@codemirror/lang-python'
 import { yaml } from '@codemirror/lang-yaml'
 import { oneDark } from '@codemirror/theme-one-dark'
-import { useI18n } from 'vue-i18n'
 import { IS_DEMO } from '@/const'
 import notFound from './notFound.vue'
 
-export default {
-  name: 'FilesPage',
-  components: {
-    notFound,
-  },
-  data() {
-    const { t } = useI18n()
-    return {
-      loading: false,
-      currentPath: '',
-      files: [],
-      showHiddenFiles: false,
-      currentPage: 1,
-      pageSize: 10,
-      totalFiles: 0,
-      showCreateDialog: false,
-      createType: 'dir',
-      createName: '',
-      showUpload: false,
-      previewUrl: '',
-      previewContent: '',
-      previewName: '',
-      previewTextDialogWidth: '90%',
-      fullscreenPreviewVisible: false,
-      showFullscreenPreviewAnim: false,
-      isText: false,
-      emptyDescription: t('files.preview.unsupported'),
-      editorView: null,
-      previewVisible: false,
-      uploadUrl: '/api/files/upload',
-      isDevelopMode: localStorage.getItem('isDevelopMode') === 'true' && !IS_DEMO,
-      t,
+const { t } = useI18n()
+const loading = ref(false)
+const currentPath = ref('')
+const allFiles = ref([])
+const files = ref([])
+const showHiddenFiles = ref(false)
+const currentPage = ref(1)
+const pageSize = ref(10)
+const totalFiles = ref(0)
+const showCreateDialog = ref(false)
+const createType = ref('dir')
+const createName = ref('')
+const showUpload = ref(false)
+const previewUrl = ref('')
+const previewContent = ref('')
+const previewName = ref('')
+const previewTextDialogWidth = ref('90%')
+const fullscreenPreviewVisible = ref(false)
+const showFullscreenPreviewAnim = ref(false)
+const isText = ref(false)
+const emptyDescription = ref(t('files.preview.unsupported'))
+const editorView = ref(null)
+const previewVisible = ref(false)
+const uploadUrl = '/api/files/upload'
+const isDevelopMode = ref(localStorage.getItem('isDevelopMode') === 'true' && !IS_DEMO)
+
+const pathParts = computed(() => {
+  const fullPath = currentPath.value ? `./${currentPath.value}` : '.'
+  return fullPath.split('/')
+})
+
+const isRoot = computed(() => !currentPath.value || currentPath.value === '.')
+
+const uploadHeaders = computed(() => {
+  const token = localStorage.getItem('token')
+  return {
+    Authorization: `Bearer ${token}`,
+  }
+})
+
+watch(currentPath, () => {
+  showUpload.value = false
+  nextTick(() => {
+    scrollBreadcrumbToEnd()
+  })
+})
+
+watch(previewContent, (newVal) => {
+  if (editorView.value && editorView.value.state.doc.toString() !== newVal) {
+    editorView.value.dispatch({
+      changes: { from: 0, to: editorView.value.state.doc.length, insert: newVal },
+    })
+  }
+})
+
+watch(fullscreenPreviewVisible, (val) => {
+  if (val) {
+    document.body.style.overflow = 'hidden'
+  } else {
+    document.body.style.overflow = ''
+  }
+})
+
+const fetchFiles = async () => {
+  if (!isDevelopMode.value) return
+
+  loading.value = true
+  try {
+    const res = await axios.get('/api/files/list', {
+      params: { path: currentPath.value },
+    })
+    allFiles.value = res.data.files || []
+    updateFiles()
+  } catch (e) {
+    if (e.response?.status === 403) {
+      ElMessage.error(t('files.message.error.invalid_path'))
+    } else {
+      ElMessage.error(t('message.error.fetch') + e.message)
     }
-  },
-  computed: {
-    pathParts() {
-      const fullPath = this.currentPath ? `./${this.currentPath}` : '.'
-      return fullPath.split('/')
-    },
-    isRoot() {
-      return !this.currentPath || this.currentPath === '.'
-    },
-    fullscreenImageStyle() {
-      if (!this.previewUrl) return {}
-      return {
-        maxWidth: '90vw',
-        maxHeight: '90vh',
-        display: 'block',
-        margin: 'auto',
-      }
-    },
-    uploadHeaders() {
-      const token = localStorage.getItem('token')
-      return {
-        Authorization: `Bearer ${token}`,
-      }
-    },
-  },
-  watch: {
-    currentPath() {
-      this.showUpload = false
-      this.$nextTick(() => {
-        this.scrollBreadcrumbToEnd()
-      })
-    },
-    previewContent(newVal) {
-      if (this.editorView && this.editorView.state.doc.toString() !== newVal) {
-        this.editorView.dispatch({
-          changes: { from: 0, to: this.editorView.state.doc.length, insert: newVal },
-        })
-      }
-    },
-    fullscreenPreviewVisible(val) {
-      if (val) {
-        document.body.style.overflow = 'hidden'
-      } else {
-        document.body.style.overflow = ''
-      }
-    },
-  },
-  methods: {
-    async fetchFiles() {
-      if (this.isDevelopMode) {
-        this.loading = true
-        try {
-          const res = await axios.get('/api/files/list', {
-            params: { path: this.currentPath },
-          })
-          this.allFiles = res.data.files || []
-          this.updateFiles()
-        } catch (e) {
-          if (e.response?.status === 403) {
-            ElMessage.error(this.t('files.message.error.invalid_path'))
-          } else {
-            ElMessage.error(this.t('message.error.fetch') + e.message)
-          }
-        } finally {
-          this.loading = false
-        }
-      }
-    },
-
-    scrollBreadcrumbToEnd() {
-      const wrapper = this.$refs.breadcrumbWrapper
-      if (wrapper) {
-        wrapper.scrollLeft = wrapper.scrollWidth
-      }
-    },
-
-    goToPath(idx) {
-      const parts = this.pathParts.slice(1, idx + 1)
-      const newPath = parts.join('/')
-
-      this.currentPath = newPath
-      this.fetchFiles()
-    },
-
-    updateFiles() {
-      const filtered = this.showHiddenFiles
-        ? this.allFiles
-        : this.allFiles.filter((f) => !f.name.startsWith('.'))
-
-      this.totalFiles = filtered.length
-
-      const start = (this.currentPage - 1) * this.pageSize
-      const end = start + this.pageSize
-
-      this.files = filtered.slice(start, end)
-    },
-
-    handleUploadError(err, _file, _fileList) {
-      if (err.status === 413) {
-        ElMessage.error(this.t('files.message.upload.error.too_large'))
-      } else if (err.status === 403) {
-        ElMessage.error(this.t('files.message.error.invalid_path'))
-      } else {
-        ElMessage.error(this.t('message.error.fetch') + err.message)
-      }
-    },
-
-    formatSize(row) {
-      const size = row.size
-      if (row.is_dir) return '--'
-      if (size < 1024) return `${size} B`
-      if (size < 1024 * 1024) return `${(size / 1024).toFixed(1)} KB`
-      return `${(size / (1024 * 1024)).toFixed(1)} MB`
-    },
-
-    formatDate(row) {
-      if (!row.modified) return ''
-      const date = new Date(row.modified)
-      const pad = (n) => String(n).padStart(2, '0')
-      return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`
-    },
-
-    handlePageChange(page) {
-      this.currentPage = page
-      this.fetchFiles()
-    },
-
-    handleSizeChange(size) {
-      this.pageSize = size
-      this.currentPage = 1
-      this.fetchFiles()
-    },
-
-    toggleHiddenFiles() {
-      this.showHiddenFiles = !this.showHiddenFiles
-      this.currentPage = 1
-      this.updateFiles()
-    },
-
-    openDir(name) {
-      this.currentPath = this.currentPath ? `${this.currentPath}/${name}` : name
-      this.fetchFiles()
-    },
-
-    goUp() {
-      const parts = this.currentPath.split('/')
-      parts.pop()
-      this.currentPath = parts.join('/')
-      this.fetchFiles()
-    },
-
-    refresh() {
-      this.fetchFiles()
-    },
-
-    async createItem() {
-      if (!this.createName) {
-        ElMessage.warning(this.t('files.message.warning.input_name'))
-        return
-      }
-
-      try {
-        await axios.post('/api/files/create', null, {
-          params: {
-            path: this.currentPath,
-            name: this.createName,
-            filetype: this.createType,
-          },
-          headers: this.uploadHeaders,
-        })
-        ElMessage.success(this.t('files.message.create.success'))
-        this.showCreateDialog = false
-        this.createName = ''
-        this.fetchFiles()
-      } catch (e) {
-        if (e.response?.status === 403) {
-          ElMessage.error(this.t('files.message.error.invalid_path'))
-        } else if (e.response?.status === 400) {
-          ElMessage.error(this.t('files.message.create.error.failed'))
-        } else {
-          ElMessage.error(this.t('message.error.fetch') + e.message)
-        }
-      }
-    },
-
-    toggleUpload() {
-      this.showUpload = !this.showUpload
-    },
-
-    updatePreviewTextDialogWidth() {
-      const screenWidth = window.innerWidth
-      if (screenWidth < 1024) {
-        this.previewTextDialogWidth = '90%'
-      } else {
-        const newWidth = screenWidth * 0.9 - 400
-        this.previewTextDialogWidth = `${newWidth}px`
-      }
-    },
-
-    getLanguageExtension(filename) {
-      const ext = filename.split('.').pop().toLowerCase()
-      switch (ext) {
-        case 'html':
-        case 'htm':
-          return html()
-        case 'json':
-          return json()
-        case 'md':
-        case 'markdown':
-          return markdown()
-        case 'py':
-          return python()
-        case 'yml':
-        case 'yaml':
-          return yaml()
-        default:
-          return null
-      }
-    },
-
-    initTextPreview() {
-      if (!this.isText) return
-
-      if (this.previewContent === '\u200B') {
-        this.previewContent = ''
-      }
-
-      const langExt = this.getLanguageExtension(this.previewName)
-      const extensions = [basicSetup, oneDark, EditorView.lineWrapping]
-      if (langExt) {
-        extensions.push(langExt)
-      }
-
-      if (this.editorView) {
-        this.editorView.destroy()
-        this.editorView = null
-      }
-
-      const state = EditorState.create({
-        doc: this.previewContent,
-        extensions,
-      })
-
-      this.editorView = new EditorView({
-        state,
-        parent: this.$refs.textEditor,
-      })
-    },
-
-    async previewFile(name) {
-      const path = this.currentPath ? `${this.currentPath}/${name}` : name
-
-      this.isText = false
-      this.emptyDescription = this.t('files.preview.unsupported')
-      try {
-        const res = await axios.get('/api/files/preview', {
-          params: { path },
-          responseType: 'blob',
-        })
-
-        const contentType = res.data.type || res.headers['content-type']
-
-        if (contentType.startsWith('image')) {
-          this.previewUrl = URL.createObjectURL(res.data)
-          this.fullscreenPreviewVisible = true
-          this.showFullscreenPreviewAnim = false
-          this.$nextTick(() => {
-            setTimeout(() => {
-              this.showFullscreenPreviewAnim = true
-            }, 10)
-          })
-        } else if (contentType.startsWith('text')) {
-          this.isText = true
-          this.previewName = name
-          const text = await res.data.text()
-          this.previewContent = text || '\u200B'
-          this.$nextTick(this.initTextPreview)
-          this.previewVisible = true
-        } else {
-          this.emptyDescription = this.t('files.preview.unsupported')
-          this.previewVisible = true
-        }
-      } catch (e) {
-        if (e.response?.status === 408) {
-          this.emptyDescription = this.t('files.preview.too_large')
-          this.previewVisible = true
-        } else if (e.response?.status === 403) {
-          ElMessage.error(this.t('files.message.error.invalid_path'))
-        } else if (e.response?.status === 400) {
-          this.emptyDescription = this.t('files.preview.failed')
-          this.previewVisible = true
-        } else {
-          ElMessage.error(this.t('message.error.fetch') + e.message)
-        }
-      }
-    },
-
-    closeFullscreenPreview() {
-      const imgEl = this.$refs.fullscreenImage
-      const wrapper = document.querySelector('.fullscreen-preview')
-
-      if (imgEl && wrapper) {
-        this.showFullscreenPreviewAnim = false
-        setTimeout(() => {
-          this.fullscreenPreviewVisible = false
-          this.previewUrl = ''
-        }, 300)
-      } else {
-        this.fullscreenPreviewVisible = false
-        this.previewUrl = ''
-      }
-    },
-
-    updateFullscreenLeft() {
-      const el = document.querySelector('.fullscreen-preview')
-      if (!el) return
-      el.style.left = window.innerWidth >= 1024 ? '60px' : '0'
-    },
-
-    closePreview() {
-      this.previewVisible = false
-
-      if (this.editorView) {
-        this.editorView.destroy()
-        this.editorView = null
-      }
-      this.previewContent = ''
-      this.previewName = ''
-      this.isText = true
-      this.previewUrl = ''
-    },
-
-    async saveFile() {
-      if (!this.editorView) return
-
-      const content = this.editorView.state.doc.toString()
-      const blob = new Blob([content], { type: 'text/plain' })
-      const formData = new FormData()
-      formData.append('file', blob, this.previewName)
-      formData.append('path', this.currentPath)
-
-      try {
-        await axios.post(this.uploadUrl, formData, {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-            ...this.uploadHeaders,
-          },
-        })
-        ElMessage.success(this.t('files.message.save.success'))
-        this.previewVisible = false
-        this.closePreview()
-        this.fetchFiles()
-      } catch (e) {
-        if (e.response.status === 400) {
-          ElMessage.error(this.t('files.message.save.error.failed'))
-        } else {
-          ElMessage.error(this.t('message.error.fetch') + e.message)
-        }
-      }
-    },
-
-    async handleBeforeUpload(file) {
-      const exists = this.files.some((f) => !f.is_dir && f.name === file.name)
-      if (exists) {
-        try {
-          await ElMessageBox.confirm(
-            this.t('files.confirm.file_exists', { name: file.name }),
-            this.t('files.title.file_exists'),
-            {
-              confirmButtonText: this.t('files.button.replace'),
-              cancelButtonText: this.t('button.cancel'),
-              type: 'warning',
-            },
-          )
-          return true
-        } catch {
-          return false
-        }
-      }
-      return true
-    },
-
-    async rename(row) {
-      try {
-        const { value: newName } = await ElMessageBox.prompt('', this.t('files.title.rename'), {
-          confirmButtonText: this.t('button.confirm'),
-          cancelButtonText: this.t('button.cancel'),
-          inputValue: row.name,
-          beforeClose: (action, instance, done) => {
-            if (action === 'confirm' && !instance.inputValue.trim()) {
-              ElMessage.warning(this.t('files.message.warning.input_new_name'))
-              return
-            }
-            done()
-          },
-        })
-
-        const path = this.currentPath ? `${this.currentPath}/${row.name}` : row.name
-
-        await axios.post('/api/files/rename', {
-          path,
-          new_name: newName,
-        })
-
-        this.fetchFiles()
-        ElMessage.success(this.t('files.message.rename.success'))
-      } catch (e) {
-        if (e === 'cancel') {
-          return
-        }
-        if (e.response?.status === 409) {
-          ElMessage.error(this.t('files.message.rename.error.exists'))
-        } else if (e.response?.status === 404) {
-          ElMessage.error(this.t('files.message.rename.error.not_found'))
-        } else if (e.response?.status === 403) {
-          ElMessage.error(this.t('files.message.error.invalid_path'))
-        } else if (e.response?.status === 400) {
-          ElMessage.error(this.t('files.message.rename.error.failed'))
-        } else {
-          ElMessage.error(this.t('message.error.fetch') + e.message)
-        }
-      }
-    },
-
-    async remove(row) {
-      try {
-        await ElMessageBox.confirm(this.t('files.confirm.delete'), this.t('files.title.delete'), {
-          confirmButtonText: this.t('button.confirm'),
-          cancelButtonText: this.t('button.cancel'),
-          type: 'warning',
-        })
-
-        const path = this.currentPath ? `${this.currentPath}/${row.name}` : row.name
-
-        await axios.delete('/api/files/delete', { params: { path } })
-
-        this.fetchFiles()
-        ElMessage.success(this.t('files.message.delete.success'))
-      } catch (e) {
-        if (e === 'cancel') {
-          return
-        }
-        if (e.response?.status === 404) {
-          ElMessage.error(this.t('files.message.delete.error.not_found'))
-        } else if (e.response?.status === 403) {
-          ElMessage.error(this.t('files.message.error.invalid_path'))
-        } else if (e.response?.status === 400) {
-          ElMessage.error(this.t('files.message.delete.error.failed'))
-        } else {
-          ElMessage.error(this.t('message.error.fetch') + e.message)
-        }
-      }
-    },
-
-    async download(row) {
-      const path = this.currentPath ? `${this.currentPath}/${row.name}` : row.name
-      const res = await axios.get('/api/files/download', {
-        params: { path },
-        responseType: 'blob',
-      })
-      const url = URL.createObjectURL(res.data)
-      const a_ = document.createElement('a')
-      a_.href = url
-      a_.download = row.name
-      a_.click()
-      URL.revokeObjectURL(url)
-    },
-  },
-
-  mounted() {
-    this.fetchFiles()
-    window.addEventListener('resize', this.updateFullscreenLeft)
-    window.addEventListener('resize', this.updatePreviewTextDialogWidth)
-    this.updateFullscreenLeft()
-    this.updatePreviewTextDialogWidth()
-  },
-
-  beforeUnmount() {
-    window.removeEventListener('resize', this.updateFullscreenLeft)
-    window.removeEventListener('resize', this.updatePreviewTextDialogWidth)
-  },
+  } finally {
+    loading.value = false
+  }
 }
+
+const scrollBreadcrumbToEnd = () => {
+  const wrapper = document.querySelector('.breadcrumb-wrapper')
+  if (wrapper) {
+    wrapper.scrollLeft = wrapper.scrollWidth
+  }
+}
+
+const goToPath = (idx) => {
+  const parts = pathParts.value.slice(1, idx + 1)
+  const newPath = parts.join('/')
+  currentPath.value = newPath
+  fetchFiles()
+}
+
+const updateFiles = () => {
+  const filtered = showHiddenFiles.value
+    ? allFiles.value
+    : allFiles.value.filter((f) => !f.name.startsWith('.'))
+
+  totalFiles.value = filtered.length
+
+  const start = (currentPage.value - 1) * pageSize.value
+  const end = start + pageSize.value
+
+  files.value = filtered.slice(start, end)
+}
+
+const handleUploadError = (err, _file, _fileList) => {
+  if (err.status === 413) {
+    ElMessage.error(t('files.message.upload.error.too_large'))
+  } else if (err.status === 403) {
+    ElMessage.error(t('files.message.error.invalid_path'))
+  } else {
+    ElMessage.error(t('message.error.fetch') + err.message)
+  }
+}
+
+const formatSize = (row) => {
+  const size = row.size
+  if (row.is_dir) return '--'
+  if (size < 1024) return `${size} B`
+  if (size < 1024 * 1024) return `${(size / 1024).toFixed(1)} KB`
+  return `${(size / (1024 * 1024)).toFixed(1)} MB`
+}
+
+const formatDate = (row) => {
+  if (!row.modified) return ''
+  const date = new Date(row.modified)
+  const pad = (n) => String(n).padStart(2, '0')
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`
+}
+
+const handlePageChange = (page) => {
+  currentPage.value = page
+  fetchFiles()
+}
+
+const handleSizeChange = (size) => {
+  pageSize.value = size
+  currentPage.value = 1
+  fetchFiles()
+}
+
+const toggleHiddenFiles = () => {
+  showHiddenFiles.value = !showHiddenFiles.value
+  currentPage.value = 1
+  updateFiles()
+}
+
+const openDir = (name) => {
+  currentPath.value = currentPath.value ? `${currentPath.value}/${name}` : name
+  fetchFiles()
+}
+
+const goUp = () => {
+  const parts = currentPath.value.split('/')
+  parts.pop()
+  currentPath.value = parts.join('/')
+  fetchFiles()
+}
+
+const refresh = () => {
+  fetchFiles()
+}
+
+const createItem = async () => {
+  if (!createName.value) {
+    ElMessage.warning(t('files.message.warning.input_name'))
+    return
+  }
+
+  try {
+    await axios.post('/api/files/create', null, {
+      params: {
+        path: currentPath.value,
+        name: createName.value,
+        filetype: createType.value,
+      },
+      headers: uploadHeaders.value,
+    })
+    ElMessage.success(t('files.message.create.success'))
+    showCreateDialog.value = false
+    createName.value = ''
+    fetchFiles()
+  } catch (e) {
+    if (e.response?.status === 403) {
+      ElMessage.error(t('files.message.error.invalid_path'))
+    } else if (e.response?.status === 400) {
+      ElMessage.error(t('files.message.create.error.failed'))
+    } else {
+      ElMessage.error(t('message.error.fetch') + e.message)
+    }
+  }
+}
+
+const toggleUpload = () => {
+  showUpload.value = !showUpload.value
+}
+
+const updatePreviewTextDialogWidth = () => {
+  const screenWidth = window.innerWidth
+  if (screenWidth < 1024) {
+    previewTextDialogWidth.value = '90%'
+  } else {
+    const newWidth = screenWidth * 0.9 - 400
+    previewTextDialogWidth.value = `${newWidth}px`
+  }
+}
+
+const getLanguageExtension = (filename) => {
+  const ext = filename.split('.').pop().toLowerCase()
+  switch (ext) {
+    case 'html':
+    case 'htm':
+      return html()
+    case 'json':
+      return json()
+    case 'md':
+    case 'markdown':
+      return markdown()
+    case 'py':
+      return python()
+    case 'yml':
+    case 'yaml':
+      return yaml()
+    default:
+      return null
+  }
+}
+
+const initTextPreview = () => {
+  if (!isText.value) return
+
+  if (previewContent.value === '\u200B') {
+    previewContent.value = ''
+  }
+
+  const langExt = getLanguageExtension(previewName.value)
+  const extensions = [basicSetup, oneDark, EditorView.lineWrapping]
+  if (langExt) {
+    extensions.push(langExt)
+  }
+
+  if (editorView.value) {
+    editorView.value.destroy()
+    editorView.value = null
+  }
+
+  const state = EditorState.create({
+    doc: previewContent.value,
+    extensions,
+  })
+
+  const textEditorEl = document.querySelector('.text-editor')
+  if (textEditorEl) {
+    editorView.value = new EditorView({
+      state,
+      parent: textEditorEl,
+    })
+  }
+}
+
+const previewFile = async (name) => {
+  const path = currentPath.value ? `${currentPath.value}/${name}` : name
+
+  isText.value = false
+  emptyDescription.value = t('files.preview.unsupported')
+  try {
+    const res = await axios.get('/api/files/preview', {
+      params: { path },
+      responseType: 'blob',
+    })
+
+    const contentType = res.data.type || res.headers['content-type']
+
+    if (contentType.startsWith('image')) {
+      previewUrl.value = URL.createObjectURL(res.data)
+      fullscreenPreviewVisible.value = true
+      showFullscreenPreviewAnim.value = false
+      nextTick(() => {
+        setTimeout(() => {
+          showFullscreenPreviewAnim.value = true
+        }, 10)
+      })
+    } else if (contentType.startsWith('text')) {
+      isText.value = true
+      previewName.value = name
+      const text = await res.data.text()
+      previewContent.value = text || '\u200B'
+      nextTick(initTextPreview)
+      previewVisible.value = true
+    } else {
+      emptyDescription.value = t('files.preview.unsupported')
+      previewVisible.value = true
+    }
+  } catch (e) {
+    if (e.response?.status === 408) {
+      emptyDescription.value = t('files.preview.too_large')
+      previewVisible.value = true
+    } else if (e.response?.status === 403) {
+      ElMessage.error(t('files.message.error.invalid_path'))
+    } else if (e.response?.status === 400) {
+      emptyDescription.value = t('files.preview.failed')
+      previewVisible.value = true
+    } else {
+      ElMessage.error(t('message.error.fetch') + e.message)
+    }
+  }
+}
+
+const closeFullscreenPreview = () => {
+  const imgEl = document.querySelector('.fullscreen-image')
+  const wrapper = document.querySelector('.fullscreen-preview')
+
+  if (imgEl && wrapper) {
+    showFullscreenPreviewAnim.value = false
+    setTimeout(() => {
+      fullscreenPreviewVisible.value = false
+      previewUrl.value = ''
+    }, 300)
+  } else {
+    fullscreenPreviewVisible.value = false
+    previewUrl.value = ''
+  }
+}
+
+const updateFullscreenLeft = () => {
+  const el = document.querySelector('.fullscreen-preview')
+  if (!el) return
+  el.style.left = window.innerWidth >= 1024 ? '60px' : '0'
+}
+
+const closePreview = () => {
+  previewVisible.value = false
+
+  if (editorView.value) {
+    editorView.value.destroy()
+    editorView.value = null
+  }
+  previewContent.value = ''
+  previewName.value = ''
+  isText.value = true
+  previewUrl.value = ''
+}
+
+const saveFile = async () => {
+  if (!editorView.value) return
+
+  const content = editorView.value.state.doc.toString()
+  const blob = new Blob([content], { type: 'text/plain' })
+  const formData = new FormData()
+  formData.append('file', blob, previewName.value)
+  formData.append('path', currentPath.value)
+
+  try {
+    await axios.post(uploadUrl, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+        ...uploadHeaders.value,
+      },
+    })
+    ElMessage.success(t('files.message.save.success'))
+    previewVisible.value = false
+    closePreview()
+    fetchFiles()
+  } catch (e) {
+    if (e.response?.status === 400) {
+      ElMessage.error(t('files.message.save.error.failed'))
+    } else {
+      ElMessage.error(t('message.error.fetch') + e.message)
+    }
+  }
+}
+
+const handleBeforeUpload = async (file) => {
+  const exists = files.value.some((f) => !f.is_dir && f.name === file.name)
+  if (exists) {
+    try {
+      await ElMessageBox.confirm(
+        t('files.confirm.file_exists', { name: file.name }),
+        t('files.title.file_exists'),
+        {
+          confirmButtonText: t('files.button.replace'),
+          cancelButtonText: t('button.cancel'),
+          type: 'warning',
+        },
+      )
+      return true
+    } catch {
+      return false
+    }
+  }
+  return true
+}
+
+const rename = async (row) => {
+  try {
+    const { value: newName } = await ElMessageBox.prompt('', t('files.title.rename'), {
+      confirmButtonText: t('button.confirm'),
+      cancelButtonText: t('button.cancel'),
+      inputValue: row.name,
+      beforeClose: (action, instance, done) => {
+        if (action === 'confirm' && !instance.inputValue.trim()) {
+          ElMessage.warning(t('files.message.warning.input_new_name'))
+          return
+        }
+        done()
+      },
+    })
+
+    const path = currentPath.value ? `${currentPath.value}/${row.name}` : row.name
+
+    await axios.post('/api/files/rename', {
+      path,
+      new_name: newName,
+    })
+
+    fetchFiles()
+    ElMessage.success(t('files.message.rename.success'))
+  } catch (e) {
+    if (e === 'cancel') {
+      return
+    }
+    if (e.response?.status === 409) {
+      ElMessage.error(t('files.message.rename.error.exists'))
+    } else if (e.response?.status === 404) {
+      ElMessage.error(t('files.message.rename.error.not_found'))
+    } else if (e.response?.status === 403) {
+      ElMessage.error(t('files.message.error.invalid_path'))
+    } else if (e.response?.status === 400) {
+      ElMessage.error(t('files.message.rename.error.failed'))
+    } else {
+      ElMessage.error(t('message.error.fetch') + e.message)
+    }
+  }
+}
+
+const remove = async (row) => {
+  try {
+    await ElMessageBox.confirm(t('files.confirm.delete'), t('files.title.delete'), {
+      confirmButtonText: t('button.confirm'),
+      cancelButtonText: t('button.cancel'),
+      type: 'warning',
+    })
+
+    const path = currentPath.value ? `${currentPath.value}/${row.name}` : row.name
+
+    await axios.delete('/api/files/delete', { params: { path } })
+
+    fetchFiles()
+    ElMessage.success(t('files.message.delete.success'))
+  } catch (e) {
+    if (e === 'cancel') {
+      return
+    }
+    if (e.response?.status === 404) {
+      ElMessage.error(t('files.message.delete.error.not_found'))
+    } else if (e.response?.status === 403) {
+      ElMessage.error(t('files.message.error.invalid_path'))
+    } else if (e.response?.status === 400) {
+      ElMessage.error(t('files.message.delete.error.failed'))
+    } else {
+      ElMessage.error(t('message.error.fetch') + e.message)
+    }
+  }
+}
+
+const download = async (row) => {
+  const path = currentPath.value ? `${currentPath.value}/${row.name}` : row.name
+  const res = await axios.get('/api/files/download', {
+    params: { path },
+    responseType: 'blob',
+  })
+  const url = URL.createObjectURL(res.data)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = row.name
+  a.click()
+  URL.revokeObjectURL(url)
+}
+
+onMounted(() => {
+  fetchFiles()
+  window.addEventListener('resize', updateFullscreenLeft)
+  window.addEventListener('resize', updatePreviewTextDialogWidth)
+  updateFullscreenLeft()
+  updatePreviewTextDialogWidth()
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', updateFullscreenLeft)
+  window.removeEventListener('resize', updatePreviewTextDialogWidth)
+})
 </script>
 
 <style scoped>
@@ -725,7 +708,7 @@ export default {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  flex-wrap: wrap; /* 允许换行 */
+  flex-wrap: wrap;
 }
 
 .breadcrumb-wrapper {

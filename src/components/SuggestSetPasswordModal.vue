@@ -18,48 +18,39 @@
   </el-dialog>
 </template>
 
-<script>
-import { useI18n } from 'vue-i18n'
+<script setup>
+import { ref, computed } from 'vue'
+import { useRouter } from 'vue-router'
+import { defineProps, defineEmits } from 'vue'
 
-export default {
-  name: 'SuggestSetPasswordModal',
-  props: {
-    modelValue: {
-      type: Boolean,
-    },
-  },
-  emits: ['update:modelValue'],
-  data() {
-    const { t } = useI18n()
-    return {
-      t,
-      noMorePrompt: false,
-    }
-  },
-  computed: {
-    dialogVisible: {
-      get() {
-        return this.modelValue
-      },
-      set(val) {
-        this.$emit('update:modelValue', val)
-      },
-    },
-  },
-  methods: {
-    handleClose() {
-      if (this.noMorePrompt) {
-        localStorage.setItem('noPasswordPromptDisabled', 'true')
-      }
-      this.dialogVisible = false
-    },
-    goToSetting() {
-      if (this.noMorePrompt) {
-        localStorage.setItem('noPasswordPromptDisabled', 'true')
-      }
-      this.dialogVisible = false
-      this.$router.push({ name: 'setting' })
-    },
-  },
+const props = defineProps({
+  modelValue: Boolean,
+  default: false,
+})
+
+const emit = defineEmits(['update:modelValue'])
+
+const router = useRouter()
+
+const noMorePrompt = ref(false)
+
+const dialogVisible = computed({
+  get: () => props.modelValue,
+  set: (val) => emit('update:modelValue', val),
+})
+
+function handleClose() {
+  if (noMorePrompt.value) {
+    localStorage.setItem('noPasswordPromptDisabled', 'true')
+  }
+  dialogVisible.value = false
+}
+
+function goToSetting() {
+  if (noMorePrompt.value) {
+    localStorage.setItem('noPasswordPromptDisabled', 'true')
+  }
+  dialogVisible.value = false
+  router.push({ name: 'setting' })
 }
 </script>

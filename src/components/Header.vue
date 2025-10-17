@@ -17,56 +17,121 @@
       </el-button>
     </div>
   </el-header>
+
+  <div
+    v-if="showHelp"
+    class="help-iframe-wrapper"
+    :style="{
+      top: helpIframeStyle.top,
+      left: helpIframeStyle.left,
+      width: helpIframeStyle.width,
+      height: helpIframeStyle.height,
+    }"
+    @mousedown="startDrag"
+  >
+    <div class="help-iframe-header">
+      <span>{{ $t('header.button.doc') }}</span>
+      <div class="help-iframe-actions">
+        <button class="close-btn" @click="showHelp = false">×</button>
+      </div>
+    </div>
+    <iframe ref="helpIframe" :src="helpUrl" frameborder="0" class="help-iframe-content"></iframe>
+  </div>
 </template>
 
-<script>
-import { useI18n } from 'vue-i18n'
+<script setup>
+import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { defineProps, defineEmits } from 'vue'
 
-export default {
-  name: 'AppHeader',
-  emits: ['toggle-sidebar'],
-  props: {
-    userVerified: {
-      type: Boolean,
-      default: false,
-    },
+const props = defineProps({
+  userVerified: {
+    type: Boolean,
+    default: false,
   },
-  data() {
-    const { t } = useI18n()
-    return {
-      t,
-      isDarkMode: false,
-      screenWidth: window.innerWidth,
-    }
-  },
-  mounted() {
-    const savedTheme = localStorage.getItem('isDarkMode')
-    if (savedTheme !== null) {
-      this.isDarkMode = JSON.parse(savedTheme)
-    }
-    window.addEventListener('resize', this.updateScreenWidth)
-  },
-  beforeUnmount() {
-    window.removeEventListener('resize', this.updateScreenWidth)
-  },
-  methods: {
-    updateScreenWidth() {
-      this.screenWidth = window.innerWidth
-    },
-    goToHelp() {
-      window.open('https://bot.teahouse.team', '_blank')
-    },
-    toggleDarkMode() {
-      this.isDarkMode = !this.isDarkMode
-      document.documentElement.classList.toggle('dark', this.isDarkMode)
-      localStorage.setItem('isDarkMode', JSON.stringify(this.isDarkMode))
-    },
-    switchSidebar() {
-      if (!this.userVerified) return
-      this.$emit('toggle-sidebar')
-    },
-  },
+})
+
+const emit = defineEmits(['toggle-sidebar'])
+
+const isDarkMode = ref(false)
+const screenWidth = ref(window.innerWidth)
+
+const showHelp = ref(false)
+const helpUrl = 'https://bot.teahouse.team'
+
+const helpIframeStyle = ref({
+  top: '50px',
+  left: '50%',
+  transform: 'translateX(-50%)',
+  width: '375px',
+  height: '667px',
+})
+
+let isDragging = false
+let dragStartX = 0
+let dragStartY = 0
+let initialTop = 0
+let initialLeft = 0
+
+function updateScreenWidth() {
+  screenWidth.value = window.innerWidth
 }
+
+function goToHelp() {
+  if (screenWidth.value < 400) {
+    window.open(helpUrl, '_blank')
+  } else {
+    showHelp.value = true
+  }
+}
+
+function startDrag(e) {
+  if (e.target.classList.contains('close-btn')) return
+  isDragging = true
+  dragStartX = e.clientX
+  dragStartY = e.clientY
+  initialTop = parseInt(helpIframeStyle.value.top)
+  initialLeft = parseInt(helpIframeStyle.value.left)
+  window.addEventListener('mousemove', onDrag)
+  window.addEventListener('mouseup', stopDrag)
+}
+
+function onDrag(e) {
+  if (!isDragging) return
+  const deltaX = e.clientX - dragStartX
+  const deltaY = e.clientY - dragStartY
+  helpIframeStyle.value.top = `${initialTop + deltaY}px`
+  helpIframeStyle.value.left = `${initialLeft + deltaX}px`
+}
+
+function stopDrag() {
+  isDragging = false
+  window.removeEventListener('mousemove', onDrag)
+  window.removeEventListener('mouseup', stopDrag)
+}
+
+function toggleDarkMode() {
+  isDarkMode.value = !isDarkMode.value
+  document.documentElement.classList.toggle('dark', isDarkMode.value)
+  localStorage.setItem('isDarkMode', JSON.stringify(isDarkMode.value))
+}
+
+function switchSidebar() {
+  if (!props.userVerified) return
+  emit('toggle-sidebar')
+}
+
+onMounted(() => {
+  const savedTheme = localStorage.getItem('isDarkMode')
+  if (savedTheme !== null) {
+    isDarkMode.value = JSON.parse(savedTheme)
+    document.documentElement.classList.toggle('dark', isDarkMode.value)
+  }
+  window.addEventListener('resize', updateScreenWidth)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', updateScreenWidth)
+})
 </script>
 
 <style scoped>
@@ -187,5 +252,56 @@ export default {
 
 .lang-select {
   min-width: 100px;
+}
+.help-iframe-wrapper {
+  position: fixed;
+  border: 1px solid #ccc;
+  background-color: white;
+  z-index: 9999;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.help-iframe-header {
+  height: 36px;
+  background: #323437;
+  color: white;
+  cursor: move;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 8px;
+  font-size: 14px;
+}
+
+.help-iframe-actions button {
+  margin-left: 4px;
+  background: transparent;
+  border: none;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.help-iframe-actions button:hover {
+  color: var(--el-color-primary);
+}
+
+.help-iframe-content {
+  flex: 1;
+  width: 100%;
+}
+.close-btn {
+  font-size: 16px;
+  cursor: pointer;
+  background: transparent;
+  border: none;
+  color: white;
+}
+.close-btn:hover {
+  color: #666;
 }
 </style>

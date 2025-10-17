@@ -6,36 +6,30 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import { ref, onMounted } from 'vue'
 import { IS_DEMO } from '@/const'
 
-export default {
-  name: 'SwitchDevelopMode',
-  data() {
-    return {
-      value1: false,
-      loading: false,
-      showDevelopMode: localStorage.getItem('showDevelopMode') === 'true' && !IS_DEMO,
-    }
-  },
-  mounted() {
-    this.value1 = Boolean(localStorage.getItem('isDevelopMode'))
-  },
-  methods: {
-    handleSwitchChange(val) {
-      this.loading = true
+const value1 = ref(false)
+const loading = ref(false)
+const showDevelopMode = ref(localStorage.getItem('showDevelopMode') === 'true' && !IS_DEMO)
 
-      setTimeout(() => {
-        if (val) {
-          localStorage.setItem('isDevelopMode', 'true')
-        } else {
-          localStorage.removeItem('isDevelopMode')
-        }
-        this.loading = false
-        location.reload()
-      }, 300)
-    },
-  },
+onMounted(() => {
+  value1.value = Boolean(localStorage.getItem('isDevelopMode'))
+})
+
+function handleSwitchChange(val) {
+  loading.value = true
+
+  setTimeout(() => {
+    if (val) {
+      localStorage.setItem('isDevelopMode', 'true')
+    } else {
+      localStorage.removeItem('isDevelopMode')
+    }
+    loading.value = false
+    location.reload()
+  }, 300)
 }
 </script>
 

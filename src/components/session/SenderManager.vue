@@ -180,176 +180,184 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import { ref, reactive, onMounted, onBeforeUnmount, watch } from 'vue'
 import axios from '@/axios.mjs'
 import { IS_DEMO } from '@/const'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 
-export default {
-  name: 'SenderManager',
-  data() {
-    const { t } = useI18n()
-    return {
-      editForm: {
-        sender_id: '',
-        warns: 0,
-        petal: 0,
-        superuser: false,
-        trusted: false,
-        blocked: false,
-        sender_data: {},
+const { t } = useI18n()
+
+const editForm = reactive({
+  sender_id: '',
+  warns: 0,
+  petal: 0,
+  superuser: false,
+  trusted: false,
+  blocked: false,
+  sender_data: {},
+})
+
+const senderList = ref([])
+const currentPage = ref(1)
+const pageSize = ref(20)
+const totalItems = ref(0)
+
+const selectedPrefix = ref('')
+const selectedStatus = ref('')
+const platformIdPart = ref('')
+
+const editDialogVisible = ref(false)
+const senderDataString = ref('')
+
+const loading = ref(false)
+let debounceTimer = null
+
+const abortController = new AbortController()
+
+onMounted(() => {
+  refreshData()
+})
+
+onBeforeUnmount(() => {
+  abortController.abort()
+})
+
+const debouncedRefresh = () => {
+  clearTimeout(debounceTimer)
+  debounceTimer = setTimeout(() => {
+    refreshData()
+  }, 500)
+}
+
+const refreshData = async () => {
+  currentPage.value = 1
+  await fetchData()
+}
+
+const fetchData = async () => {
+  loading.value = true
+  try {
+    const response = await axios.get('/api/sender', {
+      signal: abortController.signal,
+      params: {
+        prefix: selectedPrefix.value || undefined,
+        status: selectedStatus.value || undefined,
+        id: platformIdPart.value || undefined,
+        page: currentPage.value,
+        size: pageSize.value,
       },
-      senderList: [],
-      editDialogVisible: false,
-      selectedPrefix: '',
-      selectedStatus: '',
-      platformIdPart: '',
-      senderDataString: '',
-      currentPage: 1,
-      pageSize: 20,
-      totalItems: 0,
-      debounceTimer: null,
-      loading: false,
-      abortController: new AbortController(),
-      t,
+    })
+    if (response.status === 200) {
+      senderList.value = response.data.sender_list
+      totalItems.value = response.data.total || 0
     }
-  },
-  mounted() {
-    this.refreshData()
-  },
-  beforeUnmount() {
-    this.abortController.abort()
-  },
-  methods: {
-    debouncedRefresh() {
-      clearTimeout(this.debounceTimer)
+  } catch (error) {
+    if (axios.isCancel(error)) {
+      console.log('Request canceled')
+    } else {
+      ElMessage.error(t('message.error.fetch') + error)
+    }
+  } finally {
+    loading.value = false
+  }
+}
 
-      this.debounceTimer = setTimeout(() => {
-        this.refreshData()
-      }, 500)
-    },
-    async refreshData() {
-      this.currentPage = 1
-      await this.fetchData()
-    },
-    async fetchData() {
-      this.loading = true
-      try {
-        const response = await axios.get('/api/sender', {
-          signal: this.abortController.signal,
-          params: {
-            prefix: this.selectedPrefix || undefined,
-            status: this.selectedStatus || undefined,
-            id: this.platformIdPart || undefined,
-            page: this.currentPage,
-            size: this.pageSize,
-          },
-        })
-        if (response.status === 200) {
-          this.senderList = response.data.sender_list
-          this.totalItems = response.data.total || 0
-        }
-      } catch (error) {
-        if (axios.isCancel(error)) {
-          console.log('Request canceled')
-        } else {
-          ElMessage.error(this.t('message.error.fetch') + error)
-        }
-      } finally {
-        this.loading = false
-      }
-    },
-    handlePageChange(page) {
-      this.currentPage = page
-      this.fetchData()
-    },
-    handleSuperUserChange(value) {
-      if (value) {
-        this.editForm.trusted = false
-        this.editForm.blocked = false
-      }
-    },
-    handleTrustedChange(value) {
-      if (value) {
-        this.editForm.superuser = false
-        this.editForm.blocked = false
-      }
-    },
-    handleBlockedChange(value) {
-      if (value) {
-        this.editForm.superuser = false
-        this.editForm.trusted = false
-      }
-    },
-    editSender(row) {
-      Object.assign(this.editForm, {
-        sender_id: row.sender_id,
-        superuser: row.superuser,
-        trusted: row.trusted,
-        blocked: row.blocked,
-        warns: row.warns,
-        petal: row.petal,
-        sender_data: row.sender_data ? { ...row.sender_data } : {},
-      })
-      this.senderDataString = JSON.stringify(this.editForm.sender_data, null, 2)
-      this.editDialogVisible = true
-    },
-    async submitEdit() {
-      let parsedSenderData = {}
-      try {
-        parsedSenderData = JSON.parse(this.senderDataString)
-      } catch (e) {
-        ElMessage.error(this.t('session.message.invalid_json'))
-      }
+const handlePageChange = (page) => {
+  currentPage.value = page
+  fetchData()
+}
 
-      const { sender_id, ...payload } = this.editForm
-      payload.sender_data = parsedSenderData
+const handleSuperUserChange = (value) => {
+  if (value) {
+    editForm.trusted = false
+    editForm.blocked = false
+  }
+}
 
-      try {
-        await axios.patch(`/api/sender/${sender_id}`, payload)
-        ElMessage.success(this.t('session.message.success.edit'))
-        this.editDialogVisible = false
-        this.fetchData()
-      } catch (error) {
-        if (error.response?.status === 403 && IS_DEMO) {
-          ElMessage.error(this.t('message.error.demo'))
-        } else {
-          ElMessage.error(this.t('message.error.fetch') + error.message)
-        }
-      }
+const handleTrustedChange = (value) => {
+  if (value) {
+    editForm.superuser = false
+    editForm.blocked = false
+  }
+}
+
+const handleBlockedChange = (value) => {
+  if (value) {
+    editForm.superuser = false
+    editForm.trusted = false
+  }
+}
+
+const editSender = (row) => {
+  Object.assign(editForm, {
+    sender_id: row.sender_id,
+    superuser: row.superuser,
+    trusted: row.trusted,
+    blocked: row.blocked,
+    warns: row.warns,
+    petal: row.petal,
+    sender_data: row.sender_data ? { ...row.sender_data } : {},
+  })
+  senderDataString.value = JSON.stringify(editForm.sender_data, null, 2)
+  editDialogVisible.value = true
+}
+
+const submitEdit = async () => {
+  let parsedSenderData = {}
+  try {
+    parsedSenderData = JSON.parse(senderDataString.value)
+  } catch (e) {
+    ElMessage.error(t('session.message.invalid_json'))
+    return
+  }
+
+  const { sender_id, ...payload } = editForm
+  payload.sender_data = parsedSenderData
+
+  try {
+    await axios.patch(`/api/sender/${sender_id}`, payload)
+    ElMessage.success(t('session.message.success.edit'))
+    editDialogVisible.value = false
+    fetchData()
+  } catch (error) {
+    if (error.response?.status === 403 && IS_DEMO) {
+      ElMessage.error(t('message.error.demo'))
+    } else {
+      ElMessage.error(t('message.error.fetch') + error.message)
+    }
+  }
+}
+
+const confirmDelete = (row) => {
+  ElMessageBox.confirm(
+    t('session.sender.confirm.message', { sender_id: row.sender_id }),
+    t('confirm.warning'),
+    {
+      confirmButtonText: t('button.confirm'),
+      cancelButtonText: t('button.cancel'),
+      type: 'warning',
     },
-    confirmDelete(row) {
-      ElMessageBox.confirm(
-        this.t('session.sender.confirm.message', { sender_id: row.sender_id }),
-        this.t('confirm.warning'),
-        {
-          confirmButtonText: this.t('button.confirm'),
-          cancelButtonText: this.t('button.cancel'),
-          type: 'warning',
-        },
-      )
-        .then(() => {
-          this.deleteSender(row)
-        })
-        .catch(() => {
-          return
-        })
-    },
-    async deleteSender(row) {
-      try {
-        await axios.delete(`/api/sender/${row.sender_id}`)
-        ElMessage.success(this.t('session.message.success.delete'))
-        this.fetchData()
-      } catch (error) {
-        if (error.response?.status === 403 && IS_DEMO) {
-          ElMessage.error(this.t('message.error.demo'))
-        } else {
-          ElMessage.error(this.t('message.error.fetch') + error.message)
-        }
-      }
-    },
-  },
+  )
+    .then(() => {
+      deleteSender(row)
+    })
+    .catch(() => {})
+}
+
+const deleteSender = async (row) => {
+  try {
+    await axios.delete(`/api/sender/${row.sender_id}`)
+    ElMessage.success(t('session.message.success.delete'))
+    fetchData()
+  } catch (error) {
+    if (error.response?.status === 403 && IS_DEMO) {
+      ElMessage.error(t('message.error.demo'))
+    } else {
+      ElMessage.error(t('message.error.fetch') + error.message)
+    }
+  }
 }
 </script>
 

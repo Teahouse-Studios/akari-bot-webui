@@ -22,51 +22,45 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import { ref } from 'vue'
 import axios from '@/axios.mjs'
 import { ElMessage } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 
-export default {
-  name: 'LoginModal',
-  data() {
-    const { t } = useI18n()
-    return {
-      password: '',
-      loading: false,
-      t,
-    }
-  },
-  methods: {
-    async checkPassword() {
-      if (!this.password || !this.password.trim()) {
-        ElMessage.warning(this.t('login.message.warning.empty'))
-        return
-      }
+const { t } = useI18n()
 
-      this.loading = true
-      try {
-        const response = await axios.post('/api/login', {
-          password: this.password,
-        })
-        if (response.status === 200) {
-          ElMessage.success(this.t('login.message.success'))
-          localStorage.setItem('token', response.data.data)
-          location.reload()
-        }
-      } catch (error) {
-        if (error.response?.status === 403) {
-          ElMessage.error(this.t('login.message.error.failed'))
-        } else if (error.response?.status === 429) {
-          ElMessage.error(this.t('login.message.error.abuse'))
-        } else {
-          ElMessage.error(this.t('message.error.fetch') + error.message)
-        }
-      } finally {
-        this.loading = false
-      }
-    },
-  },
+const password = ref('')
+const loading = ref(false)
+
+const checkPassword = async () => {
+  if (!password.value || !password.value.trim()) {
+    ElMessage.warning(t('login.message.warning.empty'))
+    return
+  }
+
+  loading.value = true
+  try {
+    const response = await axios.post('/api/login', {
+      password: password.value,
+    })
+
+    if (response.status === 200) {
+      ElMessage.success(t('login.message.success'))
+      localStorage.setItem('token', response.data.data)
+      location.reload()
+    }
+  } catch (error) {
+    if (error.response?.status === 403) {
+      ElMessage.error(t('login.message.error.failed'))
+    } else if (error.response?.status === 429) {
+      ElMessage.error(t('login.message.error.abuse'))
+    } else {
+      ElMessage.error(t('message.error.fetch') + error.message)
+    }
+  } finally {
+    loading.value = false
+  }
 }
 </script>
 

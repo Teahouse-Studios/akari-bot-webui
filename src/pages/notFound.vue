@@ -10,25 +10,12 @@
   </el-result>
 </template>
 
-<script>
-import { useI18n } from 'vue-i18n'
+<script setup>
 import { useRouter } from 'vue-router'
 
-export default {
-  name: 'NotFoundPage',
-  data() {
-    const router = useRouter()
-    const { t } = useI18n()
+const router = useRouter()
 
-    return {
-      router,
-      t,
-    }
-  },
-  methods: {
-    goHome() {
-      this.router.push('/')
-    },
-  },
+function goHome() {
+  router.push('/')
 }
 </script>

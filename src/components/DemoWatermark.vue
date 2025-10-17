@@ -11,48 +11,43 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { IS_DEMO } from '@/const'
 
-export default {
-  name: 'DemoWatermark',
-  data() {
-    return {
-      isDemoMode: IS_DEMO,
-      watermarks: [],
-      spacingX: 300,
-      spacingY: 200,
-    }
-  },
-  mounted() {
-    if (this.isDemoMode) {
-      this.generateWatermarks()
-      window.addEventListener('resize', this.generateWatermarks)
-    }
-  },
-  beforeUnmount() {
-    window.removeEventListener('resize', this.generateWatermarks)
-  },
-  methods: {
-    generateWatermarks() {
-      const width = window.innerWidth
-      const height = window.innerHeight
-      const cols = Math.ceil(width / this.spacingX)
-      const rows = Math.ceil(height / this.spacingY)
-      const marks = []
+const isDemoMode = IS_DEMO
+const watermarks = ref([])
+const spacingX = 300
+const spacingY = 200
 
-      for (let r = 0; r < rows; r++) {
-        for (let c = 0; c < cols; c++) {
-          marks.push({
-            top: r * this.spacingY,
-            left: c * this.spacingX,
-          })
-        }
-      }
-      this.watermarks = marks
-    },
-  },
+const generateWatermarks = () => {
+  const width = window.innerWidth
+  const height = window.innerHeight
+  const cols = Math.ceil(width / spacingX)
+  const rows = Math.ceil(height / spacingY)
+  const marks = []
+
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      marks.push({
+        top: r * spacingY,
+        left: c * spacingX,
+      })
+    }
+  }
+  watermarks.value = marks
 }
+
+onMounted(() => {
+  if (isDemoMode) {
+    generateWatermarks()
+    window.addEventListener('resize', generateWatermarks)
+  }
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', generateWatermarks)
+})
 </script>
 
 <style scoped>

@@ -296,198 +296,206 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import { ref, reactive, onMounted, onBeforeUnmount } from 'vue'
 import axios from '@/axios.mjs'
 import { IS_DEMO } from '@/const'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 
-export default {
-  name: 'TargetManager',
-  data() {
-    const { t } = useI18n()
-    return {
-      editForm: {
-        target_id: '',
-        locale: '',
-        muted: false,
-        blocked: false,
-        modules: [],
-        custom_admins: [],
-        banned_users: [],
-        target_data: {},
+const { t } = useI18n()
+
+const editForm = reactive({
+  target_id: '',
+  locale: '',
+  muted: false,
+  blocked: false,
+  modules: [],
+  custom_admins: [],
+  banned_users: [],
+  target_data: {},
+})
+
+const targetList = ref([])
+const allModules = ref([])
+const selectedModules = ref([])
+const selectedAdmins = ref([])
+const selectedBanned = ref([])
+
+const moduleDialogVisible = ref(false)
+const adminDialogVisible = ref(false)
+const bannedDialogVisible = ref(false)
+const editDialogVisible = ref(false)
+
+const selectedPrefix = ref('')
+const selectedStatus = ref('')
+const platformIdPart = ref('')
+const targetDataString = ref('')
+
+const debounceTimer = ref(null)
+const currentPage = ref(1)
+const pageSize = ref(20)
+const totalItems = ref(0)
+const loading = ref(false)
+const abortController = new AbortController()
+
+onMounted(() => {
+  refreshData()
+})
+
+onBeforeUnmount(() => {
+  abortController.abort()
+})
+
+const debouncedRefresh = () => {
+  clearTimeout(debounceTimer.value)
+  debounceTimer.value = setTimeout(() => {
+    refreshData()
+  }, 500)
+}
+
+const refreshData = async () => {
+  currentPage.value = 1
+  await fetchData()
+  fetchAllModules()
+}
+
+const fetchData = async () => {
+  loading.value = true
+  try {
+    const response = await axios.get('/api/target', {
+      signal: abortController.signal,
+      params: {
+        prefix: selectedPrefix.value || undefined,
+        status: selectedStatus.value || undefined,
+        id: platformIdPart.value || undefined,
+        page: currentPage.value,
+        size: pageSize.value,
       },
-      targetList: [],
-      moduleDialogVisible: false,
-      adminDialogVisible: false,
-      bannedDialogVisible: false,
-      editDialogVisible: false,
-      selectedAdmins: [],
-      selectedBanned: [],
-      allModules: [],
-      selectedModules: [],
-      selectedPrefix: '',
-      selectedStatus: '',
-      platformIdPart: '',
-      targetDataString: '',
-      debounceTimer: null,
-      currentPage: 1,
-      pageSize: 20,
-      totalItems: 0,
-      loading: false,
-      abortController: new AbortController(),
-      t,
-    }
-  },
-  mounted() {
-    this.refreshData()
-  },
-  beforeUnmount() {
-    this.abortController.abort()
-  },
-  methods: {
-    debouncedRefresh() {
-      clearTimeout(this.debounceTimer)
-
-      this.debounceTimer = setTimeout(() => {
-        this.refreshData()
-      }, 500)
-    },
-    async refreshData() {
-      this.currentPage = 1
-      await this.fetchData()
-      this.fetchAllModules()
-    },
-    viewModules(row) {
-      this.selectedModules = row.modules
-      this.moduleDialogVisible = true
-    },
-    async fetchData() {
-      this.loading = true
-      try {
-        const response = await axios.get('/api/target', {
-          signal: this.abortController.signal,
-          params: {
-            prefix: this.selectedPrefix || undefined,
-            status: this.selectedStatus || undefined,
-            id: this.platformIdPart || undefined,
-            page: this.currentPage,
-            size: this.pageSize,
-          },
-        })
-        if (response.status === 200) {
-          this.targetList = response.data.target_list.map((item) => {
-            item.modules = Array.isArray(item.modules) ? item.modules : []
-            item.custom_admins = Array.isArray(item.custom_admins) ? item.custom_admins : []
-            return item
-          })
-          this.totalItems = response.data.total || 0
-        }
-      } catch (error) {
-        if (axios.isCancel(error)) {
-          console.log('Request canceled')
-        } else {
-          ElMessage.error(this.t('message.error.fetch') + error)
-        }
-      } finally {
-        this.loading = false
-      }
-    },
-    async fetchAllModules() {
-      try {
-        const response = await axios.get('/api/modules_list')
-        if (response.status === 200 && response.data.modules) {
-          this.allModules = Object.values(response.data.modules)
-        }
-      } catch (error) {
-        if (axios.isCancel(error)) {
-          console.log('Request canceled')
-        } else {
-          ElMessage.error(this.t('message.error.fetch') + error)
-        }
-      }
-    },
-    handlePageChange(page) {
-      this.currentPage = page
-      this.fetchData()
-    },
-    viewAdmins(row) {
-      this.selectedAdmins = row.custom_admins || []
-      this.adminDialogVisible = true
-    },
-    viewBanned(row) {
-      this.selectedBanned = row.banned_users || []
-      this.bannedDialogVisible = true
-    },
-    editTarget(row) {
-      Object.assign(this.editForm, {
-        target_id: row.target_id,
-        locale: row.locale,
-        muted: row.muted,
-        blocked: row.blocked,
-        modules: row.modules ? [...row.modules] : [],
-        custom_admins: row.custom_admins ? [...row.custom_admins] : [],
-        banned_users: row.banned_users ? [...row.banned_users] : [],
-        target_data: row.target_data ? { ...row.target_data } : {},
+    })
+    if (response.status === 200) {
+      targetList.value = response.data.target_list.map((item) => {
+        item.modules = Array.isArray(item.modules) ? item.modules : []
+        item.custom_admins = Array.isArray(item.custom_admins) ? item.custom_admins : []
+        return item
       })
-      this.targetDataString = JSON.stringify(this.editForm.target_data, null, 2)
-      this.editDialogVisible = true
-    },
-    async submitEdit() {
-      let parsedTargetData = {}
-      try {
-        parsedTargetData = JSON.parse(this.targetDataString)
-      } catch (e) {
-        ElMessage.error(this.t('session.message.invalid_json'))
-      }
+      totalItems.value = response.data.total || 0
+    }
+  } catch (error) {
+    if (axios.isCancel(error)) {
+      console.log('Request canceled')
+    } else {
+      ElMessage.error(t('message.error.fetch') + error)
+    }
+  } finally {
+    loading.value = false
+  }
+}
 
-      const { target_id, ...payload } = this.editForm
-      payload.target_data = parsedTargetData
+const fetchAllModules = async () => {
+  try {
+    const response = await axios.get('/api/modules_list')
+    if (response.status === 200 && response.data.modules) {
+      allModules.value = Object.values(response.data.modules)
+    }
+  } catch (error) {
+    if (axios.isCancel(error)) {
+      console.log('Request canceled')
+    } else {
+      ElMessage.error(t('message.error.fetch') + error)
+    }
+  }
+}
 
-      try {
-        await axios.patch(`api/target/${target_id}`, payload)
-        ElMessage.success(this.t('session.message.success.edit'))
-        this.editDialogVisible = false
-        this.fetchData()
-      } catch (error) {
-        if (error.response?.status === 403 && IS_DEMO) {
-          ElMessage.error(this.t('message.error.demo'))
-        } else {
-          ElMessage.error(this.t('message.error.fetch') + error.message)
-        }
-      }
+const handlePageChange = (page) => {
+  currentPage.value = page
+  fetchData()
+}
+
+const viewModules = (row) => {
+  selectedModules.value = row.modules
+  moduleDialogVisible.value = true
+}
+
+const viewAdmins = (row) => {
+  selectedAdmins.value = row.custom_admins || []
+  adminDialogVisible.value = true
+}
+
+const viewBanned = (row) => {
+  selectedBanned.value = row.banned_users || []
+  bannedDialogVisible.value = true
+}
+
+const editTarget = (row) => {
+  Object.assign(editForm, {
+    target_id: row.target_id,
+    locale: row.locale,
+    muted: row.muted,
+    blocked: row.blocked,
+    modules: row.modules ? [...row.modules] : [],
+    custom_admins: row.custom_admins ? [...row.custom_admins] : [],
+    banned_users: row.banned_users ? [...row.banned_users] : [],
+    target_data: row.target_data ? { ...row.target_data } : {},
+  })
+  targetDataString.value = JSON.stringify(editForm.target_data, null, 2)
+  editDialogVisible.value = true
+}
+
+const submitEdit = async () => {
+  let parsedTargetData = {}
+  try {
+    parsedTargetData = JSON.parse(targetDataString.value)
+  } catch (e) {
+    ElMessage.error(t('session.message.invalid_json'))
+    return
+  }
+
+  const { target_id, ...payload } = editForm
+  payload.target_data = parsedTargetData
+
+  try {
+    await axios.patch(`api/target/${target_id}`, payload)
+    ElMessage.success(t('session.message.success.edit'))
+    editDialogVisible.value = false
+    fetchData()
+  } catch (error) {
+    if (error.response?.status === 403 && IS_DEMO) {
+      ElMessage.error(t('message.error.demo'))
+    } else {
+      ElMessage.error(t('message.error.fetch') + error.message)
+    }
+  }
+}
+
+const confirmDelete = (row) => {
+  ElMessageBox.confirm(
+    t('session.target.confirm.message', { target_id: row.target_id }),
+    t('confirm.warning'),
+    {
+      confirmButtonText: t('button.confirm'),
+      cancelButtonText: t('button.cancel'),
+      type: 'warning',
     },
-    confirmDelete(row) {
-      ElMessageBox.confirm(
-        this.t('session.target.confirm.message', { target_id: row.target_id }),
-        this.t('confirm.warning'),
-        {
-          confirmButtonText: this.t('button.confirm'),
-          cancelButtonText: this.t('button.cancel'),
-          type: 'warning',
-        },
-      )
-        .then(() => {
-          this.deleteTarget(row)
-        })
-        .catch(() => {
-          return
-        })
-    },
-    async deleteTarget(row) {
-      try {
-        await axios.delete(`/api/target/${row.target_id}`)
-        ElMessage.success(this.t('session.message.success.delete'))
-        this.fetchData()
-      } catch (error) {
-        if (error.response?.status === 403 && IS_DEMO) {
-          ElMessage.error(this.t('message.error.demo'))
-        } else {
-          ElMessage.error(this.t('message.error.fetch') + error.message)
-        }
-      }
-    },
-  },
+  )
+    .then(() => {
+      deleteTarget(row)
+    })
+    .catch(() => {})
+}
+
+const deleteTarget = async (row) => {
+  try {
+    await axios.delete(`/api/target/${row.target_id}`)
+    ElMessage.success(t('session.message.success.delete'))
+    fetchData()
+  } catch (error) {
+    if (error.response?.status === 403 && IS_DEMO) {
+      ElMessage.error(t('message.error.demo'))
+    } else {
+      ElMessage.error(t('message.error.fetch') + error.message)
+    }
+  }
 }
 </script>
 

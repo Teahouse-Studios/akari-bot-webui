@@ -57,240 +57,213 @@
   </div>
 </template>
 
-<script>
+<script setup>
 // import axios from '@/axios.mjs'
 import { IS_DEMO } from '@/const'
 import { ElMessage } from 'element-plus'
 import { debounce } from 'lodash'
+import { ref, reactive, onMounted, onBeforeUnmount, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 
-export default {
-  name: 'LogsPage',
-  data() {
-    const { t } = useI18n()
+const { t } = useI18n()
 
-    return {
-      logData: '',
-      visibleLogs: [],
-      logViewer: null,
-      logLevels: ['DEBUG', 'INFO', 'SUCCESS', 'WARNING', 'ERROR', 'CRITICAL'],
-      activeLogLevels: ['INFO', 'SUCCESS', 'WARNING', 'ERROR', 'CRITICAL'],
-      searchText: '',
-      websocket: null,
-      abortController: new AbortController(),
-      autoScroll: true,
-      t,
-    }
-  },
-  methods: {
-    authenticateToken() {
-      // async authenticateToken() {
-      // TODO 需要重新验证?
-      // try {
-      //   const response = await axios.get('/api/verify-token', {
-      //     signal: this.abortController.signal,
-      //   })
+const logData = ref('')
+const visibleLogs = ref([])
+const logViewer = ref(null)
+const logLevels = ['DEBUG', 'INFO', 'SUCCESS', 'WARNING', 'ERROR', 'CRITICAL']
+const activeLogLevels = ref(['INFO', 'SUCCESS', 'WARNING', 'ERROR', 'CRITICAL'])
+const searchText = ref('')
+const websocket = ref(null)
+const abortController = new AbortController()
+const autoScroll = ref(true)
 
-      //   if (response.status === 200) {
-      this.connectWebSocket()
-      //   } else {
-      //     ElMessage.error(this.t('message.error.connect.auth'))
-      //   }
-      // } catch (error) {
-      //   if (axios.isCancel(error)) {
-      //     console.log('Request canceled')
-      //   } else {
-      //     ElMessage.error(this.t('message.error.fetch') + error.message)
-      //   }
-      // }
-    },
-
-    async connectWebSocket() {
-      if (IS_DEMO) {
-        const mockLogWebSocket = (await import('@/mock/log_ws.js')).default
-        this.websocket = mockLogWebSocket((event) => {
-          this.logData += `${event.data}\n`
-        })
-        return
-      }
-
-      // TODO config store
-      let config = {}
-      try {
-        const response = await fetch('/api/init')
-        if (response.ok) {
-          config = await response.json()
-        }
-      } catch (e) {
-        // empty
-      }
-
-      const enableHTTPS = config.enable_https ?? window.location.protocol === 'https:'
-      let baseUrl = config.api_url || window.location.origin
-      if (!/^https?:\/\//i.test(baseUrl)) {
-        baseUrl = (enableHTTPS ? 'https://' : 'http://') + baseUrl
-      }
-
-      try {
-        const url = new URL(baseUrl)
-        const wsProtocol = url.protocol === 'https:' ? 'wss:' : 'ws:'
-        const wsUrl = `${wsProtocol}//${url.hostname}${url.port ? `:${url.port}` : ''}/ws/logs`
-
-        this.websocket = new WebSocket(wsUrl)
-
-        this.websocket.onmessage = (event) => {
-          this.logData += `${event.data}\n`
-        }
-
-        this.websocket.onerror = () => {
-          ElMessage.error(this.t('message.error.connect.server'))
-        }
-      } catch (e) {
-        ElMessage.error(this.t('message.error.connect') + e.message)
-      }
-    },
-
-    updateLogs: debounce(function () {
-      const rawLines = this.logData.split('\n')
-      let buffer = ''
-      const formattedLines = []
-
-      rawLines.forEach((line) => {
-        if (/^\[.*?\]\[.*?\]\[.*?\]\[.*?\]:/.test(line)) {
-          if (buffer) formattedLines.push(this.formatLogLine(buffer))
-          buffer = line
-        } else {
-          buffer += `\n${line}`
-        }
-      })
-
-      if (buffer) formattedLines.push(this.formatLogLine(buffer))
-
-      this.visibleLogs = formattedLines.filter((logLine) => {
-        const textMatch = this.searchText
-          ? logLine.some((part) => part.text.toLowerCase().includes(this.searchText.toLowerCase()))
-          : true
-
-        return (
-          textMatch &&
-          this.activeLogLevels.some((level) => logLine.some((part) => part.text.includes(level)))
-        )
-      })
-
-      if (this.visibleLogs.length > 16384) {
-        this.visibleLogs = this.visibleLogs.slice(-16384)
-      }
-
-      if (this.autoScroll && this.logViewer) {
-        setTimeout(() => {
-          this.logViewer.scrollTop = this.logViewer.scrollHeight
-        }, 200)
-      }
-    }, 500),
-
-    refreshLog() {
-      this.logData = ''
-      this.visibleLogs = []
-      if (this.logViewer) {
-        this.logViewer.scrollTop = 0
-      }
-
-      if (this.websocket && this.websocket.readyState === WebSocket.OPEN) {
-        this.websocket.close()
-      }
-
-      this.authenticateToken()
-    },
-
-    formatLogLine(logLine) {
-      const logPattern = /^\[([^\]]+)\]\[([^\]]+)\]\[([^\]]+)\]\[([^\]]+)\]:(.*)$/s
-      const match = logLine.match(logPattern)
-
-      const logPlatformColor = '#11a8cd'
-      const logModulesColor = '#e5e510'
-      const logDatetimeColor = '#0dbc79'
-      let logContentColor = '#fff'
-      let logBackgroundColor = 'transparent'
-
-      if (match) {
-        const [, logPlatform, logModules, logDatetime, logLevel, logContent] = match
-
-        switch (logLevel) {
-          case 'DEBUG':
-            logContentColor = '#3b8ec9'
-            break
-          case 'INFO':
-            logContentColor = '#ffffff'
-            break
-          case 'SUCCESS':
-            logContentColor = '#23d18b'
-            break
-          case 'WARNING':
-            logContentColor = '#f5f543'
-            break
-          case 'ERROR':
-            logContentColor = '#f14c4c'
-            break
-          case 'CRITICAL':
-            logContentColor = '#ffffff'
-            logBackgroundColor = '#cd3131'
-            break
-          default:
-            logContentColor = '#ffffff'
-            break
-        }
-
-        return [
-          { text: `[${logPlatform}]`, style: { color: logPlatformColor } },
-          { text: `[${logModules}]`, style: { color: logModulesColor } },
-          { text: `[${logDatetime}]`, style: { color: logDatetimeColor } },
-          {
-            text: `[${logLevel}]:${logContent}`,
-            style: {
-              color: logContentColor,
-              backgroundColor: logBackgroundColor,
-            },
-          },
-        ]
-      }
-
-      return [
-        {
-          text: logLine,
-          style: {
-            color: '#fff',
-          },
-        },
-      ]
-    },
-
-    toggleLogLevel(level) {
-      if (this.activeLogLevels.includes(level)) {
-        this.activeLogLevels = this.activeLogLevels.filter((item) => item !== level)
-      } else {
-        this.activeLogLevels.push(level)
-      }
-      this.updateLogs()
-    },
-
-    handleSearch() {
-      this.updateLogs()
-    },
-  },
-  watch: {
-    logData: 'updateLogs',
-  },
-  mounted() {
-    this.logViewer = this.$refs.logViewer
-    this.authenticateToken()
-  },
-  beforeUnmount() {
-    if (this.websocket) {
-      this.websocket.close()
-    }
-    this.abortController.abort()
-  },
+function authenticateToken() {
+  // async authenticateToken() {
+  // TODO 需要重新验证?
+  // try {
+  //   const response = await axios.get('/api/verify-token', {
+  //     signal: abortController.signal,
+  //   })
+  //
+  //   if (response.status === 200) {
+  connectWebSocket()
+  //   } else {
+  //     ElMessage.error(t('message.error.connect.auth'))
+  //   }
+  // } catch (error) {
+  //   if (axios.isCancel(error)) {
+  //     console.log('Request canceled')
+  //   } else {
+  //     ElMessage.error(t('message.error.fetch') + error.message)
+  //   }
+  // }
 }
+
+async function connectWebSocket() {
+  if (IS_DEMO) {
+    const mockLogWebSocket = (await import('@/mock/log_ws.js')).default
+    websocket.value = mockLogWebSocket((event) => {
+      logData.value += `${event.data}\n`
+    })
+    return
+  }
+
+  // TODO config store
+  let config = {}
+  try {
+    const response = await fetch('/api/init')
+    if (response.ok) config = await response.json()
+  } catch (e) {
+    // empty
+  }
+
+  const enableHTTPS = config.enable_https ?? window.location.protocol === 'https:'
+  let baseUrl = config.api_url || window.location.origin
+  if (!/^https?:\/\//i.test(baseUrl)) {
+    baseUrl = (enableHTTPS ? 'https://' : 'http://') + baseUrl
+  }
+
+  try {
+    const url = new URL(baseUrl)
+    const wsProtocol = url.protocol === 'https:' ? 'wss:' : 'ws:'
+    const wsUrl = `${wsProtocol}//${url.hostname}${url.port ? `:${url.port}` : ''}/ws/logs`
+
+    websocket.value = new WebSocket(wsUrl)
+    websocket.value.onmessage = (event) => {
+      logData.value += `${event.data}\n`
+    }
+    websocket.value.onerror = () => {
+      ElMessage.error(t('message.error.connect.server'))
+    }
+  } catch (e) {
+    ElMessage.error(t('message.error.connect') + e.message)
+  }
+}
+
+function formatLogLine(line) {
+  const logPattern = /^\[([^\]]+)\]\[([^\]]+)\]\[([^\]]+)\]\[([^\]]+)\]:(.*)$/s
+  const match = line.match(logPattern)
+
+  const logPlatformColor = '#11a8cd'
+  const logModulesColor = '#e5e510'
+  const logDatetimeColor = '#0dbc79'
+  let logContentColor = '#fff'
+  let logBackgroundColor = 'transparent'
+
+  if (match) {
+    const [, logPlatform, logModules, logDatetime, logLevel, logContent] = match
+
+    switch (logLevel) {
+      case 'DEBUG':
+        logContentColor = '#3b8ec9'
+        break
+      case 'INFO':
+        logContentColor = '#ffffff'
+        break
+      case 'SUCCESS':
+        logContentColor = '#23d18b'
+        break
+      case 'WARNING':
+        logContentColor = '#f5f543'
+        break
+      case 'ERROR':
+        logContentColor = '#f14c4c'
+        break
+      case 'CRITICAL':
+        logContentColor = '#ffffff'
+        logBackgroundColor = '#cd3131'
+        break
+      default:
+        logContentColor = '#ffffff'
+        break
+    }
+
+    return [
+      { text: `[${logPlatform}]`, style: { color: logPlatformColor } },
+      { text: `[${logModules}]`, style: { color: logModulesColor } },
+      { text: `[${logDatetime}]`, style: { color: logDatetimeColor } },
+      {
+        text: `[${logLevel}]:${logContent}`,
+        style: { color: logContentColor, backgroundColor: logBackgroundColor },
+      },
+    ]
+  }
+
+  return [{ text: line, style: { color: '#fff' } }]
+}
+
+const updateLogs = debounce(() => {
+  const rawLines = logData.value.split('\n')
+  let buffer = ''
+  const formattedLines = []
+
+  rawLines.forEach((line) => {
+    if (/^\[.*?\]\[.*?\]\[.*?\]\[.*?\]:/.test(line)) {
+      if (buffer) formattedLines.push(formatLogLine(buffer))
+      buffer = line
+    } else {
+      buffer += `\n${line}`
+    }
+  })
+
+  if (buffer) formattedLines.push(formatLogLine(buffer))
+
+  visibleLogs.value = formattedLines.filter((logLine) => {
+    const textMatch = searchText.value
+      ? logLine.some((part) => part.text.toLowerCase().includes(searchText.value.toLowerCase()))
+      : true
+
+    return (
+      textMatch &&
+      activeLogLevels.value.some((level) => logLine.some((part) => part.text.includes(level)))
+    )
+  })
+
+  if (visibleLogs.value.length > 16384) {
+    visibleLogs.value = visibleLogs.value.slice(-16384)
+  }
+
+  if (autoScroll.value && logViewer.value) {
+    setTimeout(() => {
+      logViewer.value.scrollTop = logViewer.value.scrollHeight
+    }, 200)
+  }
+}, 500)
+
+function refreshLog() {
+  logData.value = ''
+  visibleLogs.value = []
+  if (logViewer.value) logViewer.value.scrollTop = 0
+
+  if (websocket.value && websocket.value.readyState === WebSocket.OPEN) websocket.value.close()
+
+  authenticateToken()
+}
+
+function toggleLogLevel(level) {
+  if (activeLogLevels.value.includes(level)) {
+    activeLogLevels.value = activeLogLevels.value.filter((item) => item !== level)
+  } else {
+    activeLogLevels.value.push(level)
+  }
+  updateLogs()
+}
+
+function handleSearch() {
+  updateLogs()
+}
+
+watch(logData, updateLogs)
+
+onMounted(() => {
+  logViewer.value = document.querySelector('#logViewer')
+  authenticateToken()
+})
+
+onBeforeUnmount(() => {
+  if (websocket.value) websocket.value.close()
+  abortController.abort()
+})
 </script>
 
 <style scoped>

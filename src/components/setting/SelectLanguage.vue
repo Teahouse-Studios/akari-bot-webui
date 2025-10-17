@@ -15,28 +15,24 @@
   </div>
 </template>
 
-<script>
-import { elementPlusLangMap } from '@/element-plus-langmap'
+<script setup>
+import { ref, inject } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { elementPlusLangMap } from '@/element-plus-langmap'
 
-export default {
-  name: 'LanguageSelector',
-  data() {
-    const { t } = useI18n()
-    return {
-      currentLang: localStorage.getItem('language') || 'zh_cn',
-      t,
-    }
-  },
-  inject: ['elementLocale'],
-  methods: {
-    changeLanguage(lang) {
-      this.currentLang = lang
-      this.$i18n.locale = lang
-      localStorage.setItem('language', lang)
-      this.elementLocale.lang = elementPlusLangMap[lang]
-    },
-  },
+const { locale } = useI18n()
+
+const currentLang = ref(localStorage.getItem('language') || 'zh_cn')
+
+const elementLocale = inject('elementLocale')
+
+function changeLanguage(lang) {
+  currentLang.value = lang
+  locale.value = lang
+  localStorage.setItem('language', lang)
+  if (elementLocale) {
+    elementLocale.lang = elementPlusLangMap[lang]
+  }
 }
 </script>
 

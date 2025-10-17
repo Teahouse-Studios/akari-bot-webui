@@ -85,80 +85,78 @@
   </el-card>
 </template>
 
-<script>
+<script setup>
+import { ref, computed } from 'vue'
 import axios from '@/axios.mjs'
 import { ElMessage } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 
-export default {
-  name: 'SQLConsole',
-  data() {
-    const { t } = useI18n()
-    return {
-      sql: '',
-      show_result: false,
-      result: [],
-      error: '',
-      affectedRows: null,
-      history: [],
-      historyPage: 1,
-      resultPage: 1,
-      historyPageSize: 5,
-      resultPageSize: 10,
-      loading: false,
-      t,
-    }
-  },
-  computed: {
-    pagedResult() {
-      const start = (this.resultPage - 1) * this.resultPageSize
-      return this.result.slice(start, start + this.resultPageSize)
-    },
-    pagedHistory() {
-      const start = (this.historyPage - 1) * this.historyPageSize
-      return this.history.slice(start, start + this.historyPageSize)
-    },
-  },
-  methods: {
-    async executeSQL() {
-      if (!this.sql) return
-      this.result = []
-      this.error = ''
-      this.affectedRows = null
-      this.show_result = false
-      this.history.unshift(this.sql)
-      this.loading = true
-      try {
-        const res = await axios.post('/api/database/exec', { sql: this.sql })
-        this.show_result = true
-        if (res.data.success) {
-          if (res.data.affected_rows !== undefined) {
-            this.affectedRows = res.data.affected_rows
-          } else {
-            this.result = res.data.data || []
-          }
-          this.error = ''
-        } else {
-          this.result = []
-          this.error = res.data.error
-        }
-      } catch (e) {
-        ElMessage.error(this.t('message.error.fetch') + e.message)
-      } finally {
-        this.loading = false
+const { t } = useI18n()
+
+const sql = ref('')
+const show_result = ref(false)
+const result = ref([])
+const error = ref('')
+const affectedRows = ref(null)
+const history = ref([])
+const historyPage = ref(1)
+const resultPage = ref(1)
+const historyPageSize = ref(5)
+const resultPageSize = ref(10)
+const loading = ref(false)
+
+const pagedResult = computed(() => {
+  const start = (resultPage.value - 1) * resultPageSize.value
+  return result.value.slice(start, start + resultPageSize.value)
+})
+
+const pagedHistory = computed(() => {
+  const start = (historyPage.value - 1) * historyPageSize.value
+  return history.value.slice(start, start + historyPageSize.value)
+})
+
+const executeSQL = async () => {
+  if (!sql.value) return
+
+  result.value = []
+  error.value = ''
+  affectedRows.value = null
+  show_result.value = false
+  history.value.unshift(sql.value)
+  loading.value = true
+
+  try {
+    const res = await axios.post('/api/database/exec', { sql: sql.value })
+    show_result.value = true
+
+    if (res.data.success) {
+      if (res.data.affected_rows !== undefined) {
+        affectedRows.value = res.data.affected_rows
+      } else {
+        result.value = res.data.data || []
       }
-    },
-    clearSQL() {
-      this.sql = ''
-      this.result = []
-      this.error = ''
-      this.show_result = false
-      this.resultPage = 1
-    },
-    setSQL(item) {
-      this.sql = item
-    },
-  },
+      error.value = ''
+    } else {
+      result.value = []
+      error.value = res.data.error
+    }
+  } catch (e) {
+    ElMessage.error(t('message.error.fetch') + e.message)
+  } finally {
+    loading.value = false
+  }
+}
+
+const clearSQL = () => {
+  sql.value = ''
+  result.value = []
+  error.value = ''
+  show_result.value = false
+  resultPage.value = 1
+}
+
+const setSQL = (item) => {
+  sql.value = item
 }
 </script>
 

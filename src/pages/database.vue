@@ -13,25 +13,14 @@
   <NotFound v-else />
 </template>
 
-<script>
+<script setup>
+import { ref } from 'vue'
 import SQLConsole from '@/components/database/SQLConsole.vue'
 import DataModels from '@/components/database/DataModels.vue'
 import NotFound from './notFound.vue'
 import { IS_DEMO } from '@/const'
 
-export default {
-  name: 'DatabasePage',
-  components: {
-    DataModels,
-    SQLConsole,
-    NotFound,
-  },
-  data() {
-    return {
-      isDevelopMode: localStorage.getItem('isDevelopMode') === 'true' && !IS_DEMO,
-    }
-  },
-}
+const isDevelopMode = ref(localStorage.getItem('isDevelopMode') === 'true' && !IS_DEMO)
 </script>
 
 <style scoped>

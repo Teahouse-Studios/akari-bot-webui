@@ -13,7 +13,7 @@
         <el-button
           @click="onCustomButtonClick"
           class="theme-button custom"
-          :style="customButtonStyle()"
+          :style="customButtonStyle"
         >
           {{ $t('setting.theme_setting.button.custom') }}
         </el-button>
@@ -28,62 +28,56 @@
   </div>
 </template>
 
-<script>
-import { useI18n } from 'vue-i18n'
+<script setup>
+import { ref, reactive, computed } from 'vue'
 
-export default {
-  name: 'ThemeSelector',
-  data() {
-    const { t } = useI18n()
-    return {
-      presets: {
-        akari: '#edaab3',
-        teahouse: '#0091ff',
-      },
-      customColor: '',
-      showColorPicker: localStorage.getItem('isCustomTheme') === 'true',
-      t,
-    }
-  },
-  methods: {
-    applyPreset(themeName) {
-      const color = this.presets[themeName]
-      localStorage.setItem('isCustomTheme', 'false')
-      localStorage.setItem('themeColor', color)
-      this.showColorPicker = false
-      window.dispatchEvent(new Event('theme-change'))
-    },
-    applyCustomColor(color) {
-      if (!color) {
-        localStorage.removeItem('isCustomTheme', 'false')
-        localStorage.removeItem('themeColor', '#edaab3')
-      } else {
-        localStorage.setItem('isCustomTheme', 'true')
-        localStorage.setItem('themeColor', color)
-      }
-      window.dispatchEvent(new Event('theme-change'))
-    },
-    onCustomButtonClick() {
-      this.applyCustomColor(this.customColor)
-      this.showColorPicker = true
-    },
-    customButtonStyle() {
-      const isCustomTheme = localStorage.getItem('isCustomTheme')
-      if (isCustomTheme === 'true') {
-        const savedColor = localStorage.getItem('themeColor')
-        this.customColor = savedColor
-      }
-      if (this.customColor) {
-        return {
-          backgroundColor: this.customColor,
-          borderColor: this.customColor,
-          color: 'white',
-        }
-      }
-      return {}
-    },
-  },
+const presets = reactive({
+  akari: '#edaab3',
+  teahouse: '#0091ff',
+})
+
+const customColor = ref('')
+const showColorPicker = ref(localStorage.getItem('isCustomTheme') === 'true')
+
+function applyPreset(themeName) {
+  const color = presets[themeName]
+  localStorage.setItem('isCustomTheme', 'false')
+  localStorage.setItem('themeColor', color)
+  showColorPicker.value = false
+  window.dispatchEvent(new Event('theme-change'))
 }
+
+function applyCustomColor(color) {
+  if (!color) {
+    localStorage.removeItem('isCustomTheme')
+    localStorage.setItem('themeColor', '#edaab3')
+  } else {
+    localStorage.setItem('isCustomTheme', 'true')
+    localStorage.setItem('themeColor', color)
+  }
+  window.dispatchEvent(new Event('theme-change'))
+}
+
+function onCustomButtonClick() {
+  applyCustomColor(customColor.value)
+  showColorPicker.value = true
+}
+
+const customButtonStyle = computed(() => {
+  const isCustomTheme = localStorage.getItem('isCustomTheme')
+  if (isCustomTheme === 'true') {
+    const savedColor = localStorage.getItem('themeColor')
+    customColor.value = savedColor
+  }
+  if (customColor.value) {
+    return {
+      backgroundColor: customColor.value,
+      borderColor: customColor.value,
+      color: 'white',
+    }
+  }
+  return {}
+})
 </script>
 
 <style scoped>

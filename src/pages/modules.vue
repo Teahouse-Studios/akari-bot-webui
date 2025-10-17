@@ -196,283 +196,254 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
 import axios from '@/axios.mjs'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 import VisibleEditor from '@/components/config/VisibleEditor.vue'
 
-export default {
-  name: 'ModulesManager',
-  components: {
-    VisibleEditor,
-  },
-  data() {
-    const { t } = useI18n()
-    return {
-      modules: [],
-      searchKeyword: '',
-      loading: false,
-      showBaseModules: false,
-      helpDialogVisible: false,
-      helpDoc: null,
-      activeSections: ['commands', 'options', 'regexp'],
-      currentPage: 1,
-      pageSize: 10,
-      moduleConfigDialogWidth: '90%',
-      debounceTimer: null,
-      configDialogVisible: false,
-      configModuleName: '',
-      configContent: '',
-      initialConfigContent: '',
-      unsavedConfigChanges: false,
-      configNotFound: false,
-      t,
-    }
-  },
-  computed: {
-    filteredModules() {
-      let result = this.modules
-      if (this.searchKeyword) {
-        result = result.filter((mod) =>
-          mod.bind_prefix.toLowerCase().includes(this.searchKeyword.toLowerCase()),
-        )
-      }
+const { t } = useI18n()
 
-      if (!this.showBaseModules) {
-        result = result.filter((mod) => !mod.base)
-      }
+const modules = ref([])
+const searchKeyword = ref('')
+const loading = ref(false)
+const showBaseModules = ref(false)
+const helpDialogVisible = ref(false)
+const helpDoc = ref(null)
+const activeSections = ref(['commands', 'options', 'regexp'])
+const currentPage = ref(1)
+const pageSize = ref(10)
+const moduleConfigDialogWidth = ref('90%')
+const debounceTimer = ref(null)
+const configDialogVisible = ref(false)
+const configModuleName = ref('')
+const configContent = ref('')
+const initialConfigContent = ref('')
+const unsavedConfigChanges = ref(false)
+const configNotFound = ref(false)
 
-      return result
-    },
-    pagedModules() {
-      const start = (this.currentPage - 1) * this.pageSize
-      const end = start + this.pageSize
-      return this.filteredModules.slice(start, end)
-    },
-    totalModules() {
-      return this.filteredModules.length
-    },
-    hasAnyHelp() {
-      return (
-        this.helpDoc?.desc ||
-        this.helpDoc?.commands?.args?.length > 0 ||
-        this.helpDoc?.commands?.options?.length > 0 ||
-        this.helpDoc?.regexp?.length > 0
-      )
-    },
-  },
-  mounted() {
-    this.refreshData()
-    window.addEventListener('resize', this.updateModuleConfigDialogWidth)
-    this.updateModuleConfigDialogWidth()
-  },
-  beforeUnmount() {
-    window.removeEventListener('resize', this.updateModuleConfigDialogWidth)
-  },
-  watch: {
-    configContent(newVal) {
-      this.unsavedConfigChanges = newVal !== this.initialConfigContent
-    },
-  },
-  methods: {
-    debouncedRefresh() {
-      clearTimeout(this.debounceTimer)
-      this.debounceTimer = setTimeout(() => this.refreshData(), 300)
-    },
-    handleSizeChange(size) {
-      this.pageSize = size
-      this.currentPage = 1
-    },
-    handleCurrentChange(page) {
-      this.currentPage = page
-    },
-    async refreshData() {
-      this.loading = true
-      try {
-        const language = localStorage.getItem('language') || 'zh_cn'
-        const response = await axios.get('/api/modules', {
-          params: {
-            locale: language,
-          },
-        })
-        if (response.status === 200 && response.data.modules) {
-          this.modules = Object.entries(response.data.modules)
-            .map(([name, info]) => {
-              const isLoaded = info?._db_load !== false
-              return {
-                name,
-                bind_prefix: info?.bind_prefix || name,
-                desc: info?.desc || '',
-                developers: info?.developers || [],
-                loaded: isLoaded,
-                base: info?.base === true,
-                ...info,
-              }
-            })
-            .sort((a, b) => a.name.localeCompare(b.name))
-        }
-      } catch (error) {
-        ElMessage.error(this.$t('message.error.fetch') + error.message)
-      } finally {
-        this.loading = false
-      }
-    },
+const filteredModules = computed(() => {
+  let result = modules.value
+  if (searchKeyword.value) {
+    result = result.filter((mod) =>
+      mod.bind_prefix.toLowerCase().includes(searchKeyword.value.toLowerCase()),
+    )
+  }
+  if (!showBaseModules.value) {
+    result = result.filter((mod) => !mod.base)
+  }
+  return result
+})
 
-    async getRelatedModules(moduleName) {
-      try {
-        const res = await axios.get(`/api/module/${moduleName}/related`)
-        return res.data.modules || []
-      } catch (err) {
-        ElMessage.error(this.$t('message.error.fetch') + error.message)
-        return []
-      }
-    },
+const pagedModules = computed(() => {
+  const start = (currentPage.value - 1) * pageSize.value
+  const end = start + pageSize.value
+  return filteredModules.value.slice(start, end)
+})
 
-    async handleHelp(row) {
-      try {
-        const language = localStorage.getItem('language') || 'zh_cn'
-        const res = await axios.get(`/api/module/${row.name}/helpdoc`, {
-          params: {
-            locale: language,
-          },
-        })
-        if (res.status === 200) {
-          this.helpDoc = res.data
-          this.helpDialogVisible = true
-        }
-      } catch (error) {
-        ElMessage.error(this.$t('message.error.fetch') + error.message)
-      }
-    },
+const totalModules = computed(() => filteredModules.value.length)
 
-    async handleReload(row) {
-      let msg = ''
-      if (row.base) {
-        msg = this.t('modules.confirm.message.reload.base')
-      } else {
-        const related = await this.getRelatedModules(row.name)
-        if (related.length === 0) {
-          msg = this.t('modules.confirm.message.reload')
-        } else {
-          msg = this.t('modules.confirm.message.reload.extra', {
-            modules: related
-              .map((m) => this.t('format.quote', { msg: m }))
-              .join(this.t('format.delimiter')),
-          })
-        }
-      }
-      try {
-        await ElMessageBox.confirm(msg, this.t('confirm.warning'), {
-          confirmButtonText: this.t('button.confirm'),
-          cancelButtonText: this.t('button.cancel'),
-          type: 'warning',
-        })
-        const res = await axios.post(`/api/module/${row.name}/reload`)
-        if (res.status === 204) {
-          ElMessage.success(this.t('modules.message.reload.success'))
-          this.refreshData()
-        }
-      } catch (error) {
-        if (error === 'cancel' || error?.message === 'cancel') {
-          return
-        }
-        if (error.response?.status === 422) {
-          ElMessage.error(this.t('modules.message.reload.error.failed'))
-          this.refreshData()
-        } else {
-          ElMessage.error(this.$t('message.error.fetch') + error.message)
-        }
-      }
-    },
+const hasAnyHelp = computed(() => {
+  return (
+    helpDoc.value?.desc ||
+    helpDoc.value?.commands?.args?.length > 0 ||
+    helpDoc.value?.commands?.options?.length > 0 ||
+    helpDoc.value?.regexp?.length > 0
+  )
+})
 
-    async handleUnload(row) {
-      try {
-        const res = await axios.post(`/api/module/${row.name}/unload`)
-        if (res.status === 204) {
-          ElMessage.success(this.t('modules.message.unload.success'))
-          this.refreshData()
-        }
-      } catch (error) {
-        if (error.response?.status === 422) {
-          ElMessage.error(this.t('modules.message.unload.error.failed'))
-          this.refreshData()
-        } else {
-          ElMessage.error(this.$t('message.error.fetch') + error.message)
-        }
-      }
-    },
+watch(configContent, (newVal) => {
+  unsavedConfigChanges.value = newVal !== initialConfigContent.value
+})
 
-    async handleLoad(row) {
-      try {
-        const res = await axios.post(`/api/module/${row.name}/load`)
-        if (res.status === 204) {
-          ElMessage.success(this.t('modules.message.load.success'))
-          this.refreshData()
-        }
-      } catch (error) {
-        if (error.response?.status === 422) {
-          ElMessage.error(this.t('modules.message.load.error.failed'))
-          this.refreshData()
-        } else {
-          ElMessage.error(this.$t('message.error.fetch') + error.message)
-        }
-      }
-    },
-
-    updateModuleConfigDialogWidth() {
-      const screenWidth = window.innerWidth
-      if (screenWidth < 1024) {
-        this.moduleConfigDialogWidth = '90%'
-      } else {
-        const newWidth = screenWidth * 0.9 - 400
-        this.moduleConfigDialogWidth = `${newWidth}px`
-      }
-    },
-
-    async openConfigEditor(row) {
-      this.configModuleName = row._py_module_name
-      this.configDialogVisible = true
-      this.unsavedConfigChanges = false
-      this.configNotFound = false
-      try {
-        const res = await axios.get(`/api/config/module_${this.configModuleName}.toml`)
-        this.configContent = res.data.content
-        this.initialConfigContent = res.data.content
-      } catch (error) {
-        if (error.response?.status === 404) {
-          this.configNotFound = true
-        } else {
-          ElMessage.error(this.t('message.error.fetch') + error.message)
-          this.configDialogVisible = false
-        }
-      }
-    },
-
-    async applyConfig() {
-      try {
-        await axios.put(`/api/config/module_${this.configModuleName}.toml`, {
-          content: this.configContent,
-        })
-        ElMessage.success(this.t('config.message.save.success'))
-        this.initialConfigContent = this.configContent
-        this.unsavedConfigChanges = false
-        this.configDialogVisible = false
-      } catch (error) {
-        ElMessage.error(this.t('message.error.fetch') + error.message)
-      }
-    },
-
-    resetConfigDialog() {
-      this.configDialogVisible = false
-      this.configModuleName = ''
-      this.configContent = ''
-      this.initialConfigContent = ''
-      this.unsavedConfigChanges = false
-      this.configNotFound = false
-    },
-  },
+const debouncedRefresh = () => {
+  clearTimeout(debounceTimer.value)
+  debounceTimer.value = setTimeout(() => refreshData(), 300)
 }
+
+const refreshData = async () => {
+  loading.value = true
+  try {
+    const language = localStorage.getItem('language') || 'zh_cn'
+    const response = await axios.get('/api/modules', { params: { locale: language } })
+    if (response.status === 200 && response.data.modules) {
+      modules.value = Object.entries(response.data.modules)
+        .map(([name, info]) => {
+          const isLoaded = info?._db_load !== false
+          return {
+            name,
+            bind_prefix: info?.bind_prefix || name,
+            desc: info?.desc || '',
+            developers: info?.developers || [],
+            loaded: isLoaded,
+            base: info?.base === true,
+            ...info,
+          }
+        })
+        .sort((a, b) => a.name.localeCompare(b.name))
+    }
+  } catch (error) {
+    ElMessage.error(t('message.error.fetch') + error.message)
+  } finally {
+    loading.value = false
+  }
+}
+
+const getRelatedModules = async (moduleName) => {
+  try {
+    const res = await axios.get(`/api/module/${moduleName}/related`)
+    return res.data.modules || []
+  } catch (err) {
+    ElMessage.error(t('message.error.fetch') + err.message)
+    return []
+  }
+}
+
+const handleHelp = async (row) => {
+  try {
+    const language = localStorage.getItem('language') || 'zh_cn'
+    const res = await axios.get(`/api/module/${row.name}/helpdoc`, { params: { locale: language } })
+    if (res.status === 200) {
+      helpDoc.value = res.data
+      helpDialogVisible.value = true
+    }
+  } catch (error) {
+    ElMessage.error(t('message.error.fetch') + error.message)
+  }
+}
+
+const handleReload = async (row) => {
+  let msg = ''
+  if (row.base) {
+    msg = t('modules.confirm.message.reload.base')
+  } else {
+    const related = await getRelatedModules(row.name)
+    if (related.length === 0) {
+      msg = t('modules.confirm.message.reload')
+    } else {
+      msg = t('modules.confirm.message.reload.extra', {
+        modules: related.map((m) => t('format.quote', { msg: m })).join(t('format.delimiter')),
+      })
+    }
+  }
+  try {
+    await ElMessageBox.confirm(msg, t('confirm.warning'), {
+      confirmButtonText: t('button.confirm'),
+      cancelButtonText: t('button.cancel'),
+      type: 'warning',
+    })
+    const res = await axios.post(`/api/module/${row.name}/reload`)
+    if (res.status === 204) {
+      ElMessage.success(t('modules.message.reload.success'))
+      refreshData()
+    }
+  } catch (error) {
+    if (error === 'cancel' || error?.message === 'cancel') return
+    if (error.response?.status === 422) {
+      ElMessage.error(t('modules.message.reload.error.failed'))
+      refreshData()
+    } else {
+      ElMessage.error(t('message.error.fetch') + error.message)
+    }
+  }
+}
+
+const handleUnload = async (row) => {
+  try {
+    const res = await axios.post(`/api/module/${row.name}/unload`)
+    if (res.status === 204) {
+      ElMessage.success(t('modules.message.unload.success'))
+      refreshData()
+    }
+  } catch (error) {
+    if (error.response?.status === 422) {
+      ElMessage.error(t('modules.message.unload.error.failed'))
+      refreshData()
+    } else {
+      ElMessage.error(t('message.error.fetch') + error.message)
+    }
+  }
+}
+
+const handleLoad = async (row) => {
+  try {
+    const res = await axios.post(`/api/module/${row.name}/load`)
+    if (res.status === 204) {
+      ElMessage.success(t('modules.message.load.success'))
+      refreshData()
+    }
+  } catch (error) {
+    if (error.response?.status === 422) {
+      ElMessage.error(t('modules.message.load.error.failed'))
+      refreshData()
+    } else {
+      ElMessage.error(t('message.error.fetch') + error.message)
+    }
+  }
+}
+
+const updateModuleConfigDialogWidth = () => {
+  const screenWidth = window.innerWidth
+  if (screenWidth < 1024) {
+    moduleConfigDialogWidth.value = '90%'
+  } else {
+    const newWidth = screenWidth * 0.9 - 400
+    moduleConfigDialogWidth.value = `${newWidth}px`
+  }
+}
+
+const openConfigEditor = async (row) => {
+  configModuleName.value = row._py_module_name
+  configDialogVisible.value = true
+  unsavedConfigChanges.value = false
+  configNotFound.value = false
+  try {
+    const res = await axios.get(`/api/config/module_${configModuleName.value}.toml`)
+    configContent.value = res.data.content
+    initialConfigContent.value = res.data.content
+  } catch (error) {
+    if (error.response?.status === 404) {
+      configNotFound.value = true
+    } else {
+      ElMessage.error(t('message.error.fetch') + error.message)
+      configDialogVisible.value = false
+    }
+  }
+}
+
+const applyConfig = async () => {
+  try {
+    await axios.put(`/api/config/module_${configModuleName.value}.toml`, {
+      content: configContent.value,
+    })
+    ElMessage.success(t('config.message.save.success'))
+    initialConfigContent.value = configContent.value
+    unsavedConfigChanges.value = false
+    configDialogVisible.value = false
+  } catch (error) {
+    ElMessage.error(t('message.error.fetch') + error.message)
+  }
+}
+
+const resetConfigDialog = () => {
+  configDialogVisible.value = false
+  configModuleName.value = ''
+  configContent.value = ''
+  initialConfigContent.value = ''
+  unsavedConfigChanges.value = false
+  configNotFound.value = false
+}
+
+onMounted(() => {
+  refreshData()
+  window.addEventListener('resize', updateModuleConfigDialogWidth)
+  updateModuleConfigDialogWidth()
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', updateModuleConfigDialogWidth)
+})
 </script>
 
 <style scoped>

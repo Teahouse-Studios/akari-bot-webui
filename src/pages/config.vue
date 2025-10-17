@@ -54,8 +54,8 @@
   </div>
 </template>
 
-<script>
-import { ref } from 'vue'
+<script setup>
+import { ref, reactive, watch, onMounted, onBeforeUnmount } from 'vue'
 import axios from '@/axios.mjs'
 import VisibleEditor from '@/components/config/VisibleEditor.vue'
 import SourceEditor from '@/components/config/SourceEditor.vue'
@@ -63,127 +63,121 @@ import { ElMessage } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 import { IS_DEMO } from '@/const'
 
-export default {
-  name: 'ConfigPage',
-  components: {
-    VisibleEditor,
-    SourceEditor,
-  },
-  data() {
-    const { t } = useI18n()
-    const activeCard = ref('visible')
+const { t } = useI18n()
 
-    return {
-      activeCard,
-      activeTab: '',
-      configFiles: [],
-      unsavedChanges: false,
-      initialContent: '',
-      editorContent: '',
-      fileContents: {},
-      abortController: new AbortController(),
-      loading: false,
-      t,
+const activeCard = ref('visible')
+const activeTab = ref('')
+const configFiles = ref([])
+const unsavedChanges = ref(false)
+const initialContent = ref('')
+const editorContent = ref('')
+const fileContents = reactive({})
+const loading = ref(false)
+const abortController = new AbortController()
+
+const fetchConfigFiles = async () => {
+  loading.value = true
+  try {
+    const response = await axios.get('/api/config', {
+      signal: abortController.signal,
+    })
+    configFiles.value = response.data.cfg_files
+    if (configFiles.value.length > 0) {
+      activeTab.value = configFiles.value[0]
+      fetchConfig(activeTab.value)
     }
-  },
-  mounted() {
-    this.fetchConfigFiles()
-  },
-  beforeUnmount() {
-    this.abortController.abort()
-  },
-  watch: {
-    editorContent(newVal) {
-      this.unsavedChanges = newVal !== this.initialContent
-    },
-  },
-  methods: {
-    async fetchConfigFiles() {
-      this.loading = true
-      try {
-        const response = await axios.get('/api/config', {
-          signal: this.abortController.signal,
-        })
-        this.configFiles = response.data.cfg_files
-        if (this.configFiles.length > 0) {
-          this.activeTab = this.configFiles[0]
-          this.fetchConfig(this.activeTab)
-        }
-      } catch (error) {
-        if (axios.isCancel(error)) {
-          console.log('Request canceled')
-        } else {
-          ElMessage.error(this.t('message.error.fetch') + error.message)
-        }
-      } finally {
-        this.loading = false
-      }
-    },
-    async fetchConfig(fileName, force = false) {
-      if (!force && this.fileContents[fileName]) {
-        this.editorContent = this.fileContents[fileName]
-        this.initialContent = this.fileContents[fileName]
-        this.unsavedChanges = false
-        this.updateEditorContent()
-        return
-      }
-
-      try {
-        const response = await axios.get(`/api/config/${fileName}`, {
-          signal: this.abortController.signal,
-        })
-        this.fileContents[fileName] = response.data.content
-        this.editorContent = response.data.content
-        this.initialContent = response.data.content
-        this.unsavedChanges = false
-      } catch (error) {
-        if (axios.isCancel(error)) {
-          console.log('Request canceled')
-        } else {
-          ElMessage.error(this.t('message.error.fetch') + error.message)
-        }
-      }
-    },
-    updateEditorContent() {
-      if (this.editorView) {
-        this.editorView.dispatch({
-          changes: {
-            from: 0,
-            to: this.editorView.state.doc.length,
-            insert: this.editorContent,
-          },
-        })
-      }
-    },
-    handleTabClick(pane) {
-      this.fetchConfig(pane.paneName)
-    },
-    resetConfig() {
-      this.fetchConfig(this.activeTab, true)
-      this.unsavedChanges = false
-    },
-    async applyConfig() {
-      try {
-        await axios.put(`/api/config/${this.activeTab}`, {
-          content: this.editorContent,
-        })
-        ElMessage.success(this.t('config.message.save.success'))
-        this.resetConfig()
-      } catch (error) {
-        if (error.response?.status === 403 && IS_DEMO) {
-          ElMessage.error(this.t('message.error.demo'))
-        } else {
-          ElMessage.error(this.t('message.error.fetch') + error.message)
-        }
-      }
-    },
-    refreshConfig() {
-      if (this.activeTab) {
-        this.fetchConfig(this.activeTab, true)
-      }
-    },
-  },
+  } catch (error) {
+    if (axios.isCancel(error)) {
+      console.log('Request canceled')
+    } else {
+      ElMessage.error(t('message.error.fetch') + error.message)
+    }
+  } finally {
+    loading.value = false
+  }
 }
+
+const fetchConfig = async (fileName, force = false) => {
+  if (!force && fileContents[fileName]) {
+    editorContent.value = fileContents[fileName]
+    initialContent.value = fileContents[fileName]
+    unsavedChanges.value = false
+    updateEditorContent()
+    return
+  }
+
+  try {
+    const response = await axios.get(`/api/config/${fileName}`, {
+      signal: abortController.signal,
+    })
+    fileContents[fileName] = response.data.content
+    editorContent.value = response.data.content
+    initialContent.value = response.data.content
+    unsavedChanges.value = false
+  } catch (error) {
+    if (axios.isCancel(error)) {
+      console.log('Request canceled')
+    } else {
+      ElMessage.error(t('message.error.fetch') + error.message)
+    }
+  }
+}
+
+const editorView = ref(null)
+const updateEditorContent = () => {
+  if (editorView.value) {
+    editorView.value.dispatch({
+      changes: {
+        from: 0,
+        to: editorView.value.state.doc.length,
+        insert: editorContent.value,
+      },
+    })
+  }
+}
+
+const handleTabClick = (pane) => {
+  fetchConfig(pane.paneName)
+}
+
+const resetConfig = () => {
+  fetchConfig(activeTab.value, true)
+  unsavedChanges.value = false
+}
+
+const applyConfig = async () => {
+  try {
+    await axios.put(`/api/config/${activeTab.value}`, {
+      content: editorContent.value,
+    })
+    ElMessage.success(t('config.message.save.success'))
+    resetConfig()
+  } catch (error) {
+    if (error.response?.status === 403 && IS_DEMO) {
+      ElMessage.error(t('message.error.demo'))
+    } else {
+      ElMessage.error(t('message.error.fetch') + error.message)
+    }
+  }
+}
+
+const refreshConfig = () => {
+  if (activeTab.value) {
+    fetchConfig(activeTab.value, true)
+  }
+}
+
+watch(editorContent, (newVal) => {
+  unsavedChanges.value = newVal !== initialContent.value
+})
+
+onMounted(() => {
+  fetchConfigFiles()
+})
+
+onBeforeUnmount(() => {
+  abortController.abort()
+})
 </script>
 
 <style scoped>

@@ -7,74 +7,72 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import { ref } from 'vue'
 import axios from '@/axios.mjs'
 import { ElMessage, ElMessageBox, ElLoading } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 
-export default {
-  name: 'restartBotButton',
-  data() {
-    const { t } = useI18n()
-    return {
-      t,
-      pollingTimeout: 60000,
-      pollingInterval: 2000,
-      hasShownTimeoutError: false,
-    }
-  },
-  methods: {
-    async handleRestart() {
-      try {
-        await ElMessageBox.confirm(this.t('confirm.message'), this.t('confirm.warning'), {
-          confirmButtonText: this.t('button.confirm'),
-          cancelButtonText: this.t('button.cancel'),
-          type: 'warning',
-        })
-        await this.restartBot()
-      } catch (error) {
-        return
-      }
-    },
-    async restartBot() {
-      try {
-        const response = await axios.post('/api/restart', {})
-        if (response.status === 202) {
-          ElLoading.service({
-            fullscreen: true,
-            text: this.t('setting.restart_bot.loading.text'),
-          })
+const { t } = useI18n()
 
-          const startTime = Date.now()
-          const poll = async () => {
-            try {
-              const res = await axios.get('/api')
-              if (res.status === 200) {
-                window.location.href = '/'
-              } else {
-                throw new Error('Not ready')
-              }
-            } catch (err) {
-              const elapsed = Date.now() - startTime
-              if (elapsed >= this.pollingTimeout && !this.hasShownTimeoutError) {
-                this.hasShownTimeoutError = true
-                ElMessage({
-                  message: this.t('setting.restart_bot.message.failed'),
-                  type: 'error',
-                  duration: 0,
-                })
-              }
-              setTimeout(poll, this.pollingInterval)
-            }
+const pollingTimeout = 60000
+const pollingInterval = 2000
+const hasShownTimeoutError = ref(false)
+
+const handleRestart = async () => {
+  try {
+    await ElMessageBox.confirm(t('confirm.message'), t('confirm.warning'), {
+      confirmButtonText: t('button.confirm'),
+      cancelButtonText: t('button.cancel'),
+      type: 'warning',
+    })
+    await restartBot()
+  } catch (error) {
+    return
+  }
+}
+
+const restartBot = async () => {
+  try {
+    const response = await axios.post('/api/restart', {})
+    if (response.status === 202) {
+      const loadingInstance = ElLoading.service({
+        fullscreen: true,
+        text: t('setting.restart_bot.loading.text'),
+      })
+
+      const startTime = Date.now()
+
+      const poll = async () => {
+        try {
+          const res = await axios.get('/api')
+          if (res.status === 200) {
+            loadingInstance.close()
+            window.location.href = '/'
+          } else {
+            throw new Error('Not ready')
           }
-
-          this.hasShownTimeoutError = false
-          setTimeout(poll, this.pollingInterval)
+        } catch (err) {
+          const elapsed = Date.now() - startTime
+          if (elapsed >= pollingTimeout && !hasShownTimeoutError.value) {
+            hasShownTimeoutError.value = true
+            ElMessage({
+              message: t('setting.restart_bot.message.failed'),
+              type: 'error',
+              duration: 0,
+            })
+            loadingInstance.close()
+          } else {
+            setTimeout(poll, pollingInterval)
+          }
         }
-      } catch (error) {
-        ElMessage.error(this.t('message.error.fetch') + error.message)
       }
-    },
-  },
+
+      hasShownTimeoutError.value = false
+      setTimeout(poll, pollingInterval)
+    }
+  } catch (error) {
+    ElMessage.error(t('message.error.fetch') + error.message)
+  }
 }
 </script>

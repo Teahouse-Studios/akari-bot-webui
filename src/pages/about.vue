@@ -54,75 +54,62 @@
     </span>
   </div>
 </template>
-
-<script>
+<script setup>
+import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { ElMessage } from 'element-plus'
 import { IS_DEMO } from '@/const'
 
-export default {
-  name: 'AboutPage',
-  data() {
-    const { t } = useI18n()
-    return {
-      devClickCount: 0,
-      showDevelopMode: localStorage.getItem('showDevelopMode') === 'true' && !IS_DEMO,
-      demoErrorKey: '',
-      t,
-    }
-  },
-  mounted() {
-    if (IS_DEMO) {
-      this.generateDemoErrorKey()
-    }
-  },
-  beforeUnmount() {
-    this.demoErrorKey = ''
-  },
-  methods: {
-    generateDemoErrorKey() {
-      const demoErrorIndex = Math.floor(Math.random() * 7) + 1
-      this.demoErrorKey = `setting.develop_mode.message.error.demo.${demoErrorIndex}`
-    },
-    handleDevClick() {
-      if (IS_DEMO) {
-        ElMessage.error(this.t(this.demoErrorKey))
-        return
-      }
-      if (this.showDevelopMode) {
-        ElMessage.info(this.t('setting.develop_mode.message.info.already'))
-        return
-      }
-      this.devClickCount++
+const { t } = useI18n()
 
-      const remainingClicks = 7 - this.devClickCount
+const devClickCount = ref(0)
+const showDevelopMode = ref(localStorage.getItem('showDevelopMode') === 'true' && !IS_DEMO)
+const demoErrorKey = ref('')
 
-      if (remainingClicks > 0 && remainingClicks < 6) {
-        ElMessage.info(
-          this.t('setting.develop_mode.message.info.remain', { remain: remainingClicks }),
-        )
-      }
-      if (this.devClickCount >= 7) {
-        localStorage.setItem('showDevelopMode', 'true')
-        this.showDevelopMode = true
-        ElMessage.success(this.t('setting.develop_mode.message.success'))
-        this.devClickCount = 0
-      }
-    },
-    goToRepo() {
-      window.open('https://github.com/Teahouse-Studios/akari-bot', '_blank')
-    },
-    goToWebUIRepo() {
-      window.open('https://github.com/Teahouse-Studios/akari-bot-webui', '_blank')
-    },
-    goToI18N() {
-      window.open('https://crowdin.com/project/akari-bot', '_blank')
-    },
-    goToSponsor() {
-      window.open('https://afdian.com/a/teahouse', '_blank')
-    },
-  },
+const generateDemoErrorKey = () => {
+  const demoErrorIndex = Math.floor(Math.random() * 7) + 1
+  demoErrorKey.value = `setting.develop_mode.message.error.demo.${demoErrorIndex}`
 }
+
+const handleDevClick = () => {
+  if (IS_DEMO) {
+    ElMessage.error(t(demoErrorKey.value))
+    return
+  }
+
+  if (showDevelopMode.value) {
+    ElMessage.info(t('setting.develop_mode.message.info.already'))
+    return
+  }
+
+  devClickCount.value++
+  const remainingClicks = 7 - devClickCount.value
+
+  if (remainingClicks > 0 && remainingClicks < 6) {
+    ElMessage.info(t('setting.develop_mode.message.info.remain', { remain: remainingClicks }))
+  }
+
+  if (devClickCount.value >= 7) {
+    localStorage.setItem('showDevelopMode', 'true')
+    showDevelopMode.value = true
+    ElMessage.success(t('setting.develop_mode.message.success'))
+    devClickCount.value = 0
+  }
+}
+
+const goToRepo = () => window.open('https://github.com/Teahouse-Studios/akari-bot', '_blank')
+const goToWebUIRepo = () =>
+  window.open('https://github.com/Teahouse-Studios/akari-bot-webui', '_blank')
+const goToI18N = () => window.open('https://crowdin.com/project/akari-bot', '_blank')
+const goToSponsor = () => window.open('https://afdian.com/a/teahouse', '_blank')
+
+onMounted(() => {
+  if (IS_DEMO) generateDemoErrorKey()
+})
+
+onBeforeUnmount(() => {
+  demoErrorKey.value = ''
+})
 </script>
 
 <style scoped>

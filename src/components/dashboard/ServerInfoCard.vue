@@ -128,152 +128,149 @@
   </el-row>
 </template>
 
-<script>
+<script setup>
+import { ref, reactive, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import axios from '@/axios.mjs'
 import { ElMessage } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 
-const progress_colors = ['#1989fa', '#e6a23c', '#f56c6c']
+const { t } = useI18n()
 
-export default {
-  name: 'ServerInfoCard',
-  data() {
-    const { t } = useI18n()
+const progressColors = ['#1989fa', '#e6a23c', '#f56c6c']
 
-    return {
-      os: {
-        system: '',
-        version: '',
-        machine: '',
-        boot_time: 0,
-      },
-      bot: {
-        running_time: 0,
-        python_version: '',
-        version: '',
-        web_render_status: false,
-      },
-      cpu: {
-        cpu_brand: '',
-        cpu_percent: 0,
-      },
-      memory: {
-        total: 0,
-        used: 0,
-        percent: 0,
-      },
-      disk: {
-        total: 0,
-        used: 0,
-        percent: 0,
-      },
-      abortController: new AbortController(),
-      loading: false,
-      dashboardOverflow: false,
-      t,
-    }
-  },
-  mounted() {
-    this.checkOverflow()
-    window.addEventListener('resize', this.checkOverflow)
-    this.fetchServerInfoData()
-  },
-  beforeUnmount() {
-    window.removeEventListener('resize', this.checkOverflow)
-    this.abortController.abort()
-  },
-  methods: {
-    formatRunningTime(seconds) {
-      const hours = Math.floor(seconds / 3600)
-      const minutes = Math.floor((seconds % 3600) / 60)
-      const remainingSeconds = Math.floor(seconds % 60)
-      return this.t('dashboard.server_info.text.format_time', {
-        hours,
-        minutes,
-        seconds: remainingSeconds,
-      })
-    },
-    formatTime(timestamp) {
-      const date = new Date(timestamp * 1000)
-      const language = (localStorage.getItem('language') || 'zh_cn').toLowerCase()
+const os = reactive({
+  system: '',
+  version: '',
+  machine: '',
+  boot_time: 0,
+})
 
-      const langMap = {
-        zh_cn: 'zh-CN',
-        zh_tw: 'zh-TW',
-        en_us: 'en-US',
-        ja_jp: 'ja-JP',
-      }
+const bot = reactive({
+  running_time: 0,
+  python_version: '',
+  version: '',
+  web_render_status: false,
+})
 
-      const locale = langMap[language] || 'zh-CN'
+const cpu = reactive({
+  cpu_brand: '',
+  cpu_percent: 0,
+})
 
-      if (locale === 'ja-JP') {
-        return new Intl.DateTimeFormat(locale, {
-          calendar: 'japanese',
-          era: 'short',
-          year: 'numeric',
-          month: '2-digit',
-          day: '2-digit',
-          hour: '2-digit',
-          minute: '2-digit',
-          second: '2-digit',
-          hour12: false,
-        }).format(date)
-      }
+const memory = reactive({
+  total: 0,
+  used: 0,
+  percent: 0,
+})
 
-      return new Intl.DateTimeFormat(locale, {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-        hour12: false,
-      }).format(date)
-    },
-    async fetchServerInfoData() {
-      try {
-        this.loading = true
-        const response = await axios.get('/api/server-info', {
-          signal: this.abortController.signal,
-        })
-        const data = response.data
+const disk = reactive({
+  total: 0,
+  used: 0,
+  percent: 0,
+})
 
-        this.os = { ...this.os, ...data.os }
-        this.bot = { ...this.bot, ...data.bot }
-        this.cpu = { ...this.cpu, ...data.cpu }
-        this.memory = { ...this.memory, ...data.memory }
-        this.disk = { ...this.disk, ...data.disk }
-      } catch (error) {
-        if (axios.isCancel(error)) {
-          console.log('Request canceled')
-        } else {
-          ElMessage.error(this.t('message.error.fetch') + error.message)
-        }
-      } finally {
-        this.loading = false
-      }
-    },
-    getProgressColor(percentage) {
-      if (percentage >= 90) {
-        return progress_colors[2]
-      } else {
-        if (percentage >= 60) {
-          return progress_colors[1]
-        } else {
-          return progress_colors[0]
-        }
-      }
-    },
-    checkOverflow() {
-      this.$nextTick(() => {
-        const el = this.$el.querySelector('.memory-dashboards')
-        if (el) {
-          this.dashboardOverflow = el.scrollWidth > el.clientWidth
-        }
-      })
-    },
-  },
+const loading = ref(false)
+const dashboardOverflow = ref(false)
+const abortController = new AbortController()
+
+function formatRunningTime(seconds) {
+  const hours = Math.floor(seconds / 3600)
+  const minutes = Math.floor((seconds % 3600) / 60)
+  const remainingSeconds = Math.floor(seconds % 60)
+  return t('dashboard.server_info.text.format_time', {
+    hours,
+    minutes,
+    seconds: remainingSeconds,
+  })
 }
+
+function formatTime(timestamp) {
+  const date = new Date(timestamp * 1000)
+  const language = (localStorage.getItem('language') || 'zh_cn').toLowerCase()
+
+  const langMap = {
+    zh_cn: 'zh-CN',
+    zh_tw: 'zh-TW',
+    en_us: 'en-US',
+    ja_jp: 'ja-JP',
+  }
+
+  const locale = langMap[language] || 'zh-CN'
+
+  if (locale === 'ja-JP') {
+    return new Intl.DateTimeFormat(locale, {
+      calendar: 'japanese',
+      era: 'short',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false,
+    }).format(date)
+  }
+
+  return new Intl.DateTimeFormat(locale, {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false,
+  }).format(date)
+}
+
+function getProgressColor(percentage) {
+  if (percentage >= 90) return progressColors[2]
+  if (percentage >= 60) return progressColors[1]
+  return progressColors[0]
+}
+
+function checkOverflow() {
+  nextTick(() => {
+    const el = document.querySelector('.memory-dashboards')
+    if (el) {
+      dashboardOverflow.value = el.scrollWidth > el.clientWidth
+    }
+  })
+}
+
+async function fetchServerInfoData() {
+  try {
+    loading.value = true
+    const response = await axios.get('/api/server-info', {
+      signal: abortController.signal,
+    })
+    const data = response.data
+
+    Object.assign(os, data.os)
+    Object.assign(bot, data.bot)
+    Object.assign(cpu, data.cpu)
+    Object.assign(memory, data.memory)
+    Object.assign(disk, data.disk)
+  } catch (error) {
+    if (axios.isCancel(error)) {
+      console.log('Request canceled')
+    } else {
+      ElMessage.error(t('message.error.fetch') + error.message)
+    }
+  } finally {
+    loading.value = false
+  }
+}
+
+onMounted(() => {
+  checkOverflow()
+  window.addEventListener('resize', checkOverflow)
+  fetchServerInfoData()
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', checkOverflow)
+  abortController.abort()
+})
 </script>
 
 <style scoped>

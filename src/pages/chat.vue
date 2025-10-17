@@ -173,7 +173,7 @@
   </div>
 </template>
 
-<script>
+<script setup>
 // import axios from '@/axios.mjs'
 import { IS_DEMO } from '@/const'
 import { ElMessage, ElMessageBox } from 'element-plus'
@@ -184,602 +184,572 @@ import { useI18n } from 'vue-i18n'
 import EmojiPicker from 'vue3-emoji-picker'
 import 'vue3-emoji-picker/css'
 
-export default {
-  name: 'ChatPage',
-  components: {
-    EmojiPicker,
-  },
-  data() {
-    const { t } = useI18n()
-    const md = new MarkdownIt('zero')
-      .set({ html: false, linkify: true, breaks: true })
-      .use(linkAttributes, {
-        pattern: /^(https?:)?\/\//,
-        attrs: {
-          target: '_blank',
-          rel: 'noopener noreferrer',
-        },
-      })
-      .use((md_) => {
-        md_.enable(['blockquote', 'fence', 'heading', 'list'])
-        md_.enable([
-          'autolink',
-          'backticks',
-          'emphasis',
-          'escape',
-          'link',
-          'linkify',
-          'newline',
-          'strikethrough',
-          'text',
-        ])
+import { ref, computed, onMounted, onBeforeUnmount, nextTick } from 'vue'
 
-        md_.renderer.rules.paragraph_open = () => ''
-        md_.renderer.rules.paragraph_close = () => '<br />'
+const { t } = useI18n()
+const inputText = ref('')
+const messages = ref([])
+const chatBox = ref(null)
+const websocket = ref(null)
+const connectionStatus = ref('connecting')
+const copiedId = ref(null)
+const heartbeatTimer = ref(null)
+const heartbeatTimeoutTimer = ref(null)
+const heartbeatRetryCount = ref(0)
+const heartbeatInterval = ref(30000)
+const heartbeatTimeout = ref(5000)
+const heartbeatAttempt = ref(3)
+const imageDialogVisible = ref(false)
+const isMobileView = ref(window.innerWidth < 1024)
+const previewImageSrc = ref('')
+const activeReactionMsg = ref(null)
+const abortController = ref(new AbortController())
+const debug = ref(false)
+const isDarkMode = ref(localStorage.getItem('isDarkMode') === 'true')
+const observer = ref(null)
 
-        md_.renderer.rules.fence = (tokens, idx) => {
-          const content = tokens[idx].content
-          return `<pre class="chat-pre">${md_.utils.escapeHtml(content)}</pre>`
-        }
+const md = new MarkdownIt('zero')
+  .set({ html: false, linkify: true, breaks: true })
+  .use(linkAttributes, {
+    pattern: /^(https?:)?\/\//,
+    attrs: {
+      target: '_blank',
+      rel: 'noopener noreferrer',
+    },
+  })
+  .use((md_) => {
+    md_.enable(['blockquote', 'fence', 'heading', 'list'])
+    md_.enable([
+      'autolink',
+      'backticks',
+      'emphasis',
+      'escape',
+      'link',
+      'linkify',
+      'newline',
+      'strikethrough',
+      'text',
+    ])
 
-        md_.renderer.rules.code_inline = (tokens, idx) => {
-          const content = tokens[idx].content
-          return `<code class="chat-code">${md_.utils.escapeHtml(content)}</code>`
-        }
+    md_.renderer.rules.paragraph_open = () => ''
+    md_.renderer.rules.paragraph_close = () => '<br />'
 
-        md_.renderer.rules.blockquote_open = () => {
-          return '<blockquote class="chat-blockquote">'
-        }
-      })
-    return {
-      commandPrefix: '~',
-      inputText: '',
-      messages: [],
-      chatBox: null,
-      websocket: null,
-      connectionStatus: 'connecting',
-      copiedId: null,
-      heartbeatTimer: null,
-      heartbeatTimeoutTimer: null,
-      heartbeatRetryCount: 0,
-      heartbeatInterval: 30000,
-      heartbeatTimeout: 5000,
-      heartbeatAttempt: 3,
-      imageDialogVisible: false,
-      isMobileView: window.innerWidth < 1024,
-      previewImageSrc: '',
-      activeReactionMsg: null,
-      abortController: new AbortController(),
-      // debug: process.env.VUE_APP_DEBUG === 'true',
-      debug: false,
-      isDarkMode: localStorage.getItem('isDarkMode') === 'true',
-      md,
-      t,
+    md_.renderer.rules.fence = (tokens, idx) => {
+      const content = tokens[idx].content
+      return `<pre class="chat-pre">${md_.utils.escapeHtml(content)}</pre>`
     }
-  },
-  computed: {
-    emojiTheme() {
-      return this.isDarkMode ? 'dark' : 'light'
-    },
-    groupNames() {
-      return {
-        smileys_people: this.t('emojipicker.group.smileys_people'),
-        animals_nature: this.t('emojipicker.group.animals_nature'),
-        food_drink: this.t('emojipicker.group.food_drink'),
-        activities: this.t('emojipicker.group.activities'),
-        travel_places: this.t('emojipicker.group.travel_places'),
-        objects: this.t('emojipicker.group.objects'),
-        symbols: this.t('emojipicker.group.symbols'),
-        flags: this.t('emojipicker.group.flags'),
-        recent: this.t('emojipicker.group.recent'),
-      }
-    },
-  },
-  methods: {
-    async connectWebSocket() {
-      if (IS_DEMO) {
-        this.connectionStatus = 'connected'
-        ElMessage.warning(this.t('chat.message.warning.demo'))
 
-        this.websocket = {
-          send: (data) => {
-            const parsed = JSON.parse(data)
-            if (parsed.action === 'send') {
-              const uuid = parsed.id || uuidv4()
-              this.messages.push({
-                from: 'user',
-                text: parsed.message[0].content,
-                html: this.renderMarkdown(parsed.message[0].content),
-                id: uuid,
-                showEmojiPicker: false,
-                reactions: {},
-                userReactions: [],
-              })
-              this.scrollToBottom()
-            }
-          },
-          close: () => {
-            // empty
-          },
-        }
-        return
-      }
+    md_.renderer.rules.code_inline = (tokens, idx) => {
+      const content = tokens[idx].content
+      return `<code class="chat-code">${md_.utils.escapeHtml(content)}</code>`
+    }
 
-      this.connectionStatus = 'connecting'
-      let config = {}
-      try {
-        const response = await fetch('/api/init')
-        if (response.ok) {
-          config = await response.json()
-          this.commandPrefix = config.command_prefix || '~'
-        }
-      } catch (e) {
-        // empty
-      }
+    md_.renderer.rules.blockquote_open = () => {
+      return '<blockquote class="chat-blockquote">'
+    }
+  })
 
-      const enableHTTPS = config.enable_https ?? window.location.protocol === 'https:'
-      let baseUrl = config.api_url || window.location.origin
-      if (!/^https?:\/\//i.test(baseUrl)) {
-        baseUrl = (enableHTTPS ? 'https://' : 'http://') + baseUrl
-      }
+const commandPrefix = ref('~')
 
-      try {
-        const url = new URL(baseUrl)
-        const wsProtocol = url.protocol === 'https:' ? 'wss:' : 'ws:'
-        const wsUrl = `${wsProtocol}//${url.hostname}${url.port ? `:${url.port}` : ''}/ws/chat`
+const emojiTheme = computed(() => (isDarkMode.value ? 'dark' : 'light'))
 
-        this.websocket = new WebSocket(wsUrl)
+const groupNames = computed(() => ({
+  smileys_people: t('emojipicker.group.smileys_people'),
+  animals_nature: t('emojipicker.group.animals_nature'),
+  food_drink: t('emojipicker.group.food_drink'),
+  activities: t('emojipicker.group.activities'),
+  travel_places: t('emojipicker.group.travel_places'),
+  objects: t('emojipicker.group.objects'),
+  symbols: t('emojipicker.group.symbols'),
+  flags: t('emojipicker.group.flags'),
+  recent: t('emojipicker.group.recent'),
+}))
 
-        this.websocket.onopen = () => {
-          const interval = parseFloat(config.heartbeat_interval)
-          const timeout = parseFloat(config.heartbeat_timeout)
-          const attempt = parseInt(config.heartbeat_attempt)
+const connectWebSocket = async () => {
+  if (IS_DEMO) {
+    connectionStatus.value = 'connected'
+    ElMessage.warning(t('chat.message.warning.demo'))
 
-          this.heartbeatInterval = isNaN(interval) || interval <= 0 ? 30000 : interval * 1000
-          this.heartbeatTimeout = isNaN(timeout) || timeout <= 0 ? 5000 : timeout * 1000
-          this.heartbeatAttempt = isNaN(attempt) || attempt <= 0 ? 3 : attempt
-
-          this.startHeartbeat()
-        }
-
-        this.websocket.onmessage = (event) => {
-          const data = JSON.parse(event.data)
-
-          clearTimeout(this.heartbeatTimeoutTimer)
-          this.heartbeatRetryCount = 0
-
-          if (data.action === 'heartbeat' && data.message === 'pong!') {
-            this.handleHeartbeatResponse()
-            return
-          }
-
-          this.connectionStatus = 'connected'
-
-          if (data.action === 'delete' && Array.isArray(data.id)) {
-            this.messages = this.messages.filter((msg) => !data.id.includes(msg.id))
-            return
-          }
-
-          if (data.action === 'reaction') {
-            const msg = this.messages.find((m) => m.id === data.id)
-            if (msg) {
-              if (!msg.reactions) msg.reactions = {}
-
-              if (data.add) {
-                msg.reactions[data.emoji] = (msg.reactions[data.emoji] || 0) + 1
-              } else {
-                if (msg.reactions[data.emoji]) {
-                  msg.reactions[data.emoji]--
-                  if (msg.reactions[data.emoji] <= 0) {
-                    delete msg.reactions[data.emoji]
-                  }
-                }
-              }
-            }
-            return
-          }
-
-          if (data.action === 'send') {
-            this.messages.push({
-              from: 'bot',
-              text: this.renderResponse(data.message),
-              html: this.renderMarkdown(this.renderResponse(data.message)),
-              id: data.id || uuidv4(),
-              typingStatus: null,
-              showEmojiPicker: false,
-              reactions: {},
-              userReactions: [],
-            })
-
-            this.scrollToBottom()
-            return
-          }
-
-          if (data.action === 'typing') {
-            const msg = this.messages.find((m) => m.id === data.id)
-            if (msg) {
-              if (['start', 'end', 'error'].includes(data.status)) {
-                if (msg.typingStatus === 'error' && data.status === 'end') {
-                  return
-                }
-                msg.typingStatus = data.status
-              }
-            }
-          }
-        }
-
-        this.websocket.onerror = () => {
-          this.connectionStatus = 'disconnected'
-          ElMessage.error(this.t('message.error.connect.server'))
-        }
-      } catch (e) {
-        this.connectionStatus = 'disconnected'
-        ElMessage.error(this.t('message.error.connect') + e.message)
-      }
-    },
-
-    startHeartbeat() {
-      this.heartbeatRetryCount = 0
-      this.sendHeartbeat()
-
-      this.heartbeatTimer = setInterval(() => {
-        this.sendHeartbeat()
-      }, this.heartbeatInterval)
-    },
-
-    sendHeartbeat(immediate = false) {
-      if (!this.websocket || this.websocket.readyState !== WebSocket.OPEN) {
-        this.disconnectWebSocket()
-        this.connectionStatus = 'unconnected'
-        return
-      }
-
-      this.websocket.send(JSON.stringify({ action: 'heartbeat', message: 'ping!' }))
-
-      clearTimeout(this.heartbeatTimeoutTimer)
-      this.heartbeatTimeoutTimer = setTimeout(() => {
-        this.heartbeatRetryCount++
-        this.connectionStatus = 'connecting'
-
-        if (this.heartbeatRetryCount >= this.heartbeatAttempt) {
-          this.stopHeartbeat()
-          this.disconnectWebSocket()
-          this.connectionStatus = 'disconnected'
-          ElMessage.error(this.t('message.error.connect.server'))
-        } else {
-          this.sendHeartbeat(true)
-        }
-      }, this.heartbeatTimeout)
-
-      if (!immediate) {
-        clearInterval(this.heartbeatTimer)
-        this.heartbeatTimer = setInterval(() => {
-          this.sendHeartbeat()
-        }, this.heartbeatInterval)
-      }
-    },
-
-    handleHeartbeatResponse() {
-      clearTimeout(this.heartbeatTimeoutTimer)
-      this.heartbeatRetryCount = 0
-      this.connectionStatus = 'connected'
-    },
-
-    stopHeartbeat() {
-      clearInterval(this.heartbeatTimer)
-      clearTimeout(this.heartbeatTimeoutTimer)
-      this.heartbeatTimer = null
-      this.heartbeatTimeoutTimer = null
-    },
-
-    disconnectWebSocket() {
-      if (this.websocket) {
-        this.websocket.close()
-        this.websocket = null
-      }
-
-      if (this.heartbeatTimer) {
-        clearInterval(this.heartbeatTimer)
-        this.heartbeatTimer = null
-      }
-
-      if (this.heartbeatTimeoutTimer) {
-        clearTimeout(this.heartbeatTimeoutTimer)
-        this.heartbeatTimeoutTimer = null
-      }
-    },
-
-    authenticateToken() {
-      // async authenticateToken() {
-      // TODO 需要重新验证?
-      // try {
-      //   const response = await axios.get('/api/verify', {
-      //     signal: this.abortController.signal,
-      //   })
-
-      //   if (response.status === 200) {
-      this.connectWebSocket()
-      //   } else {
-      //     this.connectionStatus = 'disconnected'
-      //     ElMessage.error(this.t('message.error.connect.auth'))
-      //   }
-      // } catch (error) {
-      //   if (axios.isCancel(error)) {
-      //     console.log('Request canceled')
-      //   } else {
-      //     this.connectionStatus = 'disconnected'
-      //     ElMessage.error(this.t('message.error.fetch') + error.message)
-      //   }
-      // }
-    },
-
-    sendMessage() {
-      const text = this.inputText.trim()
-      if (!text) return
-
-      const uuid = uuidv4()
-      this.messages.push({
-        from: 'user',
-        text,
-        html: this.renderMarkdown(text),
-        id: uuid,
-        showEmojiPicker: false,
-        reactions: {},
-        userReactions: [],
-      })
-
-      if (!IS_DEMO) {
-        this.websocket?.send(
-          JSON.stringify({
-            action: 'send',
-            message: [{ type: 'text', content: text }],
+    websocket.value = {
+      send: (data) => {
+        const parsed = JSON.parse(data)
+        if (parsed.action === 'send') {
+          const uuid = parsed.id || uuidv4()
+          messages.value.push({
+            from: 'user',
+            text: parsed.message[0].content,
+            html: renderMarkdown(parsed.message[0].content),
             id: uuid,
-          }),
-        )
-      }
-      this.inputText = ''
-      this.scrollToBottom()
-    },
-
-    resetChat() {
-      this.connectionStatus = 'connecting'
-      this.messages = []
-
-      if (this.websocket && this.websocket.readyState === WebSocket.OPEN) {
-        this.websocket.close()
-      }
-
-      this.authenticateToken()
-    },
-
-    scrollToBottom() {
-      setTimeout(() => {
-        if (this.chatBox) {
-          this.chatBox.scrollTop = this.chatBox.scrollHeight
+            showEmojiPicker: false,
+            reactions: {},
+            userReactions: [],
+          })
+          scrollToBottom()
         }
-      }, 0)
-    },
+      },
+      close: () => {
+        // empty
+      },
+    }
+    return
+  }
 
-    handleResize() {
-      this.isMobileView = window.innerWidth < 1024
-    },
+  connectionStatus.value = 'connecting'
+  let config = {}
+  try {
+    const response = await fetch('/api/init')
+    if (response.ok) {
+      config = await response.json()
+      commandPrefix.value = config.command_prefix || '~'
+    }
+  } catch (e) {
+    // empty
+  }
 
-    handleEnterKey(event) {
-      if (this.isMobileView) {
+  const enableHTTPS = config.enable_https ?? window.location.protocol === 'https:'
+  let baseUrl = config.api_url || window.location.origin
+  if (!/^https?:\/\//i.test(baseUrl)) {
+    baseUrl = (enableHTTPS ? 'https://' : 'http://') + baseUrl
+  }
+
+  try {
+    const url = new URL(baseUrl)
+    const wsProtocol = url.protocol === 'https:' ? 'wss:' : 'ws:'
+    const wsUrl = `${wsProtocol}//${url.hostname}${url.port ? `:${url.port}` : ''}/ws/chat`
+
+    websocket.value = new WebSocket(wsUrl)
+
+    websocket.value.onopen = () => {
+      const interval = parseFloat(config.heartbeat_interval)
+      const timeout = parseFloat(config.heartbeat_timeout)
+      const attempt = parseInt(config.heartbeat_attempt)
+
+      heartbeatInterval.value = isNaN(interval) || interval <= 0 ? 30000 : interval * 1000
+      heartbeatTimeout.value = isNaN(timeout) || timeout <= 0 ? 5000 : timeout * 1000
+      heartbeatAttempt.value = isNaN(attempt) || attempt <= 0 ? 3 : attempt
+
+      startHeartbeat()
+    }
+
+    websocket.value.onmessage = (event) => {
+      const data = JSON.parse(event.data)
+
+      clearTimeout(heartbeatTimeoutTimer.value)
+      heartbeatRetryCount.value = 0
+
+      if (data.action === 'heartbeat' && data.message === 'pong!') {
+        handleHeartbeatResponse()
         return
       }
-      if (event.shiftKey) {
-        // empty for newline
-      } else {
-        event.preventDefault()
-        this.sendMessage()
+
+      connectionStatus.value = 'connected'
+
+      if (data.action === 'delete' && Array.isArray(data.id)) {
+        messages.value = messages.value.filter((msg) => !data.id.includes(msg.id))
+        return
       }
-    },
 
-    renderMarkdown(text) {
-      return this.md.render(text).replace(/\[image:([^\]]+)\]/g, (match, src) => {
-        return `<img src="${src}" class="chat-img" />`
-      })
-    },
+      if (data.action === 'reaction') {
+        const msg = messages.value.find((m) => m.id === data.id)
+        if (msg) {
+          if (!msg.reactions) msg.reactions = {}
 
-    handleMarkdownClick(event) {
-      const target = event.target
-      if (target.tagName === 'A') {
-        event.preventDefault()
-        this.confirmExternalLink(target.href)
-      } else if (target.tagName === 'IMG') {
-        this.showImagePreview(target.src)
-      }
-    },
-
-    confirmExternalLink(url) {
-      ElMessageBox.confirm(
-        this.$t('chat.external_link.confirm.message', { url }),
-        this.$t('chat.external_link.confirm.title'),
-        {
-          confirmButtonText: this.$t('yes'),
-          cancelButtonText: this.$t('no'),
-          type: 'warning',
-        },
-      )
-        .then(() => {
-          window.open(url, '_blank')
-        })
-        .catch(() => {
-          console.log('Link blocked')
-        })
-    },
-
-    renderResponse(data) {
-      if (Array.isArray(data)) {
-        return data
-          .map((item) => {
-            if (item.type === 'text') {
-              return item.content
-            }
-            if (item.type === 'image') {
-              const base64Content = item.content
-              if (
-                base64Content.startsWith('data:image/png;base64,') ||
-                base64Content.startsWith('data:image/jpeg;base64,') ||
-                base64Content.startsWith('data:image/gif;base64,')
-              ) {
-                return `[image:${base64Content}]`
+          if (data.add) {
+            msg.reactions[data.emoji] = (msg.reactions[data.emoji] || 0) + 1
+          } else {
+            if (msg.reactions[data.emoji]) {
+              msg.reactions[data.emoji]--
+              if (msg.reactions[data.emoji] <= 0) {
+                delete msg.reactions[data.emoji]
               }
-              return ''
             }
-            return ''
-          })
-          .join('\n')
-      }
-      return data
-    },
-
-    openEmojiPicker(msg) {
-      this.messages.forEach((m) => {
-        m.showEmojiPicker = false // 明确执行赋值
-      })
-      this.activeReactionMsg = msg
-      msg.showEmojiPicker = true
-    },
-
-    selectEmoji(msg, emoji) {
-      const selected = emoji.i
-      if (!msg) return
-
-      if (!msg.reactions) msg.reactions = {}
-      if (!msg.userReactions) msg.userReactions = []
-
-      const hasReaction = msg.userReactions.includes(selected)
-
-      if (hasReaction) {
-        msg.reactions[selected]--
-
-        if (msg.reactions[selected] <= 0) {
-          delete msg.reactions[selected]
-        }
-
-        msg.userReactions = msg.userReactions.filter((e) => e !== selected)
-
-        this.websocket?.send(
-          JSON.stringify({
-            action: 'reaction',
-            emoji: selected,
-            id: msg.id,
-            add: false,
-          }),
-        )
-      } else {
-        msg.reactions[selected] = (msg.reactions[selected] || 0) + 1
-        msg.userReactions.push(selected)
-
-        this.websocket?.send(
-          JSON.stringify({
-            action: 'reaction',
-            emoji: selected,
-            id: msg.id,
-            add: true,
-          }),
-        )
-      }
-
-      msg.showEmojiPicker = false
-    },
-
-    userReacted(msg, emoji) {
-      return msg.userReactions?.includes(emoji)
-    },
-
-    toggleReaction(msg, emoji) {
-      if (!msg.reactions) msg.reactions = {}
-      if (!msg.userReactions) msg.userReactions = []
-
-      const hasReaction = msg.userReactions.includes(emoji)
-
-      if (hasReaction) {
-        msg.reactions[emoji]--
-        if (msg.reactions[emoji] <= 0) delete msg.reactions[emoji]
-        msg.userReactions = msg.userReactions.filter((e) => e !== emoji)
-
-        this.websocket?.send(
-          JSON.stringify({
-            action: 'reaction',
-            emoji,
-            id: msg.id,
-            add: false,
-          }),
-        )
-      } else {
-        msg.reactions[emoji] = (msg.reactions[emoji] || 0) + 1
-        msg.userReactions.push(emoji)
-
-        this.websocket?.send(
-          JSON.stringify({
-            action: 'reaction',
-            emoji,
-            id: msg.id,
-            add: true,
-          }),
-        )
-      }
-    },
-
-    async copyMessage(msg) {
-      try {
-        const textWithoutImages = msg.text.replace(/\[image:[^\]]+\]/g, '').trim()
-        if (!textWithoutImages) {
-          ElMessage.warning(this.t('chat.message.warning.nothing_to_copy'))
-          return
-        }
-
-        await navigator.clipboard.writeText(textWithoutImages)
-        this.copiedId = msg.id
-        setTimeout(() => {
-          if (this.copiedId === msg.id) {
-            this.copiedId = null
           }
-        }, 2000)
-      } catch (e) {
-        ElMessage.error(this.t('chat.message.error.copy') + e.message)
+        }
+        return
       }
-    },
 
-    showImagePreview(src) {
-      this.previewImageSrc = src
-      this.imageDialogVisible = true
-    },
+      if (data.action === 'send') {
+        messages.value.push({
+          from: 'bot',
+          text: renderResponse(data.message),
+          html: renderMarkdown(renderResponse(data.message)),
+          id: data.id || uuidv4(),
+          typingStatus: null,
+          showEmojiPicker: false,
+          reactions: {},
+          userReactions: [],
+        })
 
-    openImageInNewWindow() {
-      if (this.previewImageSrc) {
-        window.open(this.previewImageSrc, '_blank')
+        scrollToBottom()
+        return
       }
-    },
-  },
 
-  mounted() {
-    this.chatBox = this.$refs.chatBox
-    this.authenticateToken()
-    window.addEventListener('resize', this.handleResize)
-
-    const html = document.documentElement
-    this.isDarkMode = html.classList.contains('dark')
-
-    this.observer = new MutationObserver(() => {
-      this.isDarkMode = html.classList.contains('dark')
-    })
-
-    this.observer.observe(html, { attributes: true, attributeFilter: ['class'] })
-  },
-
-  beforeUnmount() {
-    this.stopHeartbeat()
-    if (this.websocket) {
-      this.websocket.close()
+      if (data.action === 'typing') {
+        const msg = messages.value.find((m) => m.id === data.id)
+        if (msg) {
+          if (['start', 'end', 'error'].includes(data.status)) {
+            if (msg.typingStatus === 'error' && data.status === 'end') {
+              return
+            }
+            msg.typingStatus = data.status
+          }
+        }
+      }
     }
-    this.abortController.abort()
-    window.removeEventListener('resize', this.handleResize)
-  },
+
+    websocket.value.onerror = () => {
+      connectionStatus.value = 'disconnected'
+      ElMessage.error(t('message.error.connect.server'))
+    }
+  } catch (e) {
+    connectionStatus.value = 'disconnected'
+    ElMessage.error(t('message.error.connect') + e.message)
+  }
 }
+
+const startHeartbeat = () => {
+  heartbeatRetryCount.value = 0
+  sendHeartbeat()
+
+  heartbeatTimer.value = setInterval(() => {
+    sendHeartbeat()
+  }, heartbeatInterval.value)
+}
+
+const sendHeartbeat = (immediate = false) => {
+  if (!websocket.value || websocket.value.readyState !== WebSocket.OPEN) {
+    disconnectWebSocket()
+    connectionStatus.value = 'unconnected'
+    return
+  }
+
+  websocket.value.send(JSON.stringify({ action: 'heartbeat', message: 'ping!' }))
+
+  clearTimeout(heartbeatTimeoutTimer.value)
+  heartbeatTimeoutTimer.value = setTimeout(() => {
+    heartbeatRetryCount.value++
+    connectionStatus.value = 'connecting'
+
+    if (heartbeatRetryCount.value >= heartbeatAttempt.value) {
+      stopHeartbeat()
+      disconnectWebSocket()
+      connectionStatus.value = 'disconnected'
+      ElMessage.error(t('message.error.connect.server'))
+    } else {
+      sendHeartbeat(true)
+    }
+  }, heartbeatTimeout.value)
+
+  if (!immediate) {
+    clearInterval(heartbeatTimer.value)
+    heartbeatTimer.value = setInterval(() => {
+      sendHeartbeat()
+    }, heartbeatInterval.value)
+  }
+}
+
+const handleHeartbeatResponse = () => {
+  clearTimeout(heartbeatTimeoutTimer.value)
+  heartbeatRetryCount.value = 0
+  connectionStatus.value = 'connected'
+}
+
+const stopHeartbeat = () => {
+  clearInterval(heartbeatTimer.value)
+  clearTimeout(heartbeatTimeoutTimer.value)
+  heartbeatTimer.value = null
+  heartbeatTimeoutTimer.value = null
+}
+
+const disconnectWebSocket = () => {
+  if (websocket.value) {
+    websocket.value.close()
+    websocket.value = null
+  }
+
+  if (heartbeatTimer.value) {
+    clearInterval(heartbeatTimer.value)
+    heartbeatTimer.value = null
+  }
+
+  if (heartbeatTimeoutTimer.value) {
+    clearTimeout(heartbeatTimeoutTimer.value)
+    heartbeatTimeoutTimer.value = null
+  }
+}
+
+const authenticateToken = () => {
+  connectWebSocket()
+}
+
+const sendMessage = () => {
+  const text = inputText.value.trim()
+  if (!text) return
+
+  const uuid = uuidv4()
+  messages.value.push({
+    from: 'user',
+    text,
+    html: renderMarkdown(text),
+    id: uuid,
+    showEmojiPicker: false,
+    reactions: {},
+    userReactions: [],
+  })
+
+  if (!IS_DEMO) {
+    websocket.value?.send(
+      JSON.stringify({
+        action: 'send',
+        message: [{ type: 'text', content: text }],
+        id: uuid,
+      }),
+    )
+  }
+  inputText.value = ''
+  scrollToBottom()
+}
+
+const resetChat = () => {
+  connectionStatus.value = 'connecting'
+  messages.value = []
+
+  if (websocket.value && websocket.value.readyState === WebSocket.OPEN) {
+    websocket.value.close()
+  }
+
+  authenticateToken()
+}
+
+const scrollToBottom = () => {
+  nextTick(() => {
+    if (chatBox.value) {
+      chatBox.value.scrollTop = chatBox.value.scrollHeight
+    }
+  })
+}
+
+const handleResize = () => {
+  isMobileView.value = window.innerWidth < 1024
+}
+
+const handleEnterKey = (event) => {
+  if (isMobileView.value) {
+    return
+  }
+  if (event.shiftKey) {
+    // empty for newline
+  } else {
+    event.preventDefault()
+    sendMessage()
+  }
+}
+
+const renderMarkdown = (text) => {
+  return md.render(text).replace(/\[image:([^\]]+)\]/g, (match, src) => {
+    return `<img src="${src}" class="chat-img" />`
+  })
+}
+
+const handleMarkdownClick = (event) => {
+  const target = event.target
+  if (target.tagName === 'A') {
+    event.preventDefault()
+    confirmExternalLink(target.href)
+  } else if (target.tagName === 'IMG') {
+    showImagePreview(target.src)
+  }
+}
+
+const confirmExternalLink = (url) => {
+  ElMessageBox.confirm(
+    t('chat.external_link.confirm.message', { url }),
+    t('chat.external_link.confirm.title'),
+    {
+      confirmButtonText: t('yes'),
+      cancelButtonText: t('no'),
+      type: 'warning',
+    },
+  )
+    .then(() => {
+      window.open(url, '_blank')
+    })
+    .catch(() => {
+      console.log('Link blocked')
+    })
+}
+
+const renderResponse = (data) => {
+  if (Array.isArray(data)) {
+    return data
+      .map((item) => {
+        if (item.type === 'text') {
+          return item.content
+        }
+        if (item.type === 'image') {
+          const base64Content = item.content
+          if (
+            base64Content.startsWith('data:image/png;base64,') ||
+            base64Content.startsWith('data:image/jpeg;base64,') ||
+            base64Content.startsWith('data:image/gif;base64,')
+          ) {
+            return `[image:${base64Content}]`
+          }
+          return ''
+        }
+        return ''
+      })
+      .join('\n')
+  }
+  return data
+}
+
+const openEmojiPicker = (msg) => {
+  messages.value.forEach((m) => {
+    m.showEmojiPicker = false
+  })
+  activeReactionMsg.value = msg
+  msg.showEmojiPicker = true
+}
+
+const selectEmoji = (msg, emoji) => {
+  const selected = emoji.i
+  if (!msg) return
+
+  if (!msg.reactions) msg.reactions = {}
+  if (!msg.userReactions) msg.userReactions = []
+
+  const hasReaction = msg.userReactions.includes(selected)
+
+  if (hasReaction) {
+    msg.reactions[selected]--
+
+    if (msg.reactions[selected] <= 0) {
+      delete msg.reactions[selected]
+    }
+
+    msg.userReactions = msg.userReactions.filter((e) => e !== selected)
+
+    websocket.value?.send(
+      JSON.stringify({
+        action: 'reaction',
+        emoji: selected,
+        id: msg.id,
+        add: false,
+      }),
+    )
+  } else {
+    msg.reactions[selected] = (msg.reactions[selected] || 0) + 1
+    msg.userReactions.push(selected)
+
+    websocket.value?.send(
+      JSON.stringify({
+        action: 'reaction',
+        emoji: selected,
+        id: msg.id,
+        add: true,
+      }),
+    )
+  }
+
+  msg.showEmojiPicker = false
+}
+
+const userReacted = (msg, emoji) => {
+  return msg.userReactions?.includes(emoji)
+}
+
+const toggleReaction = (msg, emoji) => {
+  if (!msg.reactions) msg.reactions = {}
+  if (!msg.userReactions) msg.userReactions = []
+
+  const hasReaction = msg.userReactions.includes(emoji)
+
+  if (hasReaction) {
+    msg.reactions[emoji]--
+    if (msg.reactions[emoji] <= 0) delete msg.reactions[emoji]
+    msg.userReactions = msg.userReactions.filter((e) => e !== emoji)
+
+    websocket.value?.send(
+      JSON.stringify({
+        action: 'reaction',
+        emoji,
+        id: msg.id,
+        add: false,
+      }),
+    )
+  } else {
+    msg.reactions[emoji] = (msg.reactions[emoji] || 0) + 1
+    msg.userReactions.push(emoji)
+
+    websocket.value?.send(
+      JSON.stringify({
+        action: 'reaction',
+        emoji,
+        id: msg.id,
+        add: true,
+      }),
+    )
+  }
+}
+
+const copyMessage = async (msg) => {
+  try {
+    const textWithoutImages = msg.text.replace(/\[image:[^\]]+\]/g, '').trim()
+    if (!textWithoutImages) {
+      ElMessage.warning(t('chat.message.warning.nothing_to_copy'))
+      return
+    }
+
+    await navigator.clipboard.writeText(textWithoutImages)
+    copiedId.value = msg.id
+    setTimeout(() => {
+      if (copiedId.value === msg.id) {
+        copiedId.value = null
+      }
+    }, 2000)
+  } catch (e) {
+    ElMessage.error(t('chat.message.error.copy') + e.message)
+  }
+}
+
+const showImagePreview = (src) => {
+  previewImageSrc.value = src
+  imageDialogVisible.value = true
+}
+
+const openImageInNewWindow = () => {
+  if (previewImageSrc.value) {
+    window.open(previewImageSrc.value, '_blank')
+  }
+}
+
+onMounted(() => {
+  chatBox.value = chatBox.value || document.querySelector('.chat-box')
+  authenticateToken()
+  window.addEventListener('resize', handleResize)
+
+  const html = document.documentElement
+  isDarkMode.value = html.classList.contains('dark')
+
+  observer.value = new MutationObserver(() => {
+    isDarkMode.value = html.classList.contains('dark')
+  })
+
+  observer.value.observe(html, { attributes: true, attributeFilter: ['class'] })
+})
+
+onBeforeUnmount(() => {
+  stopHeartbeat()
+  if (websocket.value) {
+    websocket.value.close()
+  }
+  abortController.value.abort()
+  window.removeEventListener('resize', handleResize)
+  if (observer.value) {
+    observer.value.disconnect()
+  }
+})
 </script>
 
 <style>

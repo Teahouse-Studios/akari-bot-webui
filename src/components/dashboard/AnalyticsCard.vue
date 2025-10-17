@@ -107,9 +107,10 @@
   </el-row>
 </template>
 
-<script>
-import { ElMessage } from 'element-plus'
+<script setup>
+import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { ElMessage } from 'element-plus'
 import axios from '@/axios.mjs'
 import { LineChart } from 'echarts/charts'
 import {
@@ -124,251 +125,206 @@ import { init, use } from 'echarts/core'
 import { LabelLayout, UniversalTransition } from 'echarts/features'
 import { CanvasRenderer } from 'echarts/renderers'
 
-export default {
-  name: 'AnalyticsCard',
-  data() {
-    const { t } = useI18n()
+const { t } = useI18n()
 
-    return {
-      trendData: [],
-      selectedDays: '1',
-      count: 0,
-      averageCount: 0,
-      changeRate: 0,
-      commandStats: [],
-      chartInstance: null,
-      resizeObserver: null,
-      abortController: new AbortController(),
-      loading: false,
-      t,
-    }
-  },
-  mounted() {
-    this.fetchAnalyticsData(this.selectedDays)
+const trendData = ref([])
+const selectedDays = ref('1')
+const count = ref(0)
+const averageCount = ref(0)
+const changeRate = ref(0)
+const commandStats = ref([])
+const chartInstance = ref(null)
+const chartContainer = ref(null)
+const loading = ref(false)
+const abortController = new AbortController()
+let resizeObserver = null
 
-    this.resizeObserver = new ResizeObserver(() => {
-      this.resizeChart()
-    })
+use([
+  LineChart,
+  TitleComponent,
+  TooltipComponent,
+  GridComponent,
+  DatasetComponent,
+  TransformComponent,
+  LabelLayout,
+  UniversalTransition,
+  CanvasRenderer,
+  DataZoomComponent,
+])
 
-    this.resizeObserver.observe(this.$refs.chartContainer)
-    use([
-      LineChart,
-      TitleComponent,
-      TooltipComponent,
-      GridComponent,
-      DatasetComponent,
-      TransformComponent,
-      LabelLayout,
-      UniversalTransition,
-      CanvasRenderer,
-      DataZoomComponent,
-    ])
-  },
-  beforeUnmount() {
-    this.abortController.abort()
-    if (this.resizeObserver && this.$refs.chartContainer) {
-      this.resizeObserver.unobserve(this.$refs.chartContainer)
-      this.resizeObserver.disconnect()
-    }
-    if (this.chartInstance) {
-      this.chartInstance.dispose()
-    }
-  },
-  methods: {
-    async fetchAnalyticsData(days) {
-      this.loading = true
-      try {
-        const response = await axios.get('/api/analytics', {
-          signal: this.abortController.signal,
-          params: { days },
-        })
-        const { data } = response
-        this.processData(data, days)
-        this.renderChart(days)
-      } catch (error) {
-        if (axios.isCancel(error)) {
-          console.log('Request canceled')
-        } else {
-          ElMessage.error(this.t('message.error.fetch') + error.message)
-        }
-      } finally {
-        this.loading = false
-      }
-    },
-
-    processData(data, days) {
-      const timeGroupedData = this.groupDataByTimeInterval(data.data, days)
-
-      this.trendData = this.fillMissingData(timeGroupedData, days)
-        .map((item) => ({
-          date: this.formatTimestamp(item.date),
-          count: item.count,
-        }))
-        .sort((a, b) => new Date(a.date) - new Date(b.date))
-
-      this.count = timeGroupedData.reduce((sum, item) => sum + item.count, 0)
-      this.averageCount = Math.round(this.count / days)
-
-      this.changeRate = Math.floor(data.change_rate * 100)
-      const prefixCountMap = {}
-      data.data.forEach((item) => {
-        const prefix = item.target_id?.split('|')[0] || this.t('unknown')
-        prefixCountMap[prefix] = (prefixCountMap[prefix] || 0) + 1
-      })
-
-      const sorted = Object.entries(prefixCountMap)
-        .map(([prefix, count]) => ({ prefix, count }))
-        .sort((a, b) => b.count - a.count)
-
-      this.commandStats = sorted
-    },
-
-    fillMissingData(timeGroupedData, days) {
-      const intervalMinutes = 30
-      const now = new Date()
-      const totalIntervals = (days * 24 * 60) / intervalMinutes
-      const baseTime = new Date(now.getTime() - intervalMinutes * 60 * 1000)
-
-      const existingKeys = new Set(timeGroupedData.map((item) => item.date.toISOString()))
-      const filledData = [...timeGroupedData]
-
-      for (let i = 0; i < totalIntervals; i++) {
-        const date = new Date(baseTime.getTime() - i * intervalMinutes * 60 * 1000)
-        if (!existingKeys.has(date.toISOString())) {
-          filledData.push({ date, count: 0 })
-        }
-      }
-
-      return filledData.sort((a, b) => new Date(a.date) - new Date(b.date))
-    },
-
-    generateAllTimeIntervals(days) {
-      const timeIntervals = []
-      const now = new Date()
-      const interval = 48 * days
-      const baseTime = new Date(now.getTime() - 30 * 60 * 1000)
-
-      for (let i = 0; i < interval; i++) {
-        const newTime = new Date(baseTime.getTime() - i * 30 * 60 * 1000)
-        timeIntervals.push(newTime.toISOString())
-      }
-
-      return timeIntervals
-    },
-
-    groupDataByTimeInterval(data, _days) {
-      const groupedData = {}
-      const now = new Date()
-      const intervalMinutes = 30
-      const baseTime = new Date(now.getTime() - intervalMinutes * 60 * 1000) // 当前时间向前对齐半小时
-
-      data.forEach((item) => {
-        const timestamp = new Date(item.timestamp)
-        const diff = baseTime.getTime() - timestamp.getTime()
-        const steps = Math.floor(diff / (intervalMinutes * 60 * 1000))
-        const alignedTime = new Date(baseTime.getTime() - steps * intervalMinutes * 60 * 1000)
-        const timeKey = alignedTime.toISOString()
-
-        if (!groupedData[timeKey]) {
-          groupedData[timeKey] = { date: alignedTime, count: 0 }
-        }
-        groupedData[timeKey].count += 1
-      })
-
-      return Object.values(groupedData)
-    },
-
-    formatTimestamp(timestamp) {
-      const date = new Date(timestamp)
-      return date
-        .toLocaleString([], {
-          year: 'numeric',
-          month: 'numeric',
-          day: 'numeric',
-          hour: '2-digit',
-          minute: '2-digit',
-          hour12: false,
-        })
-        .replace(',', '')
-    },
-
-    getPrimaryColor() {
-      return getComputedStyle(document.documentElement)
-        .getPropertyValue('--el-color-primary')
-        .trim()
-    },
-
-    renderChart() {
-      this.$nextTick(() => {
-        if (this.chartInstance) {
-          this.chartInstance.dispose()
-        }
-
-        const chartDom = this.$refs.chartContainer
-        if (!chartDom || chartDom.offsetWidth === 0) return
-
-        const primaryColor = this.getPrimaryColor()
-        const chart = init(this.$refs.chartContainer)
-        const option = {
-          color: [primaryColor],
-          tooltip: { trigger: 'axis' },
-          dataZoom: [
-            { type: 'slider', start: 0, end: 100 },
-            { type: 'inside', start: 0, end: 100 },
-          ],
-          xAxis: {
-            type: 'category',
-            data: this.trendData.map((item) => item.date),
-          },
-          yAxis: {
-            type: 'value',
-          },
-          series: [
-            {
-              name: this.t('dashboard.analytics.command.chart.command'),
-              data: this.trendData.map((item) => item.count),
-              type: 'line',
-              smooth: true,
-            },
-          ],
-        }
-        chart.setOption(option)
-        this.chartInstance = chart
-      })
-    },
-
-    resizeChart() {
-      this.$nextTick(() => {
-        if (this.chartInstance) {
-          this.chartInstance.resize()
-        }
-      })
-    },
-
-    onTimeRangeChange(newValue) {
-      this.fetchAnalyticsData(newValue)
-    },
-
-    getColorByIndex(prefix) {
-      const colors = [
-        '#F56C6C', // 红
-        '#E6A23C', // 橙
-        '#FAE384', // 黄
-        '#67C23A', // 绿
-        '#1ABC9C', // 青
-        '#409EFF', // 蓝
-        '#9B59B6', // 紫
-        '#E84393', // 粉
-      ]
-      // 使用 prefix 的哈希来选颜色
-      let hash = 0
-      for (let i = 0; i < prefix.length; i++) {
-        hash += prefix.charCodeAt(i)
-      }
-      return colors[hash % colors.length]
-    },
-  },
+const getPrimaryColor = () => {
+  return getComputedStyle(document.documentElement).getPropertyValue('--el-color-primary').trim()
 }
+
+const formatTimestamp = (timestamp) => {
+  const date = new Date(timestamp)
+  return date
+    .toLocaleString([], {
+      year: 'numeric',
+      month: 'numeric',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+    })
+    .replace(',', '')
+}
+
+const fillMissingData = (timeGroupedData, days) => {
+  const intervalMinutes = 30
+  const now = new Date()
+  const totalIntervals = (days * 24 * 60) / intervalMinutes
+  const baseTime = new Date(now.getTime() - intervalMinutes * 60 * 1000)
+
+  const existingKeys = new Set(timeGroupedData.map((item) => item.date.toISOString()))
+  const filledData = [...timeGroupedData]
+
+  for (let i = 0; i < totalIntervals; i++) {
+    const date = new Date(baseTime.getTime() - i * intervalMinutes * 60 * 1000)
+    if (!existingKeys.has(date.toISOString())) {
+      filledData.push({ date, count: 0 })
+    }
+  }
+
+  return filledData.sort((a, b) => new Date(a.date) - new Date(b.date))
+}
+
+const groupDataByTimeInterval = (data, _days) => {
+  const groupedData = {}
+  const now = new Date()
+  const intervalMinutes = 30
+  const baseTime = new Date(now.getTime() - intervalMinutes * 60 * 1000)
+
+  data.forEach((item) => {
+    const timestamp = new Date(item.timestamp)
+    const diff = baseTime.getTime() - timestamp.getTime()
+    const steps = Math.floor(diff / (intervalMinutes * 60 * 1000))
+    const alignedTime = new Date(baseTime.getTime() - steps * intervalMinutes * 60 * 1000)
+    const timeKey = alignedTime.toISOString()
+
+    if (!groupedData[timeKey]) {
+      groupedData[timeKey] = { date: alignedTime, count: 0 }
+    }
+    groupedData[timeKey].count += 1
+  })
+
+  return Object.values(groupedData)
+}
+
+const processData = (data, days) => {
+  const timeGroupedData = groupDataByTimeInterval(data.data, days)
+
+  trendData.value = fillMissingData(timeGroupedData, days)
+    .map((item) => ({
+      date: formatTimestamp(item.date),
+      count: item.count,
+    }))
+    .sort((a, b) => new Date(a.date) - new Date(b.date))
+
+  count.value = timeGroupedData.reduce((sum, item) => sum + item.count, 0)
+  averageCount.value = Math.round(count.value / days)
+  changeRate.value = Math.floor(data.change_rate * 100)
+
+  const prefixCountMap = {}
+  data.data.forEach((item) => {
+    const prefix = item.target_id?.split('|')[0] || t('unknown')
+    prefixCountMap[prefix] = (prefixCountMap[prefix] || 0) + 1
+  })
+
+  commandStats.value = Object.entries(prefixCountMap)
+    .map(([prefix, count]) => ({ prefix, count }))
+    .sort((a, b) => b.count - a.count)
+}
+
+const renderChart = async () => {
+  await nextTick()
+  if (chartInstance.value) chartInstance.value.dispose()
+  const chartDom = chartContainer.value
+  if (!chartDom || chartDom.offsetWidth === 0) return
+
+  const primaryColor = getPrimaryColor()
+  const chart = init(chartDom)
+  chart.setOption({
+    color: [primaryColor],
+    tooltip: { trigger: 'axis' },
+    dataZoom: [
+      { type: 'slider', start: 0, end: 100 },
+      { type: 'inside', start: 0, end: 100 },
+    ],
+    xAxis: { type: 'category', data: trendData.value.map((item) => item.date) },
+    yAxis: { type: 'value' },
+    series: [
+      {
+        name: t('dashboard.analytics.command.chart.command'),
+        type: 'line',
+        smooth: true,
+        data: trendData.value.map((item) => item.count),
+      },
+    ],
+  })
+  chartInstance.value = chart
+}
+
+const resizeChart = async () => {
+  await nextTick()
+  if (chartInstance.value) chartInstance.value.resize()
+}
+
+const fetchAnalyticsData = async (days) => {
+  loading.value = true
+  try {
+    const response = await axios.get('/api/analytics', {
+      signal: abortController.signal,
+      params: { days },
+    })
+    processData(response.data, days)
+    renderChart()
+  } catch (error) {
+    if (axios.isCancel(error)) {
+      console.log('Request canceled')
+    } else {
+      ElMessage.error(t('message.error.fetch') + error.message)
+    }
+  } finally {
+    loading.value = false
+  }
+}
+
+const onTimeRangeChange = (newValue) => {
+  fetchAnalyticsData(newValue)
+}
+
+const getColorByIndex = (prefix) => {
+  const colors = [
+    '#F56C6C',
+    '#E6A23C',
+    '#FAE384',
+    '#67C23A',
+    '#1ABC9C',
+    '#409EFF',
+    '#9B59B6',
+    '#E84393',
+  ]
+  let hash = 0
+  for (let i = 0; i < prefix.length; i++) hash += prefix.charCodeAt(i)
+  return colors[hash % colors.length]
+}
+
+onMounted(() => {
+  fetchAnalyticsData(selectedDays.value)
+
+  resizeObserver = new ResizeObserver(resizeChart)
+  if (chartContainer.value) resizeObserver.observe(chartContainer.value)
+})
+
+onBeforeUnmount(() => {
+  abortController.abort()
+  if (resizeObserver && chartContainer.value) {
+    resizeObserver.unobserve(chartContainer.value)
+    resizeObserver.disconnect()
+  }
+  if (chartInstance.value) chartInstance.value.dispose()
+})
 </script>
 
 <style scoped>
