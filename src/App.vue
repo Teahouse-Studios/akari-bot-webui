@@ -31,6 +31,8 @@
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount, inject } from 'vue'
 import axios from '@/axios.mjs'
+import LocalStorageJson from '@/localStorageJson.js'
+import { elementPlusLangMap } from '@/element-plus-langmap.js'
 import AppSidebarDrawer from './components/SidebarDrawer.vue'
 import AppSidebar from './components/Sidebar.vue'
 import AppHeader from './components/Header.vue'
@@ -56,7 +58,7 @@ const sidebarMarginLeft = computed(() => {
 })
 
 async function initializeUserVerification() {
-  if (!localStorage.getItem('token')) {
+  if (!LocalStorageJson.getItem('token')) {
     await checkPassword()
   } else {
     try {
@@ -69,14 +71,14 @@ async function initializeUserVerification() {
         showSuggestPasswordModal.value = true
       } else {
         const noPassword = response.data.no_password
-        const promptDisabled = localStorage.getItem('noPasswordPromptDisabled') === 'true'
+        const promptDisabled = LocalStorageJson.getItem('noPasswordPromptDisabled') === 'true'
         if (noPassword && !promptDisabled) {
           showSuggestPasswordModal.value = true
         }
       }
     } catch (error) {
       await checkPassword()
-      localStorage.removeItem('token')
+      LocalStorageJson.removeItem('token')
     }
   }
 }
@@ -86,8 +88,8 @@ async function checkPassword() {
     const response = await axios.post('/api/login', {})
     if (response.status === 200) {
       userVerified.value = true
-      localStorage.setItem('token', response.data.data)
-      const promptDisabled = localStorage.getItem('noPasswordPromptDisabled') === 'true'
+      LocalStorageJson.setItem('token', response.data.data)
+      const promptDisabled = LocalStorageJson.getItem('noPasswordPromptDisabled') === 'true'
       if (!promptDisabled) {
         showSuggestPasswordModal.value = true
       }
@@ -151,7 +153,7 @@ function applyThemeColor(color) {
 }
 
 function observeThemeChange() {
-  const savedColor = localStorage.getItem('themeColor')
+  const savedColor = LocalStorageJson.getItem('themeColor')
   if (savedColor) applyThemeColor(savedColor)
 
   const handleStorage = (event) => {
@@ -161,7 +163,7 @@ function observeThemeChange() {
   }
 
   const handleThemeChange = () => {
-    const color = localStorage.getItem('themeColor') || '#edaab3'
+    const color = LocalStorageJson.getItem('themeColor') || '#edaab3'
     applyThemeColor(color)
   }
 
@@ -169,7 +171,7 @@ function observeThemeChange() {
   window.addEventListener('theme-change', handleThemeChange)
 
   const observer = new MutationObserver(() => {
-    const color = localStorage.getItem('themeColor') || '#edaab3'
+    const color = LocalStorageJson.getItem('themeColor') || '#edaab3'
     applyThemeColor(color)
   })
 
@@ -187,12 +189,12 @@ onMounted(async () => {
   window.addEventListener('resize', updateSidebarVisibility)
   observeThemeChange()
 
-  if (!localStorage.getItem('language')) {
+  if (!LocalStorageJson.getItem('language')) {
     await fetch('/api/init')
       .then((res) => res.json())
       .then((config) => {
         locale.value = config.lang
-        localStorage.setItem('language', config.lang)
+        LocalStorageJson.setItem('language', config.lang)
         elementLocale.lang = elementPlusLangMap[config.lang]
       })
   }

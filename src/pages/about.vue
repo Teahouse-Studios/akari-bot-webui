@@ -59,11 +59,12 @@ import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { ElMessage } from 'element-plus'
 import { IS_DEMO } from '@/const'
+import LocalStorageJson from '@/localStorageJson.js'
 
 const { t } = useI18n()
 
 const devClickCount = ref(0)
-const showDevelopMode = ref(localStorage.getItem('showDevelopMode') === 'true' && !IS_DEMO)
+const showDevelopMode = ref(LocalStorageJson.getItem('showDevelopMode') === 'true' && !IS_DEMO)
 const demoErrorKey = ref('')
 
 const generateDemoErrorKey = () => {
@@ -90,7 +91,7 @@ const handleDevClick = () => {
   }
 
   if (devClickCount.value >= 7) {
-    localStorage.setItem('showDevelopMode', 'true')
+    LocalStorageJson.setItem('showDevelopMode', 'true')
     showDevelopMode.value = true
     ElMessage.success(t('setting.develop_mode.message.success'))
     devClickCount.value = 0

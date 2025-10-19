@@ -30,6 +30,7 @@
 
 <script setup>
 import { ref, reactive, computed } from 'vue'
+import LocalStorageJson from '@/localStorageJson.js'
 
 const presets = reactive({
   akari: '#edaab3',
@@ -37,23 +38,23 @@ const presets = reactive({
 })
 
 const customColor = ref('')
-const showColorPicker = ref(localStorage.getItem('isCustomTheme') === 'true')
+const showColorPicker = ref(LocalStorageJson.getItem('isCustomTheme') === 'true')
 
 function applyPreset(themeName) {
   const color = presets[themeName]
-  localStorage.setItem('isCustomTheme', 'false')
-  localStorage.setItem('themeColor', color)
+  LocalStorageJson.setItem('isCustomTheme', 'false')
+  LocalStorageJson.setItem('themeColor', color)
   showColorPicker.value = false
   window.dispatchEvent(new Event('theme-change'))
 }
 
 function applyCustomColor(color) {
   if (!color) {
-    localStorage.removeItem('isCustomTheme')
-    localStorage.setItem('themeColor', '#edaab3')
+    LocalStorageJson.removeItem('isCustomTheme')
+    LocalStorageJson.setItem('themeColor', '#edaab3')
   } else {
-    localStorage.setItem('isCustomTheme', 'true')
-    localStorage.setItem('themeColor', color)
+    LocalStorageJson.setItem('isCustomTheme', 'true')
+    LocalStorageJson.setItem('themeColor', color)
   }
   window.dispatchEvent(new Event('theme-change'))
 }
@@ -64,9 +65,9 @@ function onCustomButtonClick() {
 }
 
 const customButtonStyle = computed(() => {
-  const isCustomTheme = localStorage.getItem('isCustomTheme')
+  const isCustomTheme = LocalStorageJson.getItem('isCustomTheme')
   if (isCustomTheme === 'true') {
-    const savedColor = localStorage.getItem('themeColor')
+    const savedColor = LocalStorageJson.getItem('themeColor')
     customColor.value = savedColor
   }
   if (customColor.value) {

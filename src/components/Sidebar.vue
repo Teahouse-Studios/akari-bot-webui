@@ -47,6 +47,7 @@
 
 <script setup>
 import { ref, watch } from 'vue'
+import LocalStorageJson from '@/localStorageJson.js'
 import { useRoute, useRouter } from 'vue-router'
 import { IS_DEMO } from '@/const'
 
@@ -61,7 +62,7 @@ const route = useRoute()
 const router = useRouter()
 
 const activeMenu = ref(route.name)
-const isDevelopMode = ref(localStorage.getItem('isDevelopMode') === 'true' && !IS_DEMO)
+const isDevelopMode = ref(LocalStorageJson.getItem('isDevelopMode') === 'true' && !IS_DEMO)
 
 function getActiveMenuFromRoute() {
   return route.name

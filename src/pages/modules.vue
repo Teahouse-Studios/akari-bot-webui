@@ -198,10 +198,11 @@
 
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
-import axios from '@/axios.mjs'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useI18n } from 'vue-i18n'
+import axios from '@/axios.mjs'
 import VisibleEditor from '@/components/config/VisibleEditor.vue'
+import LocalStorageJson from '@/localStorageJson.js'
 
 const { t } = useI18n()
 
@@ -265,7 +266,7 @@ const debouncedRefresh = () => {
 const refreshData = async () => {
   loading.value = true
   try {
-    const language = localStorage.getItem('language') || 'zh_cn'
+    const language = LocalStorageJson.getItem('language') || 'zh_cn'
     const response = await axios.get('/api/modules', { params: { locale: language } })
     if (response.status === 200 && response.data.modules) {
       modules.value = Object.entries(response.data.modules)
@@ -302,7 +303,7 @@ const getRelatedModules = async (moduleName) => {
 
 const handleHelp = async (row) => {
   try {
-    const language = localStorage.getItem('language') || 'zh_cn'
+    const language = LocalStorageJson.getItem('language') || 'zh_cn'
     const res = await axios.get(`/api/module/${row.name}/helpdoc`, { params: { locale: language } })
     if (res.status === 200) {
       helpDoc.value = res.data

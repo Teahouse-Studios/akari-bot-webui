@@ -59,6 +59,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 import axios from '@/axios.mjs'
 import { IS_DEMO } from '@/const'
+import LocalStorageJson from '@/localStorageJson.js'
 
 const { t } = useI18n()
 
@@ -164,7 +165,7 @@ const confirmClearPassword = async () => {
 
     if (response.status === 205) {
       ElMessage.success(t('setting.change_password.message.success.clear'))
-      localStorage.removeItem('noPasswordPromptDisabled')
+      LocalStorageJson.removeItem('noPasswordPromptDisabled')
       location.reload()
     }
   } catch (error) {

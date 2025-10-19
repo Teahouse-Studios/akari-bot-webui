@@ -15,12 +15,13 @@
 
 <script setup>
 import { ref } from 'vue'
+import NotFound from './notFound.vue'
 import SQLConsole from '@/components/database/SQLConsole.vue'
 import DataModels from '@/components/database/DataModels.vue'
-import NotFound from './notFound.vue'
 import { IS_DEMO } from '@/const'
+import LocalStorageJson from '@/localStorageJson.js'
 
-const isDevelopMode = ref(localStorage.getItem('isDevelopMode') === 'true' && !IS_DEMO)
+const isDevelopMode = ref(LocalStorageJson.getItem('isDevelopMode') === 'true' && !IS_DEMO)
 </script>
 
 <style scoped>

@@ -23,6 +23,7 @@
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 import AnalyticsCard from '@/components/dashboard/AnalyticsCard.vue'
 import ServerInfoCard from '@/components/dashboard/ServerInfoCard.vue'
+import LocalStorageJson from '@/localStorageJson.js'
 
 const loading = ref(false)
 const refreshInterval = ref(null)
@@ -67,7 +68,7 @@ function clearAutoRefresh() {
 
 function formatTime(timestamp) {
   const date = new Date(timestamp * 1000)
-  const language = (localStorage.getItem('language') || 'zh_cn').toLowerCase()
+  const language = (LocalStorageJson.getItem('language') || 'zh_cn').toLowerCase()
 
   const langMap = {
     zh_cn: 'zh-CN',

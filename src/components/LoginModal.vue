@@ -25,6 +25,7 @@
 <script setup>
 import { ref } from 'vue'
 import axios from '@/axios.mjs'
+import LocalStorageJson from '@/localStorageJson.js'
 import { ElMessage } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 
@@ -47,7 +48,7 @@ const checkPassword = async () => {
 
     if (response.status === 200) {
       ElMessage.success(t('login.message.success'))
-      localStorage.setItem('token', response.data.data)
+      LocalStorageJson.setItem('token', response.data.data)
       location.reload()
     }
   } catch (error) {

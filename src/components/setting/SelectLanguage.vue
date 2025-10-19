@@ -18,18 +18,19 @@
 <script setup>
 import { ref, inject } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { elementPlusLangMap } from '@/element-plus-langmap'
+import { elementPlusLangMap } from '@/element-plus-langmap.js'
+import LocalStorageJson from '@/localStorageJson.js'
 
 const { locale } = useI18n()
 
-const currentLang = ref(localStorage.getItem('language') || 'zh_cn')
+const currentLang = ref(LocalStorageJson.getItem('language') || 'zh_cn')
 
 const elementLocale = inject('elementLocale')
 
 function changeLanguage(lang) {
   currentLang.value = lang
   locale.value = lang
-  localStorage.setItem('language', lang)
+  LocalStorageJson.setItem('language', lang)
   if (elementLocale) {
     elementLocale.lang = elementPlusLangMap[lang]
   }

@@ -9,13 +9,14 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { IS_DEMO } from '@/const'
+import LocalStorageJson from '@/localStorageJson.js'
 
 const value1 = ref(false)
 const loading = ref(false)
-const showDevelopMode = ref(localStorage.getItem('showDevelopMode') === 'true' && !IS_DEMO)
+const showDevelopMode = ref(LocalStorageJson.getItem('showDevelopMode') === 'true' && !IS_DEMO)
 
 onMounted(() => {
-  value1.value = Boolean(localStorage.getItem('isDevelopMode'))
+  value1.value = Boolean(LocalStorageJson.getItem('isDevelopMode'))
 })
 
 function handleSwitchChange(val) {
@@ -23,9 +24,9 @@ function handleSwitchChange(val) {
 
   setTimeout(() => {
     if (val) {
-      localStorage.setItem('isDevelopMode', 'true')
+      LocalStorageJson.setItem('isDevelopMode', 'true')
     } else {
-      localStorage.removeItem('isDevelopMode')
+      LocalStorageJson.removeItem('isDevelopMode')
     }
     loading.value = false
     location.reload()

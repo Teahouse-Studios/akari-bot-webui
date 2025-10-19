@@ -190,7 +190,6 @@
 <script setup>
 import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
-import axios from '@/axios.mjs'
 import { ElMessageBox, ElMessage } from 'element-plus'
 import { basicSetup } from 'codemirror'
 import { EditorView } from '@codemirror/view'
@@ -201,7 +200,9 @@ import { markdown } from '@codemirror/lang-markdown'
 import { python } from '@codemirror/lang-python'
 import { yaml } from '@codemirror/lang-yaml'
 import { oneDark } from '@codemirror/theme-one-dark'
+import axios from '@/axios.mjs'
 import { IS_DEMO } from '@/const'
+import LocalStorageJson from '@/localStorageJson.js'
 import notFound from './notFound.vue'
 
 const { t } = useI18n()
@@ -226,9 +227,10 @@ const showFullscreenPreviewAnim = ref(false)
 const isText = ref(false)
 const emptyDescription = ref(t('files.preview.unsupported'))
 const editorView = ref(null)
+const textEditor = ref(null)
 const previewVisible = ref(false)
 const uploadUrl = '/api/files/upload'
-const isDevelopMode = ref(localStorage.getItem('isDevelopMode') === 'true' && !IS_DEMO)
+const isDevelopMode = ref(LocalStorageJson.getItem('isDevelopMode') === 'true' && !IS_DEMO)
 
 const pathParts = computed(() => {
   const fullPath = currentPath.value ? `./${currentPath.value}` : '.'
@@ -238,7 +240,7 @@ const pathParts = computed(() => {
 const isRoot = computed(() => !currentPath.value || currentPath.value === '.')
 
 const uploadHeaders = computed(() => {
-  const token = localStorage.getItem('token')
+  const token = LocalStorageJson.getItem('token')
   return {
     Authorization: `Bearer ${token}`,
   }
@@ -461,7 +463,7 @@ const initTextPreview = () => {
     extensions,
   })
 
-  const textEditorEl = document.querySelector('.text-editor')
+  const textEditorEl = textEditor.value || document.querySelector('.editor-body')
   if (textEditorEl) {
     editorView.value = new EditorView({
       state,

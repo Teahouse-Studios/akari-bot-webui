@@ -174,19 +174,20 @@ const fillMissingData = (timeGroupedData, days) => {
   const intervalMinutes = 30
   const now = new Date()
   const totalIntervals = (days * 24 * 60) / intervalMinutes
-  const baseTime = new Date(now.getTime() - intervalMinutes * 60 * 1000)
+  const filledData = []
 
-  const existingKeys = new Set(timeGroupedData.map((item) => item.date.toISOString()))
-  const filledData = [...timeGroupedData]
+  const existingKeys = new Set(timeGroupedData.map(item => item.date.getTime()))
 
-  for (let i = 0; i < totalIntervals; i++) {
-    const date = new Date(baseTime.getTime() - i * intervalMinutes * 60 * 1000)
-    if (!existingKeys.has(date.toISOString())) {
+  for (let i = totalIntervals - 1; i >= 0; i--) {
+    const date = new Date(now.getTime() - i * intervalMinutes * 60 * 1000)
+    const timestamp = date.getTime()
+    if (existingKeys.has(timestamp)) {
+      filledData.push(timeGroupedData.find(item => item.date.getTime() === timestamp))
+    } else {
       filledData.push({ date, count: 0 })
     }
   }
-
-  return filledData.sort((a, b) => new Date(a.date) - new Date(b.date))
+  return filledData
 }
 
 const groupDataByTimeInterval = (data, _days) => {
@@ -214,12 +215,10 @@ const groupDataByTimeInterval = (data, _days) => {
 const processData = (data, days) => {
   const timeGroupedData = groupDataByTimeInterval(data.data, days)
 
-  trendData.value = fillMissingData(timeGroupedData, days)
-    .map((item) => ({
-      date: formatTimestamp(item.date),
-      count: item.count,
-    }))
-    .sort((a, b) => new Date(a.date) - new Date(b.date))
+  trendData.value = fillMissingData(timeGroupedData, days).map(item => ({
+    date: formatTimestamp(item.date),
+    count: item.count,
+  }))
 
   count.value = timeGroupedData.reduce((sum, item) => sum + item.count, 0)
   averageCount.value = Math.round(count.value / days)

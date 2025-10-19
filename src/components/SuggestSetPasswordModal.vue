@@ -20,6 +20,7 @@
 
 <script setup>
 import { ref, computed } from 'vue'
+import LocalStorageJson from '@/localStorageJson.js'
 import { useRouter } from 'vue-router'
 import { defineProps, defineEmits } from 'vue'
 
@@ -41,14 +42,14 @@ const dialogVisible = computed({
 
 function handleClose() {
   if (noMorePrompt.value) {
-    localStorage.setItem('noPasswordPromptDisabled', 'true')
+    LocalStorageJson.setItem('noPasswordPromptDisabled', 'true')
   }
   dialogVisible.value = false
 }
 
 function goToSetting() {
   if (noMorePrompt.value) {
-    localStorage.setItem('noPasswordPromptDisabled', 'true')
+    LocalStorageJson.setItem('noPasswordPromptDisabled', 'true')
   }
   dialogVisible.value = false
   router.push({ name: 'setting' })

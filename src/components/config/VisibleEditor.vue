@@ -104,11 +104,50 @@
   </el-card>
 </template>
 
-<script>
+<script setup>
+import { ref, computed, watch, onMounted, nextTick } from 'vue'
 import { ElMessage, ElInput, ElSwitch, ElInputNumber, ElInputTag } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 
-function debounce(fn, delay) {
+const { t } = useI18n()
+
+const props = defineProps({
+  modelValue: {
+    type: String,
+    default: '',
+  },
+})
+
+const emit = defineEmits(['update:modelValue'])
+
+const tomlInput = ref('')
+const parsedSections = ref({})
+const addDialogVisible = ref(false)
+const addForm = ref({ key: '', comment: '' })
+const addSectionKey = ref('')
+const editCommentDialogVisible = ref(false)
+const editCommentValue = ref('')
+const editCommentSectionKey = ref('')
+const editCommentKey = ref('')
+
+const addFormRef = ref()
+
+const addFormRules = computed(() => ({
+  key: [
+    {
+      required: true,
+      message: t('config.validate.key'),
+      trigger: 'blur',
+    },
+    {
+      pattern: /^[A-Za-z0-9_-]+$/,
+      message: t('config.validate.key_ascii'),
+      trigger: 'blur',
+    },
+  ],
+}))
+
+const debounce = (fn, delay) => {
   let timer = null
   return function (...args) {
     clearTimeout(timer)
@@ -116,377 +155,354 @@ function debounce(fn, delay) {
   }
 }
 
-export default {
-  name: 'VisibleEditor',
-  props: {
-    modelValue: {
-      type: String,
-      default: '',
-    },
-  },
-  components: {
-    ElInput,
-    ElSwitch,
-    ElInputNumber,
-    ElInputTag,
-  },
-  emits: ['update:modelValue'],
-  data() {
-    const { t } = useI18n()
-    return {
-      tomlInput: '',
-      parsedSections: {},
-      addDialogVisible: false,
-      addForm: { key: '', comment: '' },
-      addFormRules: {
-        key: [
-          {
-            required: true,
-            message: this.$t('config.validate.key'),
-            trigger: 'blur',
-          },
-          {
-            pattern: /^[A-Za-z0-9_-]+$/,
-            message: this.$t('config.validate.key_ascii'),
-            trigger: 'blur',
-          },
-        ],
-      },
-      addSectionKey: '',
-      editCommentDialogVisible: false,
-      editCommentValue: '',
-      editCommentSectionKey: '',
-      editCommentKey: '',
-      debouncedParse: null,
-      t,
+let debouncedParse = null
+
+const openEditCommentDialog = (sectionKey, key, item) => {
+  editCommentSectionKey.value = sectionKey
+  editCommentKey.value = key
+  editCommentValue.value = item.comment || ''
+  editCommentDialogVisible.value = true
+}
+
+const resetEditCommentDialog = () => {
+  editCommentDialogVisible.value = false
+  editCommentValue.value = ''
+  editCommentSectionKey.value = ''
+  editCommentKey.value = ''
+}
+
+const confirmEditComment = () => {
+  const section = parsedSections.value[editCommentSectionKey.value]
+  if (section.items?.[editCommentKey.value]) {
+    section.items[editCommentKey.value].comment = editCommentValue.value
+  }
+  resetEditCommentDialog()
+  updateTomlFromParsed()
+}
+
+const openAddDialog = (sectionKey) => {
+  addSectionKey.value = sectionKey
+  addForm.value = { key: '', comment: '' }
+  addDialogVisible.value = true
+  
+  nextTick(() => {
+    if (addFormRef.value) {
+      addFormRef.value.clearValidate()
     }
-  },
-  mounted() {
-    if (!this.tomlInput && this.modelValue) {
-      this.tomlInput = this.modelValue
-      this.parsedSections = this.parseTomlWithComments(this.tomlInput)
+  })
+}
+
+const resetAddDialog = () => {
+  addForm.value = { key: '', comment: '' }
+  addSectionKey.value = ''
+}
+
+const confirmAddConfig = async () => {
+  if (!addFormRef.value) return
+
+  try {
+    const valid = await addFormRef.value.validate()
+    if (!valid) return
+
+    const key = addForm.value.key.trim()
+    const section = parsedSections.value[addSectionKey.value]
+
+    if (section.items[key]) {
+      ElMessage.error(t('config.message.error.duplicated'))
+      return
     }
-    this.debouncedParse = debounce(() => {
-      this.parsedSections = this.parseTomlWithComments(this.tomlInput)
-    }, 200)
-  },
-  watch: {
-    modelValue(newVal) {
-      this.tomlInput = newVal
-      this.parsedSections = this.parseTomlWithComments(this.tomlInput)
-    },
-    tomlInput(newVal) {
-      this.$emit('update:modelValue', newVal)
-      this.debouncedParse()
-    },
-  },
-  created() {
-    this.parsedSections = this.parseTomlWithComments(this.tomlInput)
-  },
-  methods: {
-    openEditCommentDialog(sectionKey, key, item) {
-      this.editCommentSectionKey = sectionKey
-      this.editCommentKey = key
-      this.editCommentValue = item.comment || ''
-      this.editCommentDialogVisible = true
-    },
-    resetEditCommentDialog() {
-      this.editCommentDialogVisible = false
-      this.editCommentValue = ''
-      this.editCommentSectionKey = ''
-      this.editCommentKey = ''
-    },
-    confirmEditComment() {
-      const section = this.parsedSections[this.editCommentSectionKey]
-      if (section.items?.[this.editCommentKey]) {
-        section.items[this.editCommentKey].comment = this.editCommentValue
+
+    section.items[key] = {
+      value: '',
+      comment: addForm.value.comment,
+      type: 'str',
+    }
+
+    addDialogVisible.value = false
+    resetAddDialog()
+    updateTomlFromParsed()
+  } catch (error) {
+    // empty
+  }
+}
+
+const deleteConfig = (sectionKey, key) => {
+  const section = parsedSections.value[sectionKey]
+  if (section && section.items[key] !== undefined) {
+    delete section.items[key]
+  }
+  updateTomlFromParsed()
+}
+
+const onTypeChange = (item) => {
+  switch (item.type) {
+    case 'bool':
+      item.value = false
+      break
+    case 'num':
+      item.value = 0
+      break
+    case 'array':
+      item.value = []
+      break
+    default:
+      item.value = ''
+  }
+  updateTomlFromParsed()
+}
+
+const parseTomlWithComments = (input) => {
+  const len = input.length
+  const result = {}
+  let currentSection = ''
+  let sectionObj = null
+  let i = 0
+  let lineStart = 0
+
+  while (i <= len) {
+    if (i === len || input[i] === '\n') {
+      const line = input.slice(lineStart, i).trim()
+      lineStart = i + 1
+      if (!line || line[0] === '#') {
+        i++
+        continue
       }
-      this.resetEditCommentDialog()
-      this.updateTomlFromParsed()
-    },
-    openAddDialog(sectionKey) {
-      this.addSectionKey = sectionKey
-      this.addForm = { key: '', comment: '' }
-      this.addDialogVisible = true
-    },
-    resetAddDialog() {
-      this.addForm = { key: '', comment: '' }
-      this.addSectionKey = ''
-    },
-    confirmAddConfig() {
-      this.$refs.addFormRef.validate((valid) => {
-        if (!valid) return
-
-        const key = this.addForm.key.trim()
-        const section = this.parsedSections[this.addSectionKey]
-
-        if (section.items[key]) {
-          ElMessage.error(this.t('config.message.error.duplicated'))
-          return
-        }
-
-        section.items[key] = {
-          value: '',
-          comment: this.addForm.comment,
-          type: 'str',
-        }
-
-        this.addDialogVisible = false
-        this.resetAddDialog()
-        this.updateTomlFromParsed()
-      })
-    },
-    deleteConfig(sectionKey, key) {
-      const section = this.parsedSections[sectionKey]
-      if (section && section.items[key] !== undefined) {
-        delete section.items[key]
-      }
-      this.updateTomlFromParsed()
-    },
-    onTypeChange(item) {
-      switch (item.type) {
-        case 'bool':
-          item.value = false
-          break
-        case 'num':
-          item.value = 0
-          break
-        case 'array':
-          item.value = []
-          break
-        default:
-          item.value = ''
-      }
-      this.updateTomlFromParsed()
-    },
-    parseTomlWithComments(input) {
-      const len = input.length
-      const result = {}
-      let currentSection = ''
-      let sectionObj = null
-      let i = 0
-      let lineStart = 0
-
-      while (i <= len) {
-        if (i === len || input[i] === '\n') {
-          const line = input.slice(lineStart, i).trim()
-          lineStart = i + 1
-          if (!line || line[0] === '#') {
-            i++
-            continue
-          }
-          if (line[0] === '[' && line[line.length - 1] === ']') {
-            currentSection = line.slice(1, -1)
-            sectionObj = { comment: '', items: {} }
-            result[currentSection] = sectionObj
-          } else if (
-            currentSection &&
-            (sectionObj = result[currentSection]) &&
-            line.includes('=')
-          ) {
-            const eqIdx = line.indexOf('=')
-            const key = line.slice(0, eqIdx).trim()
-            const valueComment = line.slice(eqIdx + 1).trim()
-            let valueStr = valueComment,
-              comment = ''
-            const hashIdx = valueComment.indexOf('#')
-            if (hashIdx !== -1) {
-              valueStr = valueComment.slice(0, hashIdx).trim()
-              comment = valueComment.slice(hashIdx + 1).trim()
-            } else {
-              valueStr = valueComment
-            }
-            let value = null,
-              type = null
-            if (valueStr === 'true' || valueStr === 'false') {
-              value = valueStr === 'true'
-              type = 'bool'
-            } else if (valueStr[0] === '[' && valueStr[valueStr.length - 1] === ']') {
-              const arr = valueStr
-                .slice(1, -1)
-                .split(',')
-                .map((s) => s.trim().replace(/^"|"$/g, '').replace(/^'|'$/g, ''))
-                .filter((s) => s.trim() !== '')
-              value = valueStr.length > 2 ? arr : []
-              type = 'array'
-            } else if (
-              /^[+-]?\d+(\.\d+)?$/.test(valueStr) &&
-              !/^[+-]?\d*\.$/.test(valueStr) &&
-              !/^\.[0-9]+$/.test(valueStr)
-            ) {
-              value = parseFloat(valueStr)
-              type = 'num'
-            } else if (
-              (valueStr[0] === '"' && valueStr[valueStr.length - 1] === '"') ||
-              (valueStr[0] === "'" && valueStr[valueStr.length - 1] === "'")
-            ) {
-              value = valueStr.slice(1, -1)
-              type = 'str'
-            } else {
-              value = null
-              type = null
-            }
-            sectionObj.items[key] = { value, comment, type }
-          }
-          i++
-        } else {
-          i++
-        }
-      }
-      return result
-    },
-    getComponent(type) {
-      switch (type) {
-        case 'bool':
-          return 'el-switch'
-        case 'num':
-          return 'el-input-number'
-        case 'array':
-          return 'el-input-tag'
-        default:
-          return 'el-input'
-      }
-    },
-    updateTomlFromParsed() {
-      const lines = this.tomlInput.split('\n')
-      const outputLines = []
-      let currentSection = ''
-      const handledKeys = {}
-
-      for (let i = 0; i < lines.length; i++) {
-        const rawLine = lines[i]
-        const line = rawLine.trim()
-
-        if (line.startsWith('[') && line.endsWith(']')) {
-          if (currentSection && this.parsedSections[currentSection]) {
-            const missingLines = this.getMissingLines(currentSection, handledKeys)
-            outputLines.push(...missingLines)
-          }
-
-          currentSection = line.slice(1, -1)
-          handledKeys[currentSection] = new Set()
-          outputLines.push(rawLine)
-          continue
-        }
-
-        if (line === '' || line.startsWith('#')) {
-          outputLines.push(rawLine)
-          continue
-        }
-
+      if (line[0] === '[' && line[line.length - 1] === ']') {
+        currentSection = line.slice(1, -1)
+        sectionObj = { comment: '', items: {} }
+        result[currentSection] = sectionObj
+      } else if (
+        currentSection &&
+        (sectionObj = result[currentSection]) &&
+        line.includes('=')
+      ) {
         const eqIdx = line.indexOf('=')
-        if (eqIdx !== -1 && currentSection && this.parsedSections[currentSection]) {
-          const key = line.slice(0, eqIdx).trim()
-          const item = this.parsedSections[currentSection].items[key]
-
-          if (!item) {
-            continue
-          }
-
-          let valueStr = ''
-          switch (item.type) {
-            case 'bool':
-              valueStr = item.value ? 'true' : 'false'
-              break
-            case 'num':
-              valueStr = isNaN(parseFloat(item.value)) ? '0' : String(item.value)
-              break
-            case 'array':
-              valueStr = `[${item.value.map((v) => `"${v}"`).join(', ')}]`
-              break
-            case 'str':
-              valueStr = `"${String(item.value)}"`
-              break
-            case null:
-              valueStr = item.value === null ? '"<Replace me>"' : `"${String(item.value)}"`
-              break
-            default:
-              valueStr = '"<Replace me>"'
-              break
-          }
-
-          const commentStr = item.comment ? ` # ${item.comment}` : ''
-          outputLines.push(`${key} = ${valueStr}${commentStr}`)
-          handledKeys[currentSection].add(key)
+        const key = line.slice(0, eqIdx).trim()
+        const valueComment = line.slice(eqIdx + 1).trim()
+        let valueStr = valueComment,
+          comment = ''
+        const hashIdx = valueComment.indexOf('#')
+        if (hashIdx !== -1) {
+          valueStr = valueComment.slice(0, hashIdx).trim()
+          comment = valueComment.slice(hashIdx + 1).trim()
         } else {
-          outputLines.push(rawLine)
+          valueStr = valueComment
         }
+        let value = null,
+          type = null
+        if (valueStr === 'true' || valueStr === 'false') {
+          value = valueStr === 'true'
+          type = 'bool'
+        } else if (valueStr[0] === '[' && valueStr[valueStr.length - 1] === ']') {
+          const arr = valueStr
+            .slice(1, -1)
+            .split(',')
+            .map((s) => s.trim().replace(/^"|"$/g, '').replace(/^'|'$/g, ''))
+            .filter((s) => s.trim() !== '')
+          value = valueStr.length > 2 ? arr : []
+          type = 'array'
+        } else if (
+          /^[+-]?\d+(\.\d+)?$/.test(valueStr) &&
+          !/^[+-]?\d*\.$/.test(valueStr) &&
+          !/^\.[0-9]+$/.test(valueStr)
+        ) {
+          value = parseFloat(valueStr)
+          type = 'num'
+        } else if (
+          (valueStr[0] === '"' && valueStr[valueStr.length - 1] === '"') ||
+          (valueStr[0] === "'" && valueStr[valueStr.length - 1] === "'")
+        ) {
+          value = valueStr.slice(1, -1)
+          type = 'str'
+        } else {
+          value = null
+          type = null
+        }
+        sectionObj.items[key] = { value, comment, type }
       }
+      i++
+    } else {
+      i++
+    }
+  }
+  return result
+}
 
-      if (currentSection && this.parsedSections[currentSection]) {
-        const missingLines = this.getMissingLines(currentSection, handledKeys)
+const getComponent = (type) => {
+  switch (type) {
+    case 'bool':
+      return ElSwitch
+    case 'num':
+      return ElInputNumber
+    case 'array':
+      return ElInputTag
+    default:
+      return ElInput
+  }
+}
+
+const updateTomlFromParsed = () => {
+  const lines = tomlInput.value.split('\n')
+  const outputLines = []
+  let currentSection = ''
+  const handledKeys = {}
+
+  for (let i = 0; i < lines.length; i++) {
+    const rawLine = lines[i]
+    const line = rawLine.trim()
+
+    if (line.startsWith('[') && line.endsWith(']')) {
+      if (currentSection && parsedSections.value[currentSection]) {
+        const missingLines = getMissingLines(currentSection, handledKeys)
         outputLines.push(...missingLines)
       }
 
-      this.tomlInput = outputLines.join('\n')
-    },
+      currentSection = line.slice(1, -1)
+      handledKeys[currentSection] = new Set()
+      outputLines.push(rawLine)
+      continue
+    }
 
-    getMissingLines(sectionKey, handledKeys) {
-      const missing = []
-      const section = this.parsedSections[sectionKey]
-      const seen = handledKeys[sectionKey] || new Set()
+    if (line === '' || line.startsWith('#')) {
+      outputLines.push(rawLine)
+      continue
+    }
 
-      for (const key in section.items) {
-        if (!seen.has(key)) {
-          const item = section.items[key]
-          let valueStr = ''
-          switch (item.type) {
-            case 'bool':
-              valueStr = item.value ? 'true' : 'false'
-              break
-            case 'num':
-              valueStr = isNaN(parseFloat(item.value)) ? '0' : String(item.value)
-              break
-            case 'array':
-              valueStr = `[${item.value.map((v) => `"${v}"`).join(', ')}]`
-              break
-            case 'str':
-              valueStr = `"${String(item.value)}"`
-              break
-            case null:
-              valueStr = item.value === null ? '"<Replace me>"' : `"${String(item.value)}"`
-              break
-            default:
-              valueStr = '"<Replace me>"'
-              break
-          }
-          const commentStr = item.comment ? ` # ${item.comment}` : ''
-          missing.push(`${key} = ${valueStr}${commentStr}`)
-        }
+    const eqIdx = line.indexOf('=')
+    if (eqIdx !== -1 && currentSection && parsedSections.value[currentSection]) {
+      const key = line.slice(0, eqIdx).trim()
+      const item = parsedSections.value[currentSection].items[key]
+
+      if (!item) {
+        continue
       }
 
-      return missing
-    },
-
-    getComponentProps(type) {
-      switch (type) {
+      let valueStr = ''
+      switch (item.type) {
         case 'bool':
-          return {}
+          valueStr = item.value ? 'true' : 'false'
+          break
         case 'num':
-          return {
-            controlsPosition: 'right',
-          }
+          valueStr = isNaN(parseFloat(item.value)) ? '0' : String(item.value)
+          break
         case 'array':
-          return {
-            placeholder: this.t('session.input.array'),
-            clearable: true,
-            style: {
-              width: '100%',
-              minWidth: '200px',
-            },
-          }
+          valueStr = `[${item.value.map((v) => `"${v}"`).join(', ')}]`
+          break
+        case 'str':
+          valueStr = `"${String(item.value)}"`
+          break
+        case null:
+          valueStr = item.value === null ? '"<Replace me>"' : `"${String(item.value)}"`
+          break
         default:
-          return {
-            clearable: true,
-            style: {
-              width: '100%',
-              minWidth: '200px',
-            },
-          }
+          valueStr = '"<Replace me>"'
+          break
       }
-    },
-  },
+
+      const commentStr = item.comment ? ` # ${item.comment}` : ''
+      outputLines.push(`${key} = ${valueStr}${commentStr}`)
+      handledKeys[currentSection].add(key)
+    } else {
+      outputLines.push(rawLine)
+    }
+  }
+
+  if (currentSection && parsedSections.value[currentSection]) {
+    const missingLines = getMissingLines(currentSection, handledKeys)
+    outputLines.push(...missingLines)
+  }
+
+  tomlInput.value = outputLines.join('\n')
 }
+
+const getMissingLines = (sectionKey, handledKeys) => {
+  const missing = []
+  const section = parsedSections.value[sectionKey]
+  const seen = handledKeys[sectionKey] || new Set()
+
+  for (const key in section.items) {
+    if (!seen.has(key)) {
+      const item = section.items[key]
+      let valueStr = ''
+      switch (item.type) {
+        case 'bool':
+          valueStr = item.value ? 'true' : 'false'
+          break
+        case 'num':
+          valueStr = isNaN(parseFloat(item.value)) ? '0' : String(item.value)
+          break
+        case 'array':
+          valueStr = `[${item.value.map((v) => `"${v}"`).join(', ')}]`
+          break
+        case 'str':
+          valueStr = `"${String(item.value)}"`
+          break
+        case null:
+          valueStr = item.value === null ? '"<Replace me>"' : `"${String(item.value)}"`
+          break
+        default:
+          valueStr = '"<Replace me>"'
+          break
+      }
+      const commentStr = item.comment ? ` # ${item.comment}` : ''
+      missing.push(`${key} = ${valueStr}${commentStr}`)
+    }
+  }
+
+  return missing
+}
+
+const getComponentProps = (type) => {
+  switch (type) {
+    case 'bool':
+      return {}
+    case 'num':
+      return {
+        controlsPosition: 'right',
+      }
+    case 'array':
+      return {
+        placeholder: t('session.input.array'),
+        clearable: true,
+        style: {
+          width: '100%',
+          minWidth: '200px',
+        },
+      }
+    default:
+      return {
+        clearable: true,
+        style: {
+          width: '100%',
+          minWidth: '200px',
+        },
+      }
+  }
+}
+
+onMounted(() => {
+  if (!tomlInput.value && props.modelValue) {
+    tomlInput.value = props.modelValue
+    parsedSections.value = parseTomlWithComments(tomlInput.value)
+  }
+  debouncedParse = debounce(() => {
+    parsedSections.value = parseTomlWithComments(tomlInput.value)
+  }, 200)
+})
+
+watch(() => props.modelValue, (newVal) => {
+  tomlInput.value = newVal
+  parsedSections.value = parseTomlWithComments(tomlInput.value)
+})
+
+watch(tomlInput, (newVal) => {
+  emit('update:modelValue', newVal)
+  if (debouncedParse) {
+    debouncedParse()
+  }
+})
+
+parsedSections.value = parseTomlWithComments(tomlInput.value)
 </script>
 
 <style scoped>

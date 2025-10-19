@@ -40,6 +40,7 @@
 </template>
 
 <script setup>
+import LocalStorageJson from '@/localStorageJson.js'
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { defineProps, defineEmits } from 'vue'
 
@@ -112,7 +113,7 @@ function stopDrag() {
 function toggleDarkMode() {
   isDarkMode.value = !isDarkMode.value
   document.documentElement.classList.toggle('dark', isDarkMode.value)
-  localStorage.setItem('isDarkMode', JSON.stringify(isDarkMode.value))
+  LocalStorageJson.setItem('isDarkMode', JSON.stringify(isDarkMode.value))
 }
 
 function switchSidebar() {
@@ -121,7 +122,7 @@ function switchSidebar() {
 }
 
 onMounted(() => {
-  const savedTheme = localStorage.getItem('isDarkMode')
+  const savedTheme = LocalStorageJson.getItem('isDarkMode')
   if (savedTheme !== null) {
     isDarkMode.value = JSON.parse(savedTheme)
     document.documentElement.classList.toggle('dark', isDarkMode.value)

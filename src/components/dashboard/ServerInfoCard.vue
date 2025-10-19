@@ -131,6 +131,7 @@
 <script setup>
 import { ref, reactive, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import axios from '@/axios.mjs'
+import LocalStorageJson from '@/localStorageJson.js'
 import { ElMessage } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 
@@ -186,7 +187,7 @@ function formatRunningTime(seconds) {
 
 function formatTime(timestamp) {
   const date = new Date(timestamp * 1000)
-  const language = (localStorage.getItem('language') || 'zh_cn').toLowerCase()
+  const language = (LocalStorageJson.getItem('language') || 'zh_cn').toLowerCase()
 
   const langMap = {
     zh_cn: 'zh-CN',

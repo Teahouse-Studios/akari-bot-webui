@@ -3,6 +3,7 @@ import { createI18n } from 'vue-i18n'
 import App from './App.vue'
 import router from '@/router'
 import { elementPlusLangMap } from './element-plus-langmap'
+import LocalStorageJson from '@/localStorageJson.js'
 // import '@fortawesome/fontawesome-free/css/all.css'
 // import '@mdi/font/css/materialdesignicons.css'
 import zh_cn from './i18n/zh_cn.json'
@@ -15,11 +16,11 @@ import './styles/theme-akari/dark/var.css'
 // @TODO locale
 const config_locale = 'zh_cn'
 
-if (!localStorage.getItem('language')) {
-  localStorage.setItem('language', config_locale)
+if (!LocalStorageJson.getItem('language')) {
+  LocalStorageJson.setItem('language', config_locale)
 }
 
-const locale = localStorage.getItem('language')
+const locale = LocalStorageJson.getItem('language')
 
 const i18n = createI18n({
   legacy: false,

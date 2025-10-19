@@ -4,78 +4,70 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import { ref, watch, onMounted, onBeforeUnmount } from 'vue'
 import { basicSetup } from 'codemirror'
 import { EditorView } from '@codemirror/view'
 import { EditorState } from '@codemirror/state'
 import { oneDark } from '@codemirror/theme-one-dark'
 
-export default {
-  name: 'SourceEditor',
-  props: {
-    modelValue: {
-      type: String,
-      default: '',
-    },
+defineProps({
+  modelValue: {
+    type: String,
+    default: '',
   },
-  emits: ['update:modelValue'],
-  data() {
-    return {
-      editorView: null,
-      editorOptions: {
-        lineWrapping: true,
-        theme: oneDark,
-        lineNumbers: true,
-        scrollbarStyle: 'native',
-      },
-    }
-  },
-  mounted() {
-    this.initEditor()
-  },
-  beforeUnmount() {
-    if (this.editorView) {
-      this.editorView.destroy()
-    }
-  },
-  watch: {
-    modelValue(newVal) {
-      if (this.editorView && this.editorView.state.doc.toString() !== newVal) {
-        this.editorView.dispatch({
-          changes: {
-            from: 0,
-            to: this.editorView.state.doc.length,
-            insert: newVal,
-          },
-        })
-      }
-    },
-  },
-  methods: {
-    initEditor() {
-      const state = EditorState.create({
-        doc: this.modelValue,
-        extensions: [
-          basicSetup,
-          oneDark,
-          EditorView.updateListener.of((update) => {
-            if (update.docChanged) {
-              const value = update.state.doc.toString()
-              this.$emit('update:modelValue', value)
-            }
-          }),
-        ],
-      })
-      this.editorView = new EditorView({
-        state,
-        parent: this.$refs.editor,
-      })
-    },
-    getContent() {
-      return this.editorView ? this.editorView.state.doc.toString() : ''
-    },
-  },
+})
+
+const emit = defineEmits(['update:modelValue'])
+
+const editor = ref(null)
+let editorView = null
+
+const initEditor = () => {
+  const state = EditorState.create({
+    doc: __props.modelValue,
+    extensions: [
+      basicSetup,
+      oneDark,
+      EditorView.updateListener.of((update) => {
+        if (update.docChanged) {
+          const value = update.state.doc.toString()
+          emit('update:modelValue', value)
+        }
+      }),
+    ],
+  })
+
+  editorView = new EditorView({
+    state,
+    parent: editor.value,
+  })
 }
+
+watch(
+  () => __props.modelValue,
+  (newVal) => {
+    if (editorView && editorView.state.doc.toString() !== newVal) {
+      editorView.dispatch({
+        changes: {
+          from: 0,
+          to: editorView.state.doc.length,
+          insert: newVal,
+        },
+      })
+    }
+  }
+)
+
+onMounted(() => {
+  initEditor()
+})
+
+onBeforeUnmount(() => {
+  if (editorView) {
+    editorView.destroy()
+  }
+})
 </script>
 
 <style scoped>

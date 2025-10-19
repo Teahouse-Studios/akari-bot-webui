@@ -174,8 +174,6 @@
 </template>
 
 <script setup>
-// import axios from '@/axios.mjs'
-import { IS_DEMO } from '@/const'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import MarkdownIt from 'markdown-it'
 import linkAttributes from 'markdown-it-link-attributes'
@@ -183,6 +181,9 @@ import { v4 as uuidv4 } from 'uuid'
 import { useI18n } from 'vue-i18n'
 import EmojiPicker from 'vue3-emoji-picker'
 import 'vue3-emoji-picker/css'
+// import axios from '@/axios.mjs'
+import { IS_DEMO } from '@/const'
+import LocalStorageJson from '@/localStorageJson.js'
 
 import { ref, computed, onMounted, onBeforeUnmount, nextTick } from 'vue'
 
@@ -205,7 +206,7 @@ const previewImageSrc = ref('')
 const activeReactionMsg = ref(null)
 const abortController = ref(new AbortController())
 const debug = ref(false)
-const isDarkMode = ref(localStorage.getItem('isDarkMode') === 'true')
+const isDarkMode = ref(LocalStorageJson.getItem('isDarkMode') === 'true')
 const observer = ref(null)
 
 const md = new MarkdownIt('zero')
