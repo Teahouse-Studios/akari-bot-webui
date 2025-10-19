@@ -62,7 +62,7 @@
 import { IS_DEMO } from '@/const'
 import { ElMessage } from 'element-plus'
 import { debounce } from 'lodash'
-import { ref, reactive, onMounted, onBeforeUnmount, watch } from 'vue'
+import { ref, onMounted, onBeforeUnmount, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()

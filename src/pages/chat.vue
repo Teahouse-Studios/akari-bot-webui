@@ -181,6 +181,7 @@ import { v4 as uuidv4 } from 'uuid'
 import { useI18n } from 'vue-i18n'
 import EmojiPicker from 'vue3-emoji-picker'
 import 'vue3-emoji-picker/css'
+import DOMPurify from 'dompurify'
 // import axios from '@/axios.mjs'
 import { IS_DEMO } from '@/const'
 import LocalStorageJson from '@/localStorageJson.js'
@@ -235,6 +236,17 @@ const md = new MarkdownIt('zero')
     md_.renderer.rules.paragraph_open = () => ''
     md_.renderer.rules.paragraph_close = () => '<br />'
 
+    md_.renderer.rules.link_open = (tokens, idx, options, _env, self) => {
+      const hrefIndex = tokens[idx].attrIndex('href')
+      if (hrefIndex >= 0) {
+        const href = tokens[idx].attrs[hrefIndex][1]
+        if (!/^(https?:)?\/\//.test(href) && !href.startsWith('/')) {
+          tokens[idx].attrs[hrefIndex][1] = `https://${href}`
+        }
+      }
+      return self.renderToken(tokens, idx, options)
+    }
+
     md_.renderer.rules.fence = (tokens, idx) => {
       const content = tokens[idx].content
       return `<pre class="chat-pre">${md_.utils.escapeHtml(content)}</pre>`
@@ -265,6 +277,125 @@ const groupNames = computed(() => ({
   flags: t('emojipicker.group.flags'),
   recent: t('emojipicker.group.recent'),
 }))
+
+const scrollToBottom = () => {
+  nextTick(() => {
+    if (chatBox.value) {
+      chatBox.value.scrollTop = chatBox.value.scrollHeight
+    }
+  })
+}
+
+const renderMarkdown = (text) => {
+  const raw = md.render(text).replace(/\[image:([^\]]+)\]/g, (match, src) => {
+    return `<img src="${src}" class="chat-img" />`
+  })
+
+  return DOMPurify.sanitize(raw, {
+    ALLOWED_TAGS: [
+      'b','i','em','strong','a','code','pre','blockquote','br',
+      'img','p','ul','ol','li','h1','h2','h3','h4','h5','h6'
+    ],
+    ALLOWED_ATTR: ['href','target','rel','src','class','alt','title']
+  })
+}
+
+const renderResponse = (data) => {
+  if (Array.isArray(data)) {
+    return data
+      .map((item) => {
+        if (item.type === 'text') {
+          return item.content
+        }
+        if (item.type === 'image') {
+          const base64Content = item.content
+          if (
+            base64Content.startsWith('data:image/png;base64,') ||
+            base64Content.startsWith('data:image/jpeg;base64,') ||
+            base64Content.startsWith('data:image/gif;base64,')
+          ) {
+            return `[image:${base64Content}]`
+          }
+          return ''
+        }
+        return ''
+      })
+      .join('\n')
+  }
+  return data
+}
+
+const handleHeartbeatResponse = () => {
+  clearTimeout(heartbeatTimeoutTimer.value)
+  heartbeatRetryCount.value = 0
+  connectionStatus.value = 'connected'
+}
+
+const disconnectWebSocket = () => {
+  if (websocket.value) {
+    websocket.value.close()
+    websocket.value = null
+  }
+
+  if (heartbeatTimer.value) {
+    clearInterval(heartbeatTimer.value)
+    heartbeatTimer.value = null
+  }
+
+  if (heartbeatTimeoutTimer.value) {
+    clearTimeout(heartbeatTimeoutTimer.value)
+    heartbeatTimeoutTimer.value = null
+  }
+}
+
+const stopHeartbeat = () => {
+  clearInterval(heartbeatTimer.value)
+  clearTimeout(heartbeatTimeoutTimer.value)
+  heartbeatTimer.value = null
+  heartbeatTimeoutTimer.value = null
+}
+
+const sendHeartbeat = (immediate = false) => {
+  if (!websocket.value || websocket.value.readyState !== WebSocket.OPEN) {
+    disconnectWebSocket()
+    connectionStatus.value = 'unconnected'
+    return
+  }
+
+  websocket.value.send(JSON.stringify({ action: 'heartbeat', message: 'ping!' }))
+
+  clearTimeout(heartbeatTimeoutTimer.value)
+  heartbeatTimeoutTimer.value = setTimeout(() => {
+    heartbeatRetryCount.value++
+    connectionStatus.value = 'connecting'
+
+    if (heartbeatRetryCount.value >= heartbeatAttempt.value) {
+      stopHeartbeat()
+      disconnectWebSocket()
+      connectionStatus.value = 'disconnected'
+      ElMessage.error(t('message.error.connect.server'))
+    } else {
+      sendHeartbeat(true)
+    }
+  }, heartbeatTimeout.value)
+
+  if (!immediate) {
+    clearInterval(heartbeatTimer.value)
+    heartbeatTimer.value = setInterval(() => {
+      sendHeartbeat()
+    }, heartbeatInterval.value)
+  }
+}
+
+const startHeartbeat = () => {
+  heartbeatRetryCount.value = 0
+  sendHeartbeat()
+
+  heartbeatTimer.value = setInterval(() => {
+    sendHeartbeat()
+  }, heartbeatInterval.value)
+}
+
 
 const connectWebSocket = async () => {
   if (IS_DEMO) {
@@ -408,77 +539,6 @@ const connectWebSocket = async () => {
   }
 }
 
-const startHeartbeat = () => {
-  heartbeatRetryCount.value = 0
-  sendHeartbeat()
-
-  heartbeatTimer.value = setInterval(() => {
-    sendHeartbeat()
-  }, heartbeatInterval.value)
-}
-
-const sendHeartbeat = (immediate = false) => {
-  if (!websocket.value || websocket.value.readyState !== WebSocket.OPEN) {
-    disconnectWebSocket()
-    connectionStatus.value = 'unconnected'
-    return
-  }
-
-  websocket.value.send(JSON.stringify({ action: 'heartbeat', message: 'ping!' }))
-
-  clearTimeout(heartbeatTimeoutTimer.value)
-  heartbeatTimeoutTimer.value = setTimeout(() => {
-    heartbeatRetryCount.value++
-    connectionStatus.value = 'connecting'
-
-    if (heartbeatRetryCount.value >= heartbeatAttempt.value) {
-      stopHeartbeat()
-      disconnectWebSocket()
-      connectionStatus.value = 'disconnected'
-      ElMessage.error(t('message.error.connect.server'))
-    } else {
-      sendHeartbeat(true)
-    }
-  }, heartbeatTimeout.value)
-
-  if (!immediate) {
-    clearInterval(heartbeatTimer.value)
-    heartbeatTimer.value = setInterval(() => {
-      sendHeartbeat()
-    }, heartbeatInterval.value)
-  }
-}
-
-const handleHeartbeatResponse = () => {
-  clearTimeout(heartbeatTimeoutTimer.value)
-  heartbeatRetryCount.value = 0
-  connectionStatus.value = 'connected'
-}
-
-const stopHeartbeat = () => {
-  clearInterval(heartbeatTimer.value)
-  clearTimeout(heartbeatTimeoutTimer.value)
-  heartbeatTimer.value = null
-  heartbeatTimeoutTimer.value = null
-}
-
-const disconnectWebSocket = () => {
-  if (websocket.value) {
-    websocket.value.close()
-    websocket.value = null
-  }
-
-  if (heartbeatTimer.value) {
-    clearInterval(heartbeatTimer.value)
-    heartbeatTimer.value = null
-  }
-
-  if (heartbeatTimeoutTimer.value) {
-    clearTimeout(heartbeatTimeoutTimer.value)
-    heartbeatTimeoutTimer.value = null
-  }
-}
-
 const authenticateToken = () => {
   connectWebSocket()
 }
@@ -522,14 +582,6 @@ const resetChat = () => {
   authenticateToken()
 }
 
-const scrollToBottom = () => {
-  nextTick(() => {
-    if (chatBox.value) {
-      chatBox.value.scrollTop = chatBox.value.scrollHeight
-    }
-  })
-}
-
 const handleResize = () => {
   isMobileView.value = window.innerWidth < 1024
 }
@@ -546,20 +598,9 @@ const handleEnterKey = (event) => {
   }
 }
 
-const renderMarkdown = (text) => {
-  return md.render(text).replace(/\[image:([^\]]+)\]/g, (match, src) => {
-    return `<img src="${src}" class="chat-img" />`
-  })
-}
-
-const handleMarkdownClick = (event) => {
-  const target = event.target
-  if (target.tagName === 'A') {
-    event.preventDefault()
-    confirmExternalLink(target.href)
-  } else if (target.tagName === 'IMG') {
-    showImagePreview(target.src)
-  }
+const showImagePreview = (src) => {
+  previewImageSrc.value = src
+  imageDialogVisible.value = true
 }
 
 const confirmExternalLink = (url) => {
@@ -576,33 +617,18 @@ const confirmExternalLink = (url) => {
       window.open(url, '_blank')
     })
     .catch(() => {
-      console.log('Link blocked')
+      // empty
     })
 }
 
-const renderResponse = (data) => {
-  if (Array.isArray(data)) {
-    return data
-      .map((item) => {
-        if (item.type === 'text') {
-          return item.content
-        }
-        if (item.type === 'image') {
-          const base64Content = item.content
-          if (
-            base64Content.startsWith('data:image/png;base64,') ||
-            base64Content.startsWith('data:image/jpeg;base64,') ||
-            base64Content.startsWith('data:image/gif;base64,')
-          ) {
-            return `[image:${base64Content}]`
-          }
-          return ''
-        }
-        return ''
-      })
-      .join('\n')
+const handleMarkdownClick = (event) => {
+  const target = event.target
+  if (target.tagName === 'A') {
+    event.preventDefault()
+    confirmExternalLink(target.href)
+  } else if (target.tagName === 'IMG') {
+    showImagePreview(target.src)
   }
-  return data
 }
 
 const openEmojiPicker = (msg) => {
@@ -712,11 +738,6 @@ const copyMessage = async (msg) => {
   } catch (e) {
     ElMessage.error(t('chat.message.error.copy') + e.message)
   }
-}
-
-const showImagePreview = (src) => {
-  previewImageSrc.value = src
-  imageDialogVisible.value = true
 }
 
 const openImageInNewWindow = () => {

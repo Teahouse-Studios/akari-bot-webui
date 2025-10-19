@@ -339,27 +339,6 @@ const totalItems = ref(0)
 const loading = ref(false)
 const abortController = new AbortController()
 
-onMounted(() => {
-  refreshData()
-})
-
-onBeforeUnmount(() => {
-  abortController.abort()
-})
-
-const debouncedRefresh = () => {
-  clearTimeout(debounceTimer.value)
-  debounceTimer.value = setTimeout(() => {
-    refreshData()
-  }, 500)
-}
-
-const refreshData = async () => {
-  currentPage.value = 1
-  await fetchData()
-  fetchAllModules()
-}
-
 const fetchData = async () => {
   loading.value = true
   try {
@@ -405,6 +384,19 @@ const fetchAllModules = async () => {
       ElMessage.error(t('message.error.fetch') + error)
     }
   }
+}
+
+const refreshData = async () => {
+  currentPage.value = 1
+  await fetchData()
+  fetchAllModules()
+}
+
+const debouncedRefresh = () => {
+  clearTimeout(debounceTimer.value)
+  debounceTimer.value = setTimeout(() => {
+    refreshData()
+  }, 500)
 }
 
 const handlePageChange = (page) => {
@@ -468,22 +460,6 @@ const submitEdit = async () => {
   }
 }
 
-const confirmDelete = (row) => {
-  ElMessageBox.confirm(
-    t('session.target.confirm.message', { target_id: row.target_id }),
-    t('confirm.warning'),
-    {
-      confirmButtonText: t('button.confirm'),
-      cancelButtonText: t('button.cancel'),
-      type: 'warning',
-    },
-  )
-    .then(() => {
-      deleteTarget(row)
-    })
-    .catch(() => {})
-}
-
 const deleteTarget = async (row) => {
   try {
     await axios.delete(`/api/target/${row.target_id}`)
@@ -497,6 +473,32 @@ const deleteTarget = async (row) => {
     }
   }
 }
+
+const confirmDelete = (row) => {
+  ElMessageBox.confirm(
+    t('session.target.confirm.message', { target_id: row.target_id }),
+    t('confirm.warning'),
+    {
+      confirmButtonText: t('button.confirm'),
+      cancelButtonText: t('button.cancel'),
+      type: 'warning',
+    },
+  )
+    .then(() => {
+      deleteTarget(row)
+    })
+    .catch(() => {
+      // empty
+    })
+}
+
+onMounted(() => {
+  refreshData()
+})
+
+onBeforeUnmount(() => {
+  abortController.abort()
+})
 </script>
 
 <style scoped>

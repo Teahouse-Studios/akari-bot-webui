@@ -258,11 +258,6 @@ watch(configContent, (newVal) => {
   unsavedConfigChanges.value = newVal !== initialConfigContent.value
 })
 
-const debouncedRefresh = () => {
-  clearTimeout(debounceTimer.value)
-  debounceTimer.value = setTimeout(() => refreshData(), 300)
-}
-
 const refreshData = async () => {
   loading.value = true
   try {
@@ -289,6 +284,11 @@ const refreshData = async () => {
   } finally {
     loading.value = false
   }
+}
+
+const debouncedRefresh = () => {
+  clearTimeout(debounceTimer.value)
+  debounceTimer.value = setTimeout(() => refreshData(), 300)
 }
 
 const getRelatedModules = async (moduleName) => {

@@ -11,7 +11,7 @@ import { EditorView } from '@codemirror/view'
 import { EditorState } from '@codemirror/state'
 import { oneDark } from '@codemirror/theme-one-dark'
 
-defineProps({
+const props = defineProps({
   modelValue: {
     type: String,
     default: '',
@@ -25,7 +25,7 @@ let editorView = null
 
 const initEditor = () => {
   const state = EditorState.create({
-    doc: __props.modelValue,
+    doc: props.modelValue,
     extensions: [
       basicSetup,
       oneDark,
@@ -45,7 +45,7 @@ const initEditor = () => {
 }
 
 watch(
-  () => __props.modelValue,
+  () => props.modelValue,
   (newVal) => {
     if (editorView && editorView.state.doc.toString() !== newVal) {
       editorView.dispatch({
@@ -56,7 +56,7 @@ watch(
         },
       })
     }
-  }
+  },
 )
 
 onMounted(() => {

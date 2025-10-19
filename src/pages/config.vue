@@ -75,25 +75,16 @@ const fileContents = reactive({})
 const loading = ref(false)
 const abortController = new AbortController()
 
-const fetchConfigFiles = async () => {
-  loading.value = true
-  try {
-    const response = await axios.get('/api/config', {
-      signal: abortController.signal,
+const editorView = ref(null)
+const updateEditorContent = () => {
+  if (editorView.value) {
+    editorView.value.dispatch({
+      changes: {
+        from: 0,
+        to: editorView.value.state.doc.length,
+        insert: editorContent.value,
+      },
     })
-    configFiles.value = response.data.cfg_files
-    if (configFiles.value.length > 0) {
-      activeTab.value = configFiles.value[0]
-      fetchConfig(activeTab.value)
-    }
-  } catch (error) {
-    if (axios.isCancel(error)) {
-      console.log('Request canceled')
-    } else {
-      ElMessage.error(t('message.error.fetch') + error.message)
-    }
-  } finally {
-    loading.value = false
   }
 }
 
@@ -123,16 +114,25 @@ const fetchConfig = async (fileName, force = false) => {
   }
 }
 
-const editorView = ref(null)
-const updateEditorContent = () => {
-  if (editorView.value) {
-    editorView.value.dispatch({
-      changes: {
-        from: 0,
-        to: editorView.value.state.doc.length,
-        insert: editorContent.value,
-      },
+const fetchConfigFiles = async () => {
+  loading.value = true
+  try {
+    const response = await axios.get('/api/config', {
+      signal: abortController.signal,
     })
+    configFiles.value = response.data.cfg_files
+    if (configFiles.value.length > 0) {
+      activeTab.value = configFiles.value[0]
+      fetchConfig(activeTab.value)
+    }
+  } catch (error) {
+    if (axios.isCancel(error)) {
+      console.log('Request canceled')
+    } else {
+      ElMessage.error(t('message.error.fetch') + error.message)
+    }
+  } finally {
+    loading.value = false
   }
 }
 

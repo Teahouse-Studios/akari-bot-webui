@@ -181,7 +181,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, onBeforeUnmount, watch } from 'vue'
+import { ref, reactive, onMounted, onBeforeUnmount } from 'vue'
 import axios from '@/axios.mjs'
 import { IS_DEMO } from '@/const'
 import { ElMessage, ElMessageBox } from 'element-plus'
@@ -216,26 +216,6 @@ let debounceTimer = null
 
 const abortController = new AbortController()
 
-onMounted(() => {
-  refreshData()
-})
-
-onBeforeUnmount(() => {
-  abortController.abort()
-})
-
-const debouncedRefresh = () => {
-  clearTimeout(debounceTimer)
-  debounceTimer = setTimeout(() => {
-    refreshData()
-  }, 500)
-}
-
-const refreshData = async () => {
-  currentPage.value = 1
-  await fetchData()
-}
-
 const fetchData = async () => {
   loading.value = true
   try {
@@ -262,6 +242,18 @@ const fetchData = async () => {
   } finally {
     loading.value = false
   }
+}
+
+const refreshData = async () => {
+  currentPage.value = 1
+  await fetchData()
+}
+
+const debouncedRefresh = () => {
+  clearTimeout(debounceTimer)
+  debounceTimer = setTimeout(() => {
+    refreshData()
+  }, 500)
 }
 
 const handlePageChange = (page) => {
@@ -330,22 +322,6 @@ const submitEdit = async () => {
   }
 }
 
-const confirmDelete = (row) => {
-  ElMessageBox.confirm(
-    t('session.sender.confirm.message', { sender_id: row.sender_id }),
-    t('confirm.warning'),
-    {
-      confirmButtonText: t('button.confirm'),
-      cancelButtonText: t('button.cancel'),
-      type: 'warning',
-    },
-  )
-    .then(() => {
-      deleteSender(row)
-    })
-    .catch(() => {})
-}
-
 const deleteSender = async (row) => {
   try {
     await axios.delete(`/api/sender/${row.sender_id}`)
@@ -359,6 +335,32 @@ const deleteSender = async (row) => {
     }
   }
 }
+
+const confirmDelete = (row) => {
+  ElMessageBox.confirm(
+    t('session.sender.confirm.message', { sender_id: row.sender_id }),
+    t('confirm.warning'),
+    {
+      confirmButtonText: t('button.confirm'),
+      cancelButtonText: t('button.cancel'),
+      type: 'warning',
+    },
+  )
+    .then(() => {
+      deleteSender(row)
+    })
+    .catch(() => {
+      // empty
+    })
+}
+
+onMounted(() => {
+  refreshData()
+})
+
+onBeforeUnmount(() => {
+  abortController.abort()
+})
 </script>
 
 <style scoped>

@@ -41,14 +41,13 @@
 
 <script setup>
 import LocalStorageJson from '@/localStorageJson.js'
-import { ref, onMounted, onBeforeUnmount } from 'vue'
-import { defineProps, defineEmits } from 'vue'
+import { ref, onMounted, onBeforeUnmount, defineProps, defineEmits } from 'vue'
 
 const props = defineProps({
   userVerified: {
     type: Boolean,
     default: false,
-  },
+  }
 })
 
 const emit = defineEmits(['toggle-sidebar'])

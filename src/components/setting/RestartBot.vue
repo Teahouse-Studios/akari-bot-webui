@@ -19,19 +19,6 @@ const pollingTimeout = 60000
 const pollingInterval = 2000
 const hasShownTimeoutError = ref(false)
 
-const handleRestart = async () => {
-  try {
-    await ElMessageBox.confirm(t('confirm.message'), t('confirm.warning'), {
-      confirmButtonText: t('button.confirm'),
-      cancelButtonText: t('button.cancel'),
-      type: 'warning',
-    })
-    await restartBot()
-  } catch (error) {
-    return
-  }
-}
-
 const restartBot = async () => {
   try {
     const response = await axios.post('/api/restart', {})
@@ -73,6 +60,19 @@ const restartBot = async () => {
     }
   } catch (error) {
     ElMessage.error(t('message.error.fetch') + error.message)
+  }
+}
+
+const handleRestart = async () => {
+  try {
+    await ElMessageBox.confirm(t('confirm.message'), t('confirm.warning'), {
+      confirmButtonText: t('button.confirm'),
+      cancelButtonText: t('button.cancel'),
+      type: 'warning',
+    })
+    await restartBot()
+  } catch (error) {
+    return
   }
 }
 </script>

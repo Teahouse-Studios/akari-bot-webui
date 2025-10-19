@@ -171,6 +171,117 @@ const resetEditCommentDialog = () => {
   editCommentKey.value = ''
 }
 
+const getMissingLines = (sectionKey, handledKeys) => {
+  const missing = []
+  const section = parsedSections.value[sectionKey]
+  const seen = handledKeys[sectionKey] || new Set()
+
+  for (const key in section.items) {
+    if (!seen.has(key)) {
+      const item = section.items[key]
+      let valueStr = ''
+      switch (item.type) {
+        case 'bool':
+          valueStr = item.value ? 'true' : 'false'
+          break
+        case 'num':
+          valueStr = isNaN(parseFloat(item.value)) ? '0' : String(item.value)
+          break
+        case 'array':
+          valueStr = `[${item.value.map((v) => `"${v}"`).join(', ')}]`
+          break
+        case 'str':
+          valueStr = `"${String(item.value)}"`
+          break
+        case null:
+          valueStr = item.value === null ? '"<Replace me>"' : `"${String(item.value)}"`
+          break
+        default:
+          valueStr = '"<Replace me>"'
+          break
+      }
+      const commentStr = item.comment ? ` # ${item.comment}` : ''
+      missing.push(`${key} = ${valueStr}${commentStr}`)
+    }
+  }
+
+  return missing
+}
+
+const updateTomlFromParsed = () => {
+  const lines = tomlInput.value.split('\n')
+  const outputLines = []
+  let currentSection = ''
+  const handledKeys = {}
+
+  for (let i = 0; i < lines.length; i++) {
+    const rawLine = lines[i]
+    const line = rawLine.trim()
+
+    if (line.startsWith('[') && line.endsWith(']')) {
+      if (currentSection && parsedSections.value[currentSection]) {
+        const missingLines = getMissingLines(currentSection, handledKeys)
+        outputLines.push(...missingLines)
+      }
+
+      currentSection = line.slice(1, -1)
+      handledKeys[currentSection] = new Set()
+      outputLines.push(rawLine)
+      continue
+    }
+
+    if (line === '' || line.startsWith('#')) {
+      outputLines.push(rawLine)
+      continue
+    }
+
+    const eqIdx = line.indexOf('=')
+    if (eqIdx !== -1 && currentSection && parsedSections.value[currentSection]) {
+      const key = line.slice(0, eqIdx).trim()
+      const item = parsedSections.value[currentSection].items[key]
+
+      if (!item) {
+        continue
+      }
+
+      let valueStr = ''
+      switch (item.type) {
+        case 'bool':
+          valueStr = item.value ? 'true' : 'false'
+          break
+        case 'num':
+          valueStr = isNaN(parseFloat(item.value)) ? '0' : String(item.value)
+          break
+        case 'array':
+          valueStr = `[${item.value.map((v) => `"${v}"`).join(', ')}]`
+          break
+        case 'str':
+          valueStr = `"${String(item.value)}"`
+          break
+        case null:
+          valueStr = item.value === null ? '"<Replace me>"' : `"${String(item.value)}"`
+          break
+        default:
+          valueStr = '"<Replace me>"'
+          break
+      }
+
+      const commentStr = item.comment ? ` # ${item.comment}` : ''
+      outputLines.push(`${key} = ${valueStr}${commentStr}`)
+      handledKeys[currentSection].add(key)
+    } else {
+      outputLines.push(rawLine)
+    }
+  }
+
+  if (currentSection && parsedSections.value[currentSection]) {
+    const missingLines = getMissingLines(currentSection, handledKeys)
+    outputLines.push(...missingLines)
+  }
+
+  tomlInput.value = outputLines.join('\n')
+}
+
 const confirmEditComment = () => {
   const section = parsedSections.value[editCommentSectionKey.value]
   if (section.items?.[editCommentKey.value]) {
@@ -184,7 +295,7 @@ const openAddDialog = (sectionKey) => {
   addSectionKey.value = sectionKey
   addForm.value = { key: '', comment: '' }
   addDialogVisible.value = true
-  
+
   nextTick(() => {
     if (addFormRef.value) {
       addFormRef.value.clearValidate()
@@ -271,11 +382,7 @@ const parseTomlWithComments = (input) => {
         currentSection = line.slice(1, -1)
         sectionObj = { comment: '', items: {} }
         result[currentSection] = sectionObj
-      } else if (
-        currentSection &&
-        (sectionObj = result[currentSection]) &&
-        line.includes('=')
-      ) {
+      } else if (currentSection && (sectionObj = result[currentSection]) && line.includes('=')) {
         const eqIdx = line.indexOf('=')
         const key = line.slice(0, eqIdx).trim()
         const valueComment = line.slice(eqIdx + 1).trim()
@@ -341,117 +448,6 @@ const getComponent = (type) => {
   }
 }
 
-const updateTomlFromParsed = () => {
-  const lines = tomlInput.value.split('\n')
-  const outputLines = []
-  let currentSection = ''
-  const handledKeys = {}
-
-  for (let i = 0; i < lines.length; i++) {
-    const rawLine = lines[i]
-    const line = rawLine.trim()
-
-    if (line.startsWith('[') && line.endsWith(']')) {
-      if (currentSection && parsedSections.value[currentSection]) {
-        const missingLines = getMissingLines(currentSection, handledKeys)
-        outputLines.push(...missingLines)
-      }
-
-      currentSection = line.slice(1, -1)
-      handledKeys[currentSection] = new Set()
-      outputLines.push(rawLine)
-      continue
-    }
-
-    if (line === '' || line.startsWith('#')) {
-      outputLines.push(rawLine)
-      continue
-    }
-
-    const eqIdx = line.indexOf('=')
-    if (eqIdx !== -1 && currentSection && parsedSections.value[currentSection]) {
-      const key = line.slice(0, eqIdx).trim()
-      const item = parsedSections.value[currentSection].items[key]
-
-      if (!item) {
-        continue
-      }
-
-      let valueStr = ''
-      switch (item.type) {
-        case 'bool':
-          valueStr = item.value ? 'true' : 'false'
-          break
-        case 'num':
-          valueStr = isNaN(parseFloat(item.value)) ? '0' : String(item.value)
-          break
-        case 'array':
-          valueStr = `[${item.value.map((v) => `"${v}"`).join(', ')}]`
-          break
-        case 'str':
-          valueStr = `"${String(item.value)}"`
-          break
-        case null:
-          valueStr = item.value === null ? '"<Replace me>"' : `"${String(item.value)}"`
-          break
-        default:
-          valueStr = '"<Replace me>"'
-          break
-      }
-
-      const commentStr = item.comment ? ` # ${item.comment}` : ''
-      outputLines.push(`${key} = ${valueStr}${commentStr}`)
-      handledKeys[currentSection].add(key)
-    } else {
-      outputLines.push(rawLine)
-    }
-  }
-
-  if (currentSection && parsedSections.value[currentSection]) {
-    const missingLines = getMissingLines(currentSection, handledKeys)
-    outputLines.push(...missingLines)
-  }
-
-  tomlInput.value = outputLines.join('\n')
-}
-
-const getMissingLines = (sectionKey, handledKeys) => {
-  const missing = []
-  const section = parsedSections.value[sectionKey]
-  const seen = handledKeys[sectionKey] || new Set()
-
-  for (const key in section.items) {
-    if (!seen.has(key)) {
-      const item = section.items[key]
-      let valueStr = ''
-      switch (item.type) {
-        case 'bool':
-          valueStr = item.value ? 'true' : 'false'
-          break
-        case 'num':
-          valueStr = isNaN(parseFloat(item.value)) ? '0' : String(item.value)
-          break
-        case 'array':
-          valueStr = `[${item.value.map((v) => `"${v}"`).join(', ')}]`
-          break
-        case 'str':
-          valueStr = `"${String(item.value)}"`
-          break
-        case null:
-          valueStr = item.value === null ? '"<Replace me>"' : `"${String(item.value)}"`
-          break
-        default:
-          valueStr = '"<Replace me>"'
-          break
-      }
-      const commentStr = item.comment ? ` # ${item.comment}` : ''
-      missing.push(`${key} = ${valueStr}${commentStr}`)
-    }
-  }
-
-  return missing
-}
-
 const getComponentProps = (type) => {
   switch (type) {
     case 'bool':
@@ -490,10 +486,13 @@ onMounted(() => {
   }, 200)
 })
 
-watch(() => props.modelValue, (newVal) => {
-  tomlInput.value = newVal
-  parsedSections.value = parseTomlWithComments(tomlInput.value)
-})
+watch(
+  () => props.modelValue,
+  (newVal) => {
+    tomlInput.value = newVal
+    parsedSections.value = parseTomlWithComments(tomlInput.value)
+  },
+)
 
 watch(tomlInput, (newVal) => {
   emit('update:modelValue', newVal)

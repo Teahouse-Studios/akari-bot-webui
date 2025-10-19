@@ -29,7 +29,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import LocalStorageJson from '@/localStorageJson.js'
 
 const presets = reactive({
@@ -64,12 +64,14 @@ function onCustomButtonClick() {
   showColorPicker.value = true
 }
 
-const customButtonStyle = computed(() => {
+onMounted(() => {
   const isCustomTheme = LocalStorageJson.getItem('isCustomTheme')
   if (isCustomTheme === 'true') {
-    const savedColor = LocalStorageJson.getItem('themeColor')
-    customColor.value = savedColor
+    customColor.value = LocalStorageJson.getItem('themeColor') || ''
   }
+})
+
+const customButtonStyle = computed(() => {
   if (customColor.value) {
     return {
       backgroundColor: customColor.value,

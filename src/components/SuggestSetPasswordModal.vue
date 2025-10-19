@@ -19,14 +19,15 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, defineProps, defineEmits } from 'vue'
 import LocalStorageJson from '@/localStorageJson.js'
 import { useRouter } from 'vue-router'
-import { defineProps, defineEmits } from 'vue'
 
 const props = defineProps({
-  modelValue: Boolean,
-  default: false,
+  modelValue: {
+    type: Boolean,
+    default: false,
+  }
 })
 
 const emit = defineEmits(['update:modelValue'])

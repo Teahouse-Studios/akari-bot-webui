@@ -141,22 +141,6 @@ const handleUpdatePassword = async () => {
   }
 }
 
-const handleClearPassword = async () => {
-  try {
-    await formRef.value.validateField('old_password')
-
-    ElMessageBox.confirm(t('setting.change_password.confirm.message'), t('confirm.warning'), {
-      confirmButtonText: t('button.confirm'),
-      cancelButtonText: t('button.cancel'),
-      type: 'warning',
-    })
-      .then(async () => {
-        await confirmClearPassword()
-      })
-      .catch(() => {})
-  } catch {}
-}
-
 const confirmClearPassword = async () => {
   try {
     const response = await axios.delete('/api/password', {
@@ -174,6 +158,26 @@ const confirmClearPassword = async () => {
     } else {
       ElMessage.error(t('message.error.fetch') + error.message)
     }
+  }
+}
+
+const handleClearPassword = async () => {
+  try {
+    await formRef.value.validateField('old_password')
+
+    ElMessageBox.confirm(t('setting.change_password.confirm.message'), t('confirm.warning'), {
+      confirmButtonText: t('button.confirm'),
+      cancelButtonText: t('button.cancel'),
+      type: 'warning',
+    })
+      .then(async () => {
+        await confirmClearPassword()
+      })
+      .catch(() => {
+        // empty
+      })
+  } catch {
+    // empty
   }
 }
 </script>

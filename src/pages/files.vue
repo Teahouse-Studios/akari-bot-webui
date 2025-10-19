@@ -246,28 +246,18 @@ const uploadHeaders = computed(() => {
   }
 })
 
-watch(currentPath, () => {
-  showUpload.value = false
-  nextTick(() => {
-    scrollBreadcrumbToEnd()
-  })
-})
+const updateFiles = () => {
+  const filtered = showHiddenFiles.value
+    ? allFiles.value
+    : allFiles.value.filter((f) => !f.name.startsWith('.'))
 
-watch(previewContent, (newVal) => {
-  if (editorView.value && editorView.value.state.doc.toString() !== newVal) {
-    editorView.value.dispatch({
-      changes: { from: 0, to: editorView.value.state.doc.length, insert: newVal },
-    })
-  }
-})
+  totalFiles.value = filtered.length
 
-watch(fullscreenPreviewVisible, (val) => {
-  if (val) {
-    document.body.style.overflow = 'hidden'
-  } else {
-    document.body.style.overflow = ''
-  }
-})
+  const start = (currentPage.value - 1) * pageSize.value
+  const end = start + pageSize.value
+
+  files.value = filtered.slice(start, end)
+}
 
 const fetchFiles = async () => {
   if (!isDevelopMode.value) return
@@ -304,19 +294,6 @@ const goToPath = (idx) => {
   fetchFiles()
 }
 
-const updateFiles = () => {
-  const filtered = showHiddenFiles.value
-    ? allFiles.value
-    : allFiles.value.filter((f) => !f.name.startsWith('.'))
-
-  totalFiles.value = filtered.length
-
-  const start = (currentPage.value - 1) * pageSize.value
-  const end = start + pageSize.value
-
-  files.value = filtered.slice(start, end)
-}
-
 const handleUploadError = (err, _file, _fileList) => {
   if (err.status === 413) {
     ElMessage.error(t('files.message.upload.error.too_large'))
@@ -344,12 +321,6 @@ const formatDate = (row) => {
 
 const handlePageChange = (page) => {
   currentPage.value = page
-  fetchFiles()
-}
-
-const handleSizeChange = (size) => {
-  pageSize.value = size
-  currentPage.value = 1
   fetchFiles()
 }
 
@@ -684,10 +655,10 @@ const download = async (row) => {
     responseType: 'blob',
   })
   const url = URL.createObjectURL(res.data)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = row.name
-  a.click()
+  const a_ = document.createElement('a')
+  a_.href = url
+  a_.download = row.name
+  a_.click()
   URL.revokeObjectURL(url)
 }
 
@@ -702,6 +673,29 @@ onMounted(() => {
 onUnmounted(() => {
   window.removeEventListener('resize', updateFullscreenLeft)
   window.removeEventListener('resize', updatePreviewTextDialogWidth)
+})
+
+watch(currentPath, () => {
+  showUpload.value = false
+  nextTick(() => {
+    scrollBreadcrumbToEnd()
+  })
+})
+
+watch(previewContent, (newVal) => {
+  if (editorView.value && editorView.value.state.doc.toString() !== newVal) {
+    editorView.value.dispatch({
+      changes: { from: 0, to: editorView.value.state.doc.length, insert: newVal },
+    })
+  }
+})
+
+watch(fullscreenPreviewVisible, (val) => {
+  if (val) {
+    document.body.style.overflow = 'hidden'
+  } else {
+    document.body.style.overflow = ''
+  }
 })
 </script>
 

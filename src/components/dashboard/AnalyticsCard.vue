@@ -176,13 +176,13 @@ const fillMissingData = (timeGroupedData, days) => {
   const totalIntervals = (days * 24 * 60) / intervalMinutes
   const filledData = []
 
-  const existingKeys = new Set(timeGroupedData.map(item => item.date.getTime()))
+  const existingKeys = new Set(timeGroupedData.map((item) => item.date.getTime()))
 
   for (let i = totalIntervals - 1; i >= 0; i--) {
     const date = new Date(now.getTime() - i * intervalMinutes * 60 * 1000)
     const timestamp = date.getTime()
     if (existingKeys.has(timestamp)) {
-      filledData.push(timeGroupedData.find(item => item.date.getTime() === timestamp))
+      filledData.push(timeGroupedData.find((item) => item.date.getTime() === timestamp))
     } else {
       filledData.push({ date, count: 0 })
     }
@@ -215,7 +215,7 @@ const groupDataByTimeInterval = (data, _days) => {
 const processData = (data, days) => {
   const timeGroupedData = groupDataByTimeInterval(data.data, days)
 
-  trendData.value = fillMissingData(timeGroupedData, days).map(item => ({
+  trendData.value = fillMissingData(timeGroupedData, days).map((item) => ({
     date: formatTimestamp(item.date),
     count: item.count,
   }))
@@ -231,7 +231,7 @@ const processData = (data, days) => {
   })
 
   commandStats.value = Object.entries(prefixCountMap)
-    .map(([prefix, count]) => ({ prefix, count }))
+    .map(([prefix, count]) => ({ prefix, count }))  // skipcq: JS-0123 - Shadowing is safe here
     .sort((a, b) => b.count - a.count)
 }
 

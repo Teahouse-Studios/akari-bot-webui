@@ -59,12 +59,6 @@ import LocalStorageJson from '@/localStorageJson.js'
 import { useRoute, useRouter } from 'vue-router'
 import { IS_DEMO } from '@/const'
 
-defineProps({
-  visible: {
-    type: Boolean,
-    default: true,
-  },
-})
 const emit = defineEmits(['update:modelValue'])
 
 const route = useRoute()
