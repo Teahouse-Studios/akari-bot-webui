@@ -1,6 +1,7 @@
 import axios from 'axios'
 import { IS_DEMO } from './const'
 import setupMock from '@/mock/api'
+import LocalStorageJson from '@/localStorageJson.js'
 
 // const initAxios = async () => {
 const initAxios = () => {
@@ -25,8 +26,8 @@ const initAxios = () => {
 
   axios.interceptors.request.use(
     (config) => {
-      if (localStorage.getItem('token')) {
-        config.headers.Authorization = `Bearer ${localStorage.getItem('token')}`
+      if (LocalStorageJson.getItem('token')) {
+        config.headers.Authorization = `Bearer ${LocalStorageJson.getItem('token')}`
       }
       return config
     },
