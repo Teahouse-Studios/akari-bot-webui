@@ -5,13 +5,13 @@ This project is a WebUI panel for [AkariBot](https://github.com/Teahouse-Studios
 ## Setup
 
 ```
-yarn
+yarn install
 ```
 
 ### Compiles and hot-reloads for development
 
 ```
-yarn dev
+yarn
 ```
 
 ### Compiles and minifies for production
