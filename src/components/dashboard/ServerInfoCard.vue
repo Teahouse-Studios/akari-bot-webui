@@ -14,7 +14,7 @@
         </p>
         <p>
           <strong class="data-title">{{ $t('dashboard.server_info.bot.label.bot_version') }}</strong
-          ><span class="data-text">{{ bot.version ? bot.version.slice(0, 6) : '-' }}</span>
+          ><span class="data-text">{{ formatBotVersion(bot.version) }}</span>
         </p>
         <p>
           <strong class="data-title">{{
@@ -183,6 +183,14 @@ function formatRunningTime(seconds) {
     minutes,
     seconds: remainingSeconds,
   })
+}
+
+function formatBotVersion(version) {
+  if (!version) return '-'
+  if (version.startsWith('git:')) {
+    return version.slice(4, 10)
+  }
+  return version
 }
 
 function formatTime(timestamp) {
