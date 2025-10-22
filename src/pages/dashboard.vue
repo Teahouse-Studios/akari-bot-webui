@@ -1,7 +1,7 @@
 <template>
   <div>
-    <ServerInfoCard ref="serverInfoCard" />
-    <AnalyticsCard ref="analyticsCard" />
+    <ServerInfoCard ref="serverInfoCard" :loading="loading"/>
+    <AnalyticsCard ref="analyticsCard" :loading="loading"/>
     <el-tooltip
       :content="$t('dashboard.update_time.title', { time: formatTime(lastUpdateTime) })"
       placement="left"
@@ -33,20 +33,25 @@ const serverInfoCard = ref(null)
 const analyticsCard = ref(null)
 
 async function refreshData() {
+  if (loading.value) return;
   loading.value = true
   try {
     lastUpdateTime.value = Math.floor(Date.now() / 1000)
 
+    const tasks = []
+
     if (serverInfoCard.value) {
-      await serverInfoCard.value.fetchServerInfoData()
+      tasks.push(serverInfoCard.value.fetchServerInfoData())
     }
 
     if (analyticsCard.value) {
       const selectedDays = analyticsCard.value.selectedDays
-      await analyticsCard.value.fetchAnalyticsData(selectedDays)
+      tasks.push(analyticsCard.value.fetchAnalyticsData(selectedDays))
     }
+
+    await Promise.all(tasks)
   } catch (error) {
-    console.error('刷新数据时发生错误:', error)
+    // empty
   } finally {
     loading.value = false
     resetAutoRefresh()
@@ -110,6 +115,7 @@ function formatTime(timestamp) {
 }
 
 onMounted(() => {
+  refreshData()
   startAutoRefresh()
 })
 

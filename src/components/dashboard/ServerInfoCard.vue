@@ -247,8 +247,8 @@ function checkOverflow() {
 }
 
 async function fetchServerInfoData() {
+  loading.value = true
   try {
-    loading.value = true
     const response = await axios.get('/api/server-info', {
       signal: abortController.signal,
     })
@@ -269,6 +269,10 @@ async function fetchServerInfoData() {
     loading.value = false
   }
 }
+
+defineExpose({
+  fetchServerInfoData
+})
 
 onMounted(() => {
   checkOverflow()

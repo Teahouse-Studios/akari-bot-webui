@@ -309,6 +309,11 @@ const getColorByIndex = (prefix) => {
   return colors[hash % colors.length]
 }
 
+defineExpose({
+  fetchAnalyticsData,
+  selectedDays
+})
+
 onMounted(() => {
   fetchAnalyticsData(selectedDays.value)
 
