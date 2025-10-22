@@ -32,20 +32,25 @@ const lastUpdateTime = ref(Math.floor(Date.now() / 1000))
 const serverInfoCard = ref(null)
 const analyticsCard = ref(null)
 
-function refreshData() {
+async function refreshData() {
   loading.value = true
-  lastUpdateTime.value = Math.floor(Date.now() / 1000)
+  try {
+    lastUpdateTime.value = Math.floor(Date.now() / 1000)
 
-  serverInfoCard.value?.fetchServerInfoData().finally(() => {
+    if (serverInfoCard.value) {
+      await serverInfoCard.value.fetchServerInfoData()
+    }
+
+    if (analyticsCard.value) {
+      const selectedDays = analyticsCard.value.selectedDays
+      await analyticsCard.value.fetchAnalyticsData(selectedDays)
+    }
+  } catch (error) {
+    console.error('刷新数据时发生错误:', error)
+  } finally {
     loading.value = false
-  })
-
-  if (analyticsCard.value) {
-    const selectedDays = analyticsCard.value.selectedDays
-    analyticsCard.value.fetchAnalyticsData(selectedDays)
+    resetAutoRefresh()
   }
-
-  resetAutoRefresh()
 }
 
 function startAutoRefresh() {
