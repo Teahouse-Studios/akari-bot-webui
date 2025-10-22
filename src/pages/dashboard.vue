@@ -115,7 +115,6 @@ function formatTime(timestamp) {
 }
 
 onMounted(() => {
-  refreshData()
   startAutoRefresh()
 })
 
