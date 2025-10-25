@@ -188,7 +188,7 @@ function formatRunningTime(seconds) {
 function formatBotVersion(version) {
   if (!version) return '-'
   if (version.startsWith('git:')) {
-    return version.slice(4, 10)
+    return version.slice(4, 11)
   }
   return version
 }
