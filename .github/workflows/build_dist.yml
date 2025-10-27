@@ -39,11 +39,8 @@ jobs:
       - name: Build project
         run: yarn build
 
-      - name: Archive dist folder
-        run: zip -r dist.zip dist
-
       - name: Upload build artifact
         uses: actions/upload-artifact@v5
         with:
           name: dist
-          path: dist.zip
+          path: dist
