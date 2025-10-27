@@ -1,4 +1,6 @@
 name: Build WebUI dist file
+permissions:
+  contents: read
 
 on:
   push:
