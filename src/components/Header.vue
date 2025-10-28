@@ -47,7 +47,7 @@ const props = defineProps({
   userVerified: {
     type: Boolean,
     default: false,
-  }
+  },
 })
 
 const emit = defineEmits(['toggle-sidebar'])

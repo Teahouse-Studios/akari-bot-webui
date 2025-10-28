@@ -55,6 +55,7 @@
     <el-collapse-transition>
       <div v-show="showUpload" class="upload-area">
         <el-upload
+          ref="uploadRef"
           drag
           multiple
           directory
@@ -229,6 +230,7 @@ const emptyDescription = ref(t('files.preview.unsupported'))
 const editorView = ref(null)
 const textEditor = ref(null)
 const previewVisible = ref(false)
+const uploadRef = ref(null)
 const uploadUrl = '/api/files/upload'
 const isDevelopMode = ref(LocalStorageJson.getItem('isDevelopMode') === 'true' && !IS_DEMO)
 
@@ -245,6 +247,12 @@ const uploadHeaders = computed(() => {
     Authorization: `Bearer ${token}`,
   }
 })
+
+const clearUploadFiles = () => {
+  if (uploadRef.value) {
+    uploadRef.value.clearFiles()
+  }
+}
 
 const updateFiles = () => {
   const filtered = showHiddenFiles.value
@@ -291,6 +299,7 @@ const goToPath = (idx) => {
   const parts = pathParts.value.slice(1, idx + 1)
   const newPath = parts.join('/')
   currentPath.value = newPath
+  clearUploadFiles()
   fetchFiles()
 }
 
@@ -332,6 +341,7 @@ const toggleHiddenFiles = () => {
 
 const openDir = (name) => {
   currentPath.value = currentPath.value ? `${currentPath.value}/${name}` : name
+  clearUploadFiles()
   fetchFiles()
 }
 
@@ -339,6 +349,7 @@ const goUp = () => {
   const parts = currentPath.value.split('/')
   parts.pop()
   currentPath.value = parts.join('/')
+  clearUploadFiles()
   fetchFiles()
 }
 

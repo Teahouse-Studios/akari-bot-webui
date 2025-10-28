@@ -1,7 +1,7 @@
 <template>
   <div>
-    <ServerInfoCard ref="serverInfoCard" :loading="loading"/>
-    <AnalyticsCard ref="analyticsCard" :loading="loading"/>
+    <ServerInfoCard ref="serverInfoCard" :loading="loading" />
+    <AnalyticsCard ref="analyticsCard" :loading="loading" />
     <el-tooltip
       :content="$t('dashboard.update_time.title', { time: formatTime(lastUpdateTime) })"
       placement="left"
@@ -33,7 +33,7 @@ const serverInfoCard = ref(null)
 const analyticsCard = ref(null)
 
 async function refreshData() {
-  if (loading.value) return;
+  if (loading.value) return
   loading.value = true
   try {
     lastUpdateTime.value = Math.floor(Date.now() / 1000)

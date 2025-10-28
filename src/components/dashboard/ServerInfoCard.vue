@@ -271,7 +271,7 @@ async function fetchServerInfoData() {
 }
 
 defineExpose({
-  fetchServerInfoData
+  fetchServerInfoData,
 })
 
 onMounted(() => {

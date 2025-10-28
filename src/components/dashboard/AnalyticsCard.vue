@@ -170,38 +170,19 @@ const formatTimestamp = (timestamp) => {
     .replace(',', '')
 }
 
-const fillMissingData = (timeGroupedData, days) => {
-  const intervalMinutes = 30
-  const now = new Date()
-  const totalIntervals = (days * 24 * 60) / intervalMinutes
-  const filledData = []
-
-  const existingKeys = new Set(timeGroupedData.map((item) => item.date.getTime()))
-
-  for (let i = totalIntervals - 1; i >= 0; i--) {
-    const date = new Date(now.getTime() - i * intervalMinutes * 60 * 1000)
-    const timestamp = date.getTime()
-    if (existingKeys.has(timestamp)) {
-      filledData.push(timeGroupedData.find((item) => item.date.getTime() === timestamp))
-    } else {
-      filledData.push({ date, count: 0 })
-    }
-  }
-  return filledData
+const getAlignedTime = (date, now, intervalMinutes = 30) => {
+  const diffMs = now.getTime() - date.getTime()
+  const step = Math.floor(diffMs / (intervalMinutes * 60 * 1000))
+  return new Date(now.getTime() - step * intervalMinutes * 60 * 1000)
 }
-
-const groupDataByTimeInterval = (data, _days) => {
+const groupDataByTimeInterval = (data, _days, now) => {
   const groupedData = {}
-  const now = new Date()
   const intervalMinutes = 30
-  const baseTime = new Date(now.getTime() - intervalMinutes * 60 * 1000)
 
   data.forEach((item) => {
     const timestamp = new Date(item.timestamp)
-    const diff = baseTime.getTime() - timestamp.getTime()
-    const steps = Math.floor(diff / (intervalMinutes * 60 * 1000))
-    const alignedTime = new Date(baseTime.getTime() - steps * intervalMinutes * 60 * 1000)
-    const timeKey = alignedTime.toISOString()
+    const alignedTime = getAlignedTime(timestamp, now, intervalMinutes)
+    const timeKey = alignedTime.getTime()
 
     if (!groupedData[timeKey]) {
       groupedData[timeKey] = { date: alignedTime, count: 0 }
@@ -209,13 +190,35 @@ const groupDataByTimeInterval = (data, _days) => {
     groupedData[timeKey].count += 1
   })
 
-  return Object.values(groupedData)
+  return Object.values(groupedData).sort((a, b) => a.date - b.date)
+}
+
+const fillMissingData = (timeGroupedData, days, now) => {
+  const intervalMinutes = 30
+  const totalIntervals = (days * 24 * 60) / intervalMinutes
+  const filledData = []
+
+  const dataMap = new Map(timeGroupedData.map((item) => [item.date.getTime(), item]))
+
+  for (let i = totalIntervals - 1; i >= 0; i--) {
+    const date = new Date(now.getTime() - i * intervalMinutes * 60 * 1000)
+    const alignedDate = getAlignedTime(date, now, intervalMinutes)
+    const timestamp = alignedDate.getTime()
+    if (dataMap.has(timestamp)) {
+      filledData.push(timeGroupedData.find((item) => item.date.getTime() === timestamp))
+    } else {
+      filledData.push({ date: alignedDate, count: 0 })
+    }
+  }
+
+  return filledData
 }
 
 const processData = (data, days) => {
-  const timeGroupedData = groupDataByTimeInterval(data.data, days)
+  const now = new Date()
+  const timeGroupedData = groupDataByTimeInterval(data.data, days, now)
 
-  trendData.value = fillMissingData(timeGroupedData, days).map((item) => ({
+  trendData.value = fillMissingData(timeGroupedData, days, now).map((item) => ({
     date: formatTimestamp(item.date),
     count: item.count,
   }))
@@ -231,7 +234,7 @@ const processData = (data, days) => {
   })
 
   commandStats.value = Object.entries(prefixCountMap)
-    .map(([prefix, count]) => ({ prefix, count }))  // skipcq: JS-0123 - Shadowing is safe here
+    .map(([prefix, count]) => ({ prefix, count })) // skipcq: JS-0123 - Shadowing is safe here
     .sort((a, b) => b.count - a.count)
 }
 
@@ -311,7 +314,7 @@ const getColorByIndex = (prefix) => {
 
 defineExpose({
   fetchAnalyticsData,
-  selectedDays
+  selectedDays,
 })
 
 onMounted(() => {

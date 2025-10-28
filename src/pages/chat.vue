@@ -160,13 +160,19 @@
         {{ $t('chat.button.send') }}
       </el-button>
     </div>
-    <el-dialog v-model="imageDialogVisible" :show-close="false" :center="true">
+    <div
+      v-if="fullscreenPreviewVisible"
+      class="fullscreen-preview"
+      @click="closeFullscreenPreview"
+      :class="{ show: showFullscreenPreviewAnim }"
+    >
       <img
         :src="previewImageSrc"
-        style="width: 100%; height: 100%; cursor: pointer"
         @click="openImageInNewWindow"
+        class="fullscreen-image"
+        ref="fullscreenImage"
       />
-    </el-dialog>
+    </div>
   </div>
   <div class="chat-tip">
     {{ $t('chat.tip') }}
@@ -201,7 +207,8 @@ const heartbeatRetryCount = ref(0)
 const heartbeatInterval = ref(30000)
 const heartbeatTimeout = ref(5000)
 const heartbeatAttempt = ref(3)
-const imageDialogVisible = ref(false)
+const fullscreenPreviewVisible = ref(false)
+const showFullscreenPreviewAnim = ref(false)
 const isMobileView = ref(window.innerWidth < 1024)
 const previewImageSrc = ref('')
 const activeReactionMsg = ref(null)
@@ -293,10 +300,28 @@ const renderMarkdown = (text) => {
 
   return DOMPurify.sanitize(raw, {
     ALLOWED_TAGS: [
-      'b','i','em','strong','a','code','pre','blockquote','br',
-      'img','p','ul','ol','li','h1','h2','h3','h4','h5','h6'
+      'b',
+      'i',
+      'em',
+      'strong',
+      'a',
+      'code',
+      'pre',
+      'blockquote',
+      'br',
+      'img',
+      'p',
+      'ul',
+      'ol',
+      'li',
+      'h1',
+      'h2',
+      'h3',
+      'h4',
+      'h5',
+      'h6',
     ],
-    ALLOWED_ATTR: ['href','target','rel','src','class','alt','title']
+    ALLOWED_ATTR: ['href', 'target', 'rel', 'src', 'class', 'alt', 'title'],
   })
 }
 
@@ -395,7 +420,6 @@ const startHeartbeat = () => {
     sendHeartbeat()
   }, heartbeatInterval.value)
 }
-
 
 const connectWebSocket = async () => {
   if (IS_DEMO) {
@@ -600,7 +624,13 @@ const handleEnterKey = (event) => {
 
 const showImagePreview = (src) => {
   previewImageSrc.value = src
-  imageDialogVisible.value = true
+  fullscreenPreviewVisible.value = true
+  showFullscreenPreviewAnim.value = false
+  nextTick(() => {
+    setTimeout(() => {
+      showFullscreenPreviewAnim.value = true
+    }, 10)
+  })
 }
 
 const confirmExternalLink = (url) => {
@@ -737,6 +767,22 @@ const copyMessage = async (msg) => {
     }, 2000)
   } catch (e) {
     ElMessage.error(t('chat.message.error.copy') + e.message)
+  }
+}
+
+const closeFullscreenPreview = () => {
+  const imgEl = document.querySelector('.fullscreen-image')
+  const wrapper = document.querySelector('.fullscreen-preview')
+
+  if (imgEl && wrapper) {
+    showFullscreenPreviewAnim.value = false
+    setTimeout(() => {
+      fullscreenPreviewVisible.value = false
+      previewImageSrc.value = ''
+    }, 300)
+  } else {
+    fullscreenPreviewVisible.value = false
+    previewImageSrc.value = ''
   }
 }
 
@@ -1079,6 +1125,47 @@ onBeforeUnmount(() => {
 
 .el-button:disabled {
   cursor: default !important;
+}
+
+.fullscreen-preview {
+  position: fixed;
+  top: 60px;
+  left: 0;
+  width: 100vw;
+  height: calc(100vh - 60px);
+  background-color: rgba(0, 0, 0, 0);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.fullscreen-preview.show {
+  opacity: 1;
+  background-color: rgba(0, 0, 0, 0.85);
+}
+
+.fullscreen-image {
+  max-width: 90vw;
+  max-height: 90vh;
+  display: block;
+  transform: scale(0.8);
+  transition:
+    transform 0.3s ease,
+    opacity 0.3s ease;
+  opacity: 0;
+}
+
+.fullscreen-preview.show .fullscreen-image {
+  transform: scale(1);
+  opacity: 1;
+}
+
+.fullscreen-preview img {
+  cursor: pointer;
+  object-fit: contain;
 }
 
 .chat-tip {
