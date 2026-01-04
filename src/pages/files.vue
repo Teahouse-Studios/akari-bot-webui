@@ -687,6 +687,7 @@ onUnmounted(() => {
 })
 
 watch(currentPath, () => {
+  currentPage.value = 1
   showUpload.value = false
   nextTick(() => {
     scrollBreadcrumbToEnd()
