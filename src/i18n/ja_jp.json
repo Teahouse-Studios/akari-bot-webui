@@ -145,6 +145,7 @@
   "format.delimiter": "、",
   "format.quote": "「{msg}」",
   "header.button.doc": "ドキュメント",
+  "iframe.button.open_new": "新しいウィンドウで開く",
   "login.button.login": "ログイン",
   "login.checkbox.remember": "ログイン状態を記憶する",
   "login.forgot_password.text": "忘れた",

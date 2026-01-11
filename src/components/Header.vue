@@ -32,7 +32,8 @@
     <div class="help-iframe-header">
       <span>{{ $t('header.button.doc') }}</span>
       <div class="help-iframe-actions">
-        <button class="close-btn" @click="showHelp = false">×</button>
+        <button @click="iframeOpenNew" :title="$t('iframe.button.open_new')"><i class="mdi mdi-dock-window"></i></button>
+        <button class="close-btn" :title="$t('button.close')" @click="showHelp = false"><i class="mdi mdi-window-close"></i></button>
       </div>
     </div>
     <iframe ref="helpIframe" :src="helpUrl" frameborder="0" class="help-iframe-content"></iframe>
@@ -57,7 +58,6 @@ const screenWidth = ref(window.innerWidth)
 
 const showHelp = ref(false)
 const helpUrl = 'https://bot.teahouse.team'
-
 const helpIframeStyle = ref({
   top: '50px',
   left: '50%',
@@ -107,6 +107,10 @@ function stopDrag() {
   isDragging = false
   window.removeEventListener('mousemove', onDrag)
   window.removeEventListener('mouseup', stopDrag)
+}
+
+function iframeOpenNew() {
+  window.open(helpUrl, '_blank')
 }
 
 function toggleDarkMode() {
