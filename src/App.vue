@@ -47,7 +47,7 @@ const elementLocale = inject('elementLocale')
 const { t, locale } = useI18n()
 
 const loading = ref(true)
-const userVerified = ref(false)
+const userVerified = ref(null)
 const isPromptLogin = ref(false)
 const isSidebarVisible = ref(false)
 const showSuggestPasswordModal = ref(false)
@@ -58,11 +58,22 @@ const sidebarMarginLeft = computed(() => {
 })
 
 async function initializeUserVerification() {
-  if (!LocalStorageJson.getItem('token')) {
-    await checkPassword()
-  } else {
-    try {
-      const response = await axios.get('/api/verify')
+  userVerified.value = null
+
+  try {
+    if (!LocalStorageJson.getItem('token')) {
+      await checkPassword()
+    } else {
+      await verifyToken()
+    }
+  } finally {
+    loading.value = false
+  }
+}
+
+async function verifyToken() {
+  try {
+    const response = await axios.get('/api/verify')
       if (response.status === 200) {
         userVerified.value = true
       }
@@ -76,10 +87,9 @@ async function initializeUserVerification() {
           showSuggestPasswordModal.value = true
         }
       }
-    } catch (error) {
-      await checkPassword()
-      LocalStorageJson.removeItem('token')
-    }
+  } catch {
+    LocalStorageJson.removeItem('token')
+    await checkPassword()
   }
 }
 
@@ -87,14 +97,16 @@ async function checkPassword() {
   try {
     const response = await axios.post('/api/login', {})
     if (response.status === 200) {
-      userVerified.value = true
       LocalStorageJson.setItem('token', response.data.data)
+      userVerified.value = true
+
       const promptDisabled = LocalStorageJson.getItem('noPasswordPromptDisabled') === 'true'
       if (!promptDisabled) {
         showSuggestPasswordModal.value = true
       }
     }
   } catch (error) {
+    userVerified.value = false
     if (error.response?.status === 401) {
       isPromptLogin.value = true
     } else if (error.response?.status === 429) {

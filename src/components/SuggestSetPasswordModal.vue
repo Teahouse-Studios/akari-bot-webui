@@ -53,6 +53,6 @@ function goToSetting() {
     LocalStorageJson.setItem('noPasswordPromptDisabled', 'true')
   }
   dialogVisible.value = false
-  router.push({ name: 'setting' })
+  router.push({ name: '/setting' })
 }
 </script>
