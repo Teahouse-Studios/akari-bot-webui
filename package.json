@@ -26,7 +26,7 @@
     "dompurify": "^3.3.0",
     "echarts": "^6.0.0",
     "element-plus": "^2.10.7",
-    "lodash": "^4.17.21",
+    "lodash": "^4.17.23",
     "markdown-it": "^14.1.0",
     "markdown-it-link-attributes": "^4.0.1",
     "uuid": "^13.0.0",
