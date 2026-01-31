@@ -36,7 +36,7 @@ const expandedKeys = ref([])
 
 const fetchModels = async () => {
   try {
-    const res = await axios.get('/api/database/list')
+    const res = await axios.get('/api/dev/database/list')
     modelList.value = res.data.model_list.map((model) => ({ model, fields: [] }))
   } catch (e) {
     ElMessage.error(t('message.error.fetch') + e.message)
@@ -46,7 +46,7 @@ const fetchModels = async () => {
 const fetchFields = async (model) => {
   if (model.fields.length) return
   try {
-    const res = await axios.get(`/api/database/field/${model.model}`)
+    const res = await axios.get(`/api/dev/database/field/${model.model}`)
     model.fields = res.data.model_fields
   } catch (e) {
     ElMessage.error(t('message.error.fetch') + e.message)

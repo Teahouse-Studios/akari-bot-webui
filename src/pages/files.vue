@@ -202,7 +202,7 @@ import { python } from '@codemirror/lang-python'
 import { yaml } from '@codemirror/lang-yaml'
 import { oneDark } from '@codemirror/theme-one-dark'
 import axios from '@/axios.mjs'
-import { IS_DEMO } from '@/const'
+import { getIsDevelopMode } from '@/dev'
 import LocalStorageJson from '@/localStorageJson.js'
 import notFound from './notFound.vue'
 
@@ -231,8 +231,8 @@ const editorView = ref(null)
 const textEditor = ref(null)
 const previewVisible = ref(false)
 const uploadRef = ref(null)
-const uploadUrl = '/api/files/upload'
-const isDevelopMode = ref(LocalStorageJson.getItem('isDevelopMode') === 'true' && !IS_DEMO)
+const uploadUrl = '/api/dev/files/upload'
+const isDevelopMode = ref(true)
 
 const pathParts = computed(() => {
   const fullPath = currentPath.value ? `./${currentPath.value}` : '.'
@@ -272,7 +272,7 @@ const fetchFiles = async () => {
 
   loading.value = true
   try {
-    const res = await axios.get('/api/files/list', {
+    const res = await axios.get('/api/dev/files/list', {
       params: { path: currentPath.value },
     })
     allFiles.value = res.data.files || []
@@ -364,7 +364,7 @@ const createItem = async () => {
   }
 
   try {
-    await axios.post('/api/files/create', null, {
+    await axios.post('/api/dev/files/create', null, {
       params: {
         path: currentPath.value,
         name: createName.value,
@@ -460,7 +460,7 @@ const previewFile = async (name) => {
   isText.value = false
   emptyDescription.value = t('files.preview.unsupported')
   try {
-    const res = await axios.get('/api/files/preview', {
+    const res = await axios.get('/api/dev/files/preview', {
       params: { path },
       responseType: 'blob',
     })
@@ -604,7 +604,7 @@ const rename = async (row) => {
 
     const path = currentPath.value ? `${currentPath.value}/${row.name}` : row.name
 
-    await axios.post('/api/files/rename', {
+    await axios.post('/api/dev/files/rename', {
       path,
       new_name: newName,
     })
@@ -639,7 +639,7 @@ const remove = async (row) => {
 
     const path = currentPath.value ? `${currentPath.value}/${row.name}` : row.name
 
-    await axios.delete('/api/files/delete', { params: { path } })
+    await axios.delete('/api/dev/files/delete', { params: { path } })
 
     fetchFiles()
     ElMessage.success(t('files.message.delete.success'))
@@ -661,7 +661,7 @@ const remove = async (row) => {
 
 const download = async (row) => {
   const path = currentPath.value ? `${currentPath.value}/${row.name}` : row.name
-  const res = await axios.get('/api/files/download', {
+  const res = await axios.get('/api/dev/files/download', {
     params: { path },
     responseType: 'blob',
   })
@@ -673,7 +673,8 @@ const download = async (row) => {
   URL.revokeObjectURL(url)
 }
 
-onMounted(() => {
+onMounted(async () => {
+  isDevelopMode.value = await getIsDevelopMode()
   fetchFiles()
   window.addEventListener('resize', updateFullscreenLeft)
   window.addEventListener('resize', updatePreviewTextDialogWidth)

@@ -126,7 +126,7 @@ const executeSQL = async () => {
   loading.value = true
 
   try {
-    const res = await axios.post('/api/database/exec', { sql: sql.value })
+    const res = await axios.post('/api/dev/database/exec', { sql: sql.value })
     show_result.value = true
 
     if (res.data.success) {

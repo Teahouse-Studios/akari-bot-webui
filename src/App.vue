@@ -74,19 +74,19 @@ async function initializeUserVerification() {
 async function verifyToken() {
   try {
     const response = await axios.get('/api/verify')
-      if (response.status === 200) {
-        userVerified.value = true
-      }
+    if (response.status === 200) {
+      userVerified.value = true
+    }
 
-      if (IS_DEMO) {
+    if (IS_DEMO) {
+      showSuggestPasswordModal.value = true
+    } else {
+      const noPassword = response.data.no_password
+      const promptDisabled = LocalStorageJson.getItem('noPasswordPromptDisabled') === 'true'
+      if (noPassword && !promptDisabled) {
         showSuggestPasswordModal.value = true
-      } else {
-        const noPassword = response.data.no_password
-        const promptDisabled = LocalStorageJson.getItem('noPasswordPromptDisabled') === 'true'
-        if (noPassword && !promptDisabled) {
-          showSuggestPasswordModal.value = true
-        }
       }
+    }
   } catch {
     LocalStorageJson.removeItem('token')
     await checkPassword()

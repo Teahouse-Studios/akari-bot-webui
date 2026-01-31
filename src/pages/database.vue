@@ -14,14 +14,17 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import NotFound from './notFound.vue'
 import SQLConsole from '@/components/database/SQLConsole.vue'
 import DataModels from '@/components/database/DataModels.vue'
-import { IS_DEMO } from '@/const'
-import LocalStorageJson from '@/localStorageJson.js'
+import { getIsDevelopMode } from '@/dev'
 
-const isDevelopMode = ref(LocalStorageJson.getItem('isDevelopMode') === 'true' && !IS_DEMO)
+const isDevelopMode = ref(true)
+
+onMounted(async () => {
+  isDevelopMode.value = await getIsDevelopMode()
+})
 </script>
 
 <style scoped>

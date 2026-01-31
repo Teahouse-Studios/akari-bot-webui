@@ -4,7 +4,7 @@
       <el-button class="menu-button" @click="switchSidebar" v-if="screenWidth < 1024">
         <i class="mdi mdi-menu"></i>
       </el-button>
-      <div class="logo">
+      <div class="logo" @click="handleLogoClick">
         <img src="@/assets/akaribot_logo.png" alt="Logo" class="logo-image" />
         <span class="web-ui-text" v-if="screenWidth >= 384">WebUI</span>
       </div>
@@ -32,8 +32,12 @@
     <div class="help-iframe-header">
       <span>{{ $t('header.button.doc') }}</span>
       <div class="help-iframe-actions">
-        <button @click="iframeOpenNew" :title="$t('iframe.button.open_new')"><i class="mdi mdi-dock-window"></i></button>
-        <button class="close-btn" :title="$t('button.close')" @click="showHelp = false"><i class="mdi mdi-window-close"></i></button>
+        <button @click="iframeOpenNew" :title="$t('iframe.button.open_new')">
+          <i class="mdi mdi-dock-window"></i>
+        </button>
+        <button class="close-btn" :title="$t('button.close')" @click="showHelp = false">
+          <i class="mdi mdi-window-close"></i>
+        </button>
       </div>
     </div>
     <iframe ref="helpIframe" :src="helpUrl" frameborder="0" class="help-iframe-content"></iframe>
@@ -43,6 +47,8 @@
 <script setup>
 import LocalStorageJson from '@/localStorageJson.js'
 import { ref, onMounted, onBeforeUnmount, defineProps, defineEmits } from 'vue'
+import { ElMessage } from 'element-plus'
+import { useI18n } from 'vue-i18n'
 
 const props = defineProps({
   userVerified: {
@@ -74,6 +80,36 @@ let initialLeft = 0
 
 function updateScreenWidth() {
   screenWidth.value = window.innerWidth
+}
+
+const { t } = useI18n()
+
+const devClickCount = ref(0)
+
+function handleLogoClick() {
+  if (!props.userVerified) {
+    return
+  }
+
+  const current = LocalStorageJson.getItem('showDevelopMode') === 'true'
+  if (current) {
+    ElMessage.info(t('setting.develop_mode.message.info.already'))
+    return
+  }
+
+  devClickCount.value++
+  const remainingClicks = 7 - devClickCount.value
+
+  if (remainingClicks > 0 && remainingClicks < 6) {
+    ElMessage.info(t('setting.develop_mode.message.info.remain', { remain: remainingClicks }))
+  }
+
+  if (devClickCount.value >= 7) {
+    LocalStorageJson.setItem('showDevelopMode', 'true')
+    ElMessage.success(t('setting.develop_mode.message.success'))
+    devClickCount.value = 0
+    window.dispatchEvent(new Event('develop-mode-change'))
+  }
 }
 
 function goToHelp() {

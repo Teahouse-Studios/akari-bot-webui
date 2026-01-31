@@ -46,71 +46,15 @@
       </el-button>
     </div>
 
-    <span class="footer-text">
-      Made with love❤️ and
-      <span class="python-text" :class="{ disabled: !showDevelopMode }" @click="handleDevClick">
-        Python🐍 </span
-      >.
-    </span>
+    <span class="footer-text"> Made with love❤️ and Python🐍. </span>
   </div>
 </template>
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from 'vue'
-import { useI18n } from 'vue-i18n'
-import { ElMessage } from 'element-plus'
-import { IS_DEMO } from '@/const'
-import LocalStorageJson from '@/localStorageJson.js'
-
-const { t } = useI18n()
-
-const devClickCount = ref(0)
-const showDevelopMode = ref(LocalStorageJson.getItem('showDevelopMode') === 'true' && !IS_DEMO)
-const demoErrorKey = ref('')
-
-const generateDemoErrorKey = () => {
-  const demoErrorIndex = Math.floor(Math.random() * 7) + 1
-  demoErrorKey.value = `setting.develop_mode.message.error.demo.${demoErrorIndex}`
-}
-
-const handleDevClick = () => {
-  if (IS_DEMO) {
-    ElMessage.error(t(demoErrorKey.value))
-    return
-  }
-
-  if (showDevelopMode.value) {
-    ElMessage.info(t('setting.develop_mode.message.info.already'))
-    return
-  }
-
-  devClickCount.value++
-  const remainingClicks = 7 - devClickCount.value
-
-  if (remainingClicks > 0 && remainingClicks < 6) {
-    ElMessage.info(t('setting.develop_mode.message.info.remain', { remain: remainingClicks }))
-  }
-
-  if (devClickCount.value >= 7) {
-    LocalStorageJson.setItem('showDevelopMode', 'true')
-    showDevelopMode.value = true
-    ElMessage.success(t('setting.develop_mode.message.success'))
-    devClickCount.value = 0
-  }
-}
-
 const goToRepo = () => window.open('https://github.com/Teahouse-Studios/akari-bot', '_blank')
 const goToWebUIRepo = () =>
   window.open('https://github.com/Teahouse-Studios/akari-bot-webui', '_blank')
 const goToI18N = () => window.open('https://crowdin.com/project/akari-bot', '_blank')
 const goToSponsor = () => window.open('https://afdian.com/a/teahouse', '_blank')
-
-onMounted(() => {
-  if (IS_DEMO) generateDemoErrorKey()
-})
-
-onBeforeUnmount(() => {
-  demoErrorKey.value = ''
-})
 </script>
 
 <style scoped>
@@ -145,11 +89,6 @@ onBeforeUnmount(() => {
   display: block;
   margin-top: 60px;
   font-size: 14px;
-}
-
-.python-text.disabled {
-  cursor: default;
-  user-select: none;
 }
 
 .repo-buttons {

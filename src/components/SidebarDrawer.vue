@@ -54,10 +54,9 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue'
-import LocalStorageJson from '@/localStorageJson.js'
+import { ref, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { IS_DEMO } from '@/const'
+import { getIsDevelopMode } from '@/dev'
 
 const emit = defineEmits(['update:modelValue'])
 
@@ -65,7 +64,7 @@ const route = useRoute()
 const router = useRouter()
 
 const activeMenu = ref(route.name)
-const isDevelopMode = ref(LocalStorageJson.getItem('isDevelopMode') === 'true' && !IS_DEMO)
+const isDevelopMode = ref(false)
 
 function getActiveMenuFromRoute() {
   return route.name
@@ -82,6 +81,10 @@ function handleSelect(index) {
   router.push({ name: index })
   emit('update:modelValue', false)
 }
+
+onMounted(async () => {
+  isDevelopMode.value = await getIsDevelopMode()
+})
 
 watch(
   () => route.name,
