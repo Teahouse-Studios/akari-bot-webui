@@ -7,25 +7,32 @@
       class="lang-select"
       style="width: 100px; margin-right: 10px"
     >
-      <el-option label="简体中文" value="zh_cn" />
-      <el-option label="繁體中文" value="zh_tw" />
-      <el-option label="English" value="en_us" />
-      <el-option label="日本語" value="ja_jp" />
+      <el-option
+        v-for="lang in langList"
+        :key="lang"
+        :value="lang"
+        :label="$t('language', {}, { locale: lang })"
+      />
     </el-select>
   </div>
 </template>
 
 <script setup>
-import { ref, inject } from 'vue'
+import { ref, computed, inject } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { elementPlusLangMap } from '@/element-plus-langmap.js'
 import LocalStorageJson from '@/localStorageJson.js'
 
 const { locale } = useI18n()
-
 const currentLang = ref(LocalStorageJson.getItem('language') || 'zh_cn')
-
 const elementLocale = inject('elementLocale')
+
+const langModules = import.meta.glob('@/i18n/*.json')
+const langList = computed(() =>
+  Object.keys(langModules).map(path =>
+    path.match(/\/([^/]+)\.json$/)[1]
+  )
+)
 
 function changeLanguage(lang) {
   currentLang.value = lang
@@ -34,6 +41,7 @@ function changeLanguage(lang) {
   if (elementLocale) {
     elementLocale.lang = elementPlusLangMap[lang]
   }
+  window.location.reload()
 }
 </script>
 
