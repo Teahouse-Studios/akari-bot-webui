@@ -347,6 +347,10 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
+.el-card {
+  line-height: 1;
+}
+
 .fixed-card {
   height: 450px;
   display: flex;
