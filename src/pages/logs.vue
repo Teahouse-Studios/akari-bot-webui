@@ -45,7 +45,15 @@
     <div class="log-viewer" ref="logViewer">
       <div v-for="(logLine, index) in visibleLogs" :key="index">
         <span v-for="(part, partIndex) in logLine" :key="partIndex" :style="part.style">
-          {{ part.text }}
+          <template v-for="(seg, sIndex) in splitTextIntoSegments(part.text)" :key="sIndex">
+            <span v-if="seg.type === 'text'">{{ seg.text }}</span>
+            <a
+              v-else
+              class="external-link"
+              @click.prevent="confirmExternal(seg.url)"
+              >{{ seg.text }}</a
+            >
+          </template>
         </span>
       </div>
 
@@ -64,6 +72,7 @@ import { ElMessage } from 'element-plus'
 import { debounce } from 'lodash'
 import { ref, onMounted, onBeforeUnmount, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { confirmExternalLink } from '@/components/confirmExternalLink.js'
 
 const { t } = useI18n()
 
@@ -190,6 +199,51 @@ function formatLogLine(line) {
   }
 
   return [{ text: line, style: { color: '#fff' } }]
+}
+
+function splitTextIntoSegments(text) {
+  const urlRegex = /((?:https?:\/\/|www\.)[^\s\[\]]+)/gi
+  const segments = []
+  let lastIndex = 0
+  let match
+
+  const pairs = {
+    '(': ')',
+    '[': ']',
+    '{': '}',
+    "'": "'",
+    '"': '"'
+  }
+
+  while ((match = urlRegex.exec(text)) !== null) {
+    let idx = match.index
+    let rawUrl = match[0]
+
+    const prevChar = text[idx - 1]
+    const expectedEndChar = pairs[prevChar]
+
+    if (expectedEndChar && rawUrl.endsWith(expectedEndChar)) {
+      rawUrl = rawUrl.slice(0, -1)
+      urlRegex.lastIndex -= 1
+    }
+    if (idx > lastIndex) {
+      segments.push({ type: 'text', text: text.slice(lastIndex, idx) })
+    }
+
+    let url = rawUrl
+    if (!/^https?:\/\//i.test(url)) url = 'https://' + url
+    segments.push({ type: 'link', text: rawUrl, url })
+    lastIndex = idx + rawUrl.length
+  }
+  if (lastIndex < text.length) {
+    segments.push({ type: 'text', text: text.slice(lastIndex) })
+  }
+  return segments
+}
+
+
+function confirmExternal(url) {
+  confirmExternalLink(url, t)
 }
 
 const updateLogs = debounce(() => {
@@ -460,5 +514,15 @@ onBeforeUnmount(() => {
 .log-viewer-placeholder {
   color: #636363;
   white-space: normal;
+}
+
+.external-link {
+  color: inherit;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.external-link:hover {
+  text-decoration: underline;
 }
 </style>

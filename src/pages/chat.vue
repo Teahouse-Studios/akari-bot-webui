@@ -188,6 +188,7 @@ import { useI18n } from 'vue-i18n'
 import EmojiPicker from 'vue3-emoji-picker'
 import 'vue3-emoji-picker/css'
 import DOMPurify from 'dompurify'
+import { confirmExternalLink } from '@/components/confirmExternalLink.js'
 // import axios from '@/axios.mjs'
 import { IS_DEMO } from '@/const'
 import LocalStorageJson from '@/localStorageJson.js'
@@ -633,29 +634,11 @@ const showImagePreview = (src) => {
   })
 }
 
-const confirmExternalLink = (url) => {
-  ElMessageBox.confirm(
-    t('chat.external_link.confirm.message', { url }),
-    t('chat.external_link.confirm.title'),
-    {
-      confirmButtonText: t('yes'),
-      cancelButtonText: t('no'),
-      type: 'warning',
-    },
-  )
-    .then(() => {
-      window.open(url, '_blank')
-    })
-    .catch(() => {
-      // empty
-    })
-}
-
 const handleMarkdownClick = (event) => {
   const target = event.target
   if (target.tagName === 'A') {
     event.preventDefault()
-    confirmExternalLink(target.href)
+    confirmExternalLink(target.href, t)
   } else if (target.tagName === 'IMG') {
     showImagePreview(target.src)
   }
