@@ -272,13 +272,25 @@ const resizeChart = async () => {
   if (chartInstance.value) chartInstance.value.resize()
 }
 
-const fetchAnalyticsData = async (days) => {
+const fetchAnalyticsData = async (days, noCache = false) => {
   loading.value = true
+
+  const headers = {}
+  if (noCache) {
+    Object.assign(headers, {
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      'Pragma': 'no-cache',
+      'Expires': '0'
+    })
+  }
+
   try {
     const response = await axios.get('/api/analytics', {
+      headers,
       signal: abortController.signal,
       params: { days },
     })
+
     processData(response.data, days)
     renderChart()
   } catch (error) {

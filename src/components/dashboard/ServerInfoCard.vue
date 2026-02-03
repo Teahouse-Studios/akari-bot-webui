@@ -246,10 +246,21 @@ function checkOverflow() {
   })
 }
 
-async function fetchServerInfoData() {
+async function fetchServerInfoData(noCache = false) {
   loading.value = true
+
+  const headers = {}
+  if (noCache) {
+    Object.assign(headers, {
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      'Pragma': 'no-cache',
+      'Expires': '0'
+    })
+  }
+
   try {
     const response = await axios.get('/api/server-info', {
+      headers,
       signal: abortController.signal,
     })
     const data = response.data

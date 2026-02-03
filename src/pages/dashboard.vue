@@ -41,12 +41,12 @@ async function refreshData() {
     const tasks = []
 
     if (serverInfoCard.value) {
-      tasks.push(serverInfoCard.value.fetchServerInfoData())
+      tasks.push(serverInfoCard.value.fetchServerInfoData(true))
     }
 
     if (analyticsCard.value) {
       const selectedDays = analyticsCard.value.selectedDays
-      tasks.push(analyticsCard.value.fetchAnalyticsData(selectedDays))
+      tasks.push(analyticsCard.value.fetchAnalyticsData(selectedDays, true))
     }
 
     await Promise.all(tasks)
