@@ -46,7 +46,7 @@
 
 <script setup>
 import LocalStorageJson from '@/localStorageJson.js'
-import { ref, onMounted, onBeforeUnmount, defineProps, defineEmits } from 'vue'
+import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 

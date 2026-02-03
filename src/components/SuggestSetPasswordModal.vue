@@ -19,7 +19,7 @@
 </template>
 
 <script setup>
-import { ref, computed, defineProps, defineEmits } from 'vue'
+import { ref, computed } from 'vue'
 import LocalStorageJson from '@/localStorageJson.js'
 import { useRouter } from 'vue-router'
 
