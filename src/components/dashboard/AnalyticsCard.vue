@@ -1,7 +1,7 @@
 <template>
-  <el-row :gutter="20">
+  <el-row :gutter="20" class="responsive-row">
     <el-col :span="16" :xs="24">
-      <el-card :body-style="{ height: '360px' }" shadow="never" v-loading="loading">
+      <el-card class="fixed-card" shadow="never" v-loading="loading">
         <div class="card-header">
           <h3>
             <i class="mdi mdi-chart-line"></i>
@@ -57,7 +57,7 @@
       </el-card>
     </el-col>
     <el-col :span="8" :xs="24">
-      <el-card :body-style="{ height: '360px' }" shadow="never" v-loading="loading">
+      <el-card class="fixed-card" shadow="never" v-loading="loading">
         <div class="card-header">
           <h3>
             <i class="mdi mdi-format-list-numbered"></i>
@@ -347,14 +347,22 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
-h3 {
-  cursor: default;
+.fixed-card {
+  height: 450px;
+  display: flex;
+  flex-direction: column;
 }
 
-.el-card {
-  margin-bottom: 20px;
-  line-height: 1;
-  white-space: nowrap;
+.fixed-card .el-card__body {
+  flex: 1;
+}
+
+.responsive-row {
+  row-gap: 20px;
+}
+
+h3 {
+  cursor: default;
 }
 
 .card-header {

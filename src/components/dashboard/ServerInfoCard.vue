@@ -1,60 +1,60 @@
 <template>
-  <el-row :gutter="20">
+  <el-row :gutter="20" class="responsive-row">
     <el-col :span="10" :xs="24">
-      <el-card :body-style="{ height: '190px' }" shadow="never" v-loading="loading">
-        <h3>
-          <i class="mdi mdi-robot-outline"></i>
-          {{ $t('dashboard.server_info.bot.title') }}
-        </h3>
-        <p>
-          <strong class="data-title">{{
-            $t('dashboard.server_info.bot.label.python_version')
-          }}</strong
-          ><span class="data-text">{{ bot.python_version || '-' }}</span>
-        </p>
-        <p>
-          <strong class="data-title">{{ $t('dashboard.server_info.bot.label.bot_version') }}</strong
-          ><span class="data-text">{{ formatBotVersion(bot.version) }}</span>
-        </p>
-        <p>
-          <strong class="data-title">{{
-            $t('dashboard.server_info.bot.label.web_render_status')
-          }}</strong
-          ><span class="data-text">{{ bot.web_render_status ? $t('true') : $t('false') }}</span>
-        </p>
-        <p>
-          <strong class="data-title">{{
-            $t('dashboard.server_info.bot.label.running_time')
-          }}</strong
-          ><span class="data-text">{{ formatRunningTime(bot.running_time || 0) }}</span>
-        </p>
-      </el-card>
-      <el-card :body-style="{ height: '190px' }" shadow="never" v-loading="loading">
-        <h3>
-          <i class="mdi mdi-laptop"></i>
-          {{ $t('dashboard.server_info.system.title') }}
-        </h3>
-        <p>
-          <strong class="data-title">{{ $t('dashboard.server_info.system.label.machine') }}</strong
-          ><span class="data-text"
-            >{{ os.system || '-' }} {{ os.machine ? '-' : '' }} {{ os.machine || '' }}</span
-          >
-        </p>
-        <p>
-          <strong class="data-title">{{ $t('dashboard.server_info.system.label.version') }}</strong
-          ><span class="data-text">{{ os.version || '-' }}</span>
-        </p>
-        <p>
-          <strong class="data-title">{{
-            $t('dashboard.server_info.system.label.boot_time')
-          }}</strong
-          ><span class="data-text">{{ formatTime(os.boot_time || 0) }}</span>
-        </p>
-      </el-card>
+        <el-card class="left-top-card" shadow="never" v-loading="loading">
+          <h3>
+            <i class="mdi mdi-robot-outline"></i>
+            {{ $t('dashboard.server_info.bot.title') }}
+          </h3>
+          <p>
+            <strong class="data-title">{{
+              $t('dashboard.server_info.bot.label.python_version')
+            }}</strong
+            ><span class="data-text">{{ bot.python_version || '-' }}</span>
+          </p>
+          <p>
+            <strong class="data-title">{{ $t('dashboard.server_info.bot.label.bot_version') }}</strong
+            ><span class="data-text">{{ formatBotVersion(bot.version) }}</span>
+          </p>
+          <p>
+            <strong class="data-title">{{
+              $t('dashboard.server_info.bot.label.web_render_status')
+            }}</strong
+            ><span class="data-text">{{ bot.web_render_status ? $t('true') : $t('false') }}</span>
+          </p>
+          <p>
+            <strong class="data-title">{{
+              $t('dashboard.server_info.bot.label.running_time')
+            }}</strong
+            ><span class="data-text">{{ formatRunningTime(bot.running_time || 0) }}</span>
+          </p>
+        </el-card>
+        <el-card class="left-bottom-card" shadow="never" v-loading="loading">
+          <h3>
+            <i class="mdi mdi-laptop"></i>
+            {{ $t('dashboard.server_info.system.title') }}
+          </h3>
+          <p>
+            <strong class="data-title">{{ $t('dashboard.server_info.system.label.machine') }}</strong
+            ><span class="data-text"
+              >{{ os.system || '-' }} {{ os.machine ? '-' : '' }} {{ os.machine || '' }}</span
+            >
+          </p>
+          <p>
+            <strong class="data-title">{{ $t('dashboard.server_info.system.label.version') }}</strong
+            ><span class="data-text">{{ os.version || '-' }}</span>
+          </p>
+          <p>
+            <strong class="data-title">{{
+              $t('dashboard.server_info.system.label.boot_time')
+            }}</strong
+            ><span class="data-text">{{ formatTime(os.boot_time || 0) }}</span>
+          </p>
+        </el-card>
     </el-col>
 
     <el-col :span="14" :xs="24">
-      <el-card :body-style="{ height: '440px' }" shadow="never" v-loading="loading">
+      <el-card class="right-card" shadow="never" v-loading="loading">
         <h3>
           <i class="mdi mdi-memory"></i>
           {{ $t('dashboard.server_info.cpu.title') }}
@@ -303,8 +303,26 @@ h3 {
 }
 
 .el-card {
-  margin-bottom: 20px;
   line-height: 1;
+  margin-bottom: 20px;
+}
+
+.left-top-card {
+  height: 240px;
+  display: flex;
+  flex-direction: column;
+}
+
+.left-bottom-card {
+  height: 220px;
+  display: flex;
+  flex-direction: column;
+}
+
+.right-card {
+  height: 482px;
+  display: flex;
+  flex-direction: column;
 }
 
 .data-text {
