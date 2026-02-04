@@ -1,7 +1,7 @@
 <template>
   <div class="container">
     <!-- TODO: 压缩 -->
-    <img width="300" src="@/assets/akaribot_logo.png" alt="Akaribot" />
+    <img width="400" src="@/assets/akaribot_logo.png" alt="Akaribot" />
     <h1 class="title">小可 · AkariBot</h1>
     <span class="quote">{{ $t('about.slogan') }}</span>
     <span class="text">
