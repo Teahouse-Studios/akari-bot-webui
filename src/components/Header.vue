@@ -77,6 +77,8 @@ let dragStartX = 0
 let dragStartY = 0
 let initialTop = 0
 let initialLeft = 0
+let mediaQuery = null
+let mediaListener = null
 
 function updateScreenWidth() {
   screenWidth.value = window.innerWidth
@@ -153,6 +155,15 @@ function toggleDarkMode() {
   isDarkMode.value = !isDarkMode.value
   document.documentElement.classList.toggle('dark', isDarkMode.value)
   LocalStorageJson.setItem('isDarkMode', JSON.stringify(isDarkMode.value))
+  if (mediaQuery) {
+    if (mediaQuery.removeEventListener) {
+      mediaQuery.removeEventListener('change', mediaListener)
+    } else {
+      mediaQuery.removeListener(mediaListener)
+    }
+    mediaQuery = null
+    mediaListener = null
+  }
 }
 
 function switchSidebar() {
@@ -165,12 +176,34 @@ onMounted(() => {
   if (savedTheme !== null) {
     isDarkMode.value = JSON.parse(savedTheme)
     document.documentElement.classList.toggle('dark', isDarkMode.value)
+  } else {
+    mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
+    isDarkMode.value = mediaQuery.matches
+    document.documentElement.classList.toggle('dark', isDarkMode.value)
+    mediaListener = (e) => {
+      if (LocalStorageJson.getItem('isDarkMode') === null) {
+        isDarkMode.value = e.matches
+        document.documentElement.classList.toggle('dark', isDarkMode.value)
+      }
+    }
+    if (mediaQuery.addEventListener) {
+      mediaQuery.addEventListener('change', mediaListener)
+    } else {
+      mediaQuery.addListener(mediaListener)
+    }
   }
   window.addEventListener('resize', updateScreenWidth)
 })
 
 onBeforeUnmount(() => {
   window.removeEventListener('resize', updateScreenWidth)
+  if (mediaQuery) {
+    if (mediaQuery.removeEventListener) {
+      mediaQuery.removeEventListener('change', mediaListener)
+    } else {
+      mediaQuery.removeListener(mediaListener)
+    }
+  }
 })
 </script>
 
