@@ -202,10 +202,10 @@ function formatLogLine(line) {
 }
 
 function splitTextIntoSegments(text) {
-  const urlRegex = /((?:https?:\/\/|www\.)[^\s\[\]]+)/gi
+  const urlRegex = /((?:https?:\/\/|www\.)[^\s[\]]+)/gi
   const segments = []
   let lastIndex = 0
-  let match
+  let match = null
 
   const pairs = {
     '(': ')',
@@ -216,7 +216,7 @@ function splitTextIntoSegments(text) {
   }
 
   while ((match = urlRegex.exec(text)) !== null) {
-    let idx = match.index
+    const idx = match.index
     let rawUrl = match[0]
 
     const prevChar = text[idx - 1]
@@ -231,7 +231,7 @@ function splitTextIntoSegments(text) {
     }
 
     let url = rawUrl
-    if (!/^https?:\/\//i.test(url)) url = 'https://' + url
+    if (!/^https?:\/\//i.test(url)) url = `https://${url}`
     segments.push({ type: 'link', text: rawUrl, url })
     lastIndex = idx + rawUrl.length
   }
