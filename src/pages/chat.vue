@@ -69,7 +69,7 @@
         :data-id="msg.id"
       >
         <div class="chat-message" :class="msg.from">
-          <div v-html="msg.html" @click="handleMarkdownClick"></div>
+          <SafeHtml :html="msg.html" @click="handleMarkdownClick" class="chat-message-content" />
           <div v-if="debug" class="debug-uuid">{{ msg.id }}</div>
         </div>
         <div class="chat-reactions">
@@ -180,7 +180,8 @@
 </template>
 
 <script setup>
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { ref, computed, onMounted, onBeforeUnmount, nextTick, watch, h, useAttrs } from 'vue'
+import { ElMessage } from 'element-plus'
 import MarkdownIt from 'markdown-it'
 import linkAttributes from 'markdown-it-link-attributes'
 import { v4 as uuidv4 } from 'uuid'
@@ -189,11 +190,8 @@ import EmojiPicker from 'vue3-emoji-picker'
 import 'vue3-emoji-picker/css'
 import DOMPurify from 'dompurify'
 import { confirmExternalLink } from '@/components/confirmExternalLink.js'
-// import axios from '@/axios.mjs'
 import { IS_DEMO } from '@/const'
 import LocalStorageJson from '@/localStorageJson.js'
-
-import { ref, computed, onMounted, onBeforeUnmount, nextTick } from 'vue'
 
 const { t } = useI18n()
 const inputText = ref('')
@@ -642,6 +640,60 @@ const handleMarkdownClick = (event) => {
   } else if (target.tagName === 'IMG') {
     showImagePreview(target.src)
   }
+}
+
+const SafeHtml = {
+  props: { html: { type: String, default: '' } },
+  emits: ['click'],
+  setup(props, { emit }) {
+    const root = ref(null)
+    const attrs = useAttrs()
+
+    const sanitizeAndSet = (val) => {
+      if (!root.value) return
+      const clean = DOMPurify.sanitize(val || '', {
+        ALLOWED_TAGS: [
+          'b',
+          'i',
+          'em',
+          'strong',
+          'a',
+          'code',
+          'pre',
+          'blockquote',
+          'br',
+          'img',
+          'p',
+          'ul',
+          'ol',
+          'li',
+          'h1',
+          'h2',
+          'h3',
+          'h4',
+          'h5',
+          'h6',
+        ],
+        ALLOWED_ATTR: ['href', 'target', 'rel', 'src', 'class', 'alt', 'title'],
+      })
+      root.value.innerHTML = clean
+    }
+
+    onMounted(() => {
+      sanitizeAndSet(props.html)
+    })
+
+    watch(
+      () => props.html,
+      (v) => {
+        nextTick(() => sanitizeAndSet(v))
+      },
+    )
+
+    const onClick = (e) => emit('click', e)
+
+    return () => h('div', { ref: root, onClick, ...attrs })
+  },
 }
 
 const openEmojiPicker = (msg) => {
