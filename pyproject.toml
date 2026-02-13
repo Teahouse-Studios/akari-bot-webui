@@ -3,23 +3,29 @@ name = "akari-bot-webui"
 version = "0.3.7"
 description = ""
 authors = [
-    {name = "DoroWolf",email = "dorowolf314@gmail.com"},
-    {name = "_LittleC_",email = "i@ltlec.com"},
-    {name = "OasisAkari",email = "oasisakari@gmail.com"}
+    { name = "DoroWolf", email = "dorowolf314@gmail.com" },
+    { name = "_LittleC_", email = "i@ltlec.com" },
+    { name = "OasisAkari", email = "oasisakari@gmail.com" },
 ]
 readme = "README.md"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
 requires-python = ">=3.12"
-dependencies = [
-]
+license = "AGPL-3.0"
+dependencies = []
 
-[tool.poetry]
-package-mode = true
-packages = [
-    { include = "akari_bot_webui" },
-]
-include = ["akari_bot_webui/dist"]
-
+[project.urls]
+Homepage = "https://github.com/Teahouse-Studios/akari-bot-webui"
+Issues = "https://github.com/Teahouse-Studios/akari-bot-webui/issues"
 
 [build-system]
-requires = ["poetry-core>=2.0.0,<3.0.0"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.sdist]
+include = ["/akari_bot_webui"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["akari_bot_webui"]
