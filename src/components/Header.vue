@@ -11,7 +11,13 @@
     </div>
 
     <div class="header-right">
-      <el-button class="help-button" @click="goToHelp">{{ $t('header.button.doc') }}</el-button>
+      <el-button
+        v-if="hasHelp"
+        class="help-button"
+        @click="goToHelp"
+      >
+        {{ $t('header.button.doc') }}
+      </el-button>
       <el-button class="theme-toggle-button" @click="toggleDarkMode">
         <i :class="isDarkMode ? 'mdi mdi-weather-sunny' : 'mdi mdi-weather-night'"></i>
       </el-button>
@@ -45,9 +51,10 @@
 </template>
 
 <script setup>
-import LocalStorageJson from '@/localStorageJson.js'
 import { ref, onMounted, onBeforeUnmount } from 'vue'
+import axios from '@/axios.mjs'
 import { ElMessage } from 'element-plus'
+import LocalStorageJson from '@/localStorageJson.js'
 import { useI18n } from 'vue-i18n'
 
 const props = defineProps({
@@ -62,8 +69,10 @@ const emit = defineEmits(['toggle-sidebar'])
 const isDarkMode = ref(false)
 const screenWidth = ref(window.innerWidth)
 
+const helpUrl = ref('')
+const hasHelp = ref(false)
 const showHelp = ref(false)
-const helpUrl = 'https://bot.teahouse.team'
+
 const helpIframeStyle = ref({
   top: '50px',
   left: '50%',
@@ -111,6 +120,15 @@ function handleLogoClick() {
     ElMessage.success(t('setting.develop_mode.message.success'))
     devClickCount.value = 0
     window.dispatchEvent(new Event('develop-mode-change'))
+  }
+}
+
+function isValidUrl(str) {
+  try {
+    const url = new URL(str)
+    return url.protocol === 'http:' || url.protocol === 'https:'
+  } catch (_) {
+    return false
   }
 }
 
@@ -171,7 +189,22 @@ function switchSidebar() {
   emit('toggle-sidebar')
 }
 
-onMounted(() => {
+onMounted(async () => {
+  try {
+    const resp = await fetch('/api/init')
+    const data = await resp.json()
+
+    if (data?.help_url && isValidUrl(data.help_url)) {
+      helpUrl.value = data.help_url
+      hasHelp.value = true
+    } else {
+      hasHelp.value = false
+    }
+  } catch (e) {
+    console.error('Failed to load init config:', e)
+    hasHelp.value = false
+  }
+
   const savedTheme = LocalStorageJson.getItem('isDarkMode')
   if (savedTheme !== null) {
     isDarkMode.value = JSON.parse(savedTheme)
@@ -192,6 +225,7 @@ onMounted(() => {
       mediaQuery.addListener(mediaListener)
     }
   }
+
   window.addEventListener('resize', updateScreenWidth)
 })
 
