@@ -392,8 +392,6 @@ const parseTomlWithComments = (input) => {
         if (hashIdx !== -1) {
           valueStr = valueComment.slice(0, hashIdx).trim()
           comment = valueComment.slice(hashIdx + 1).trim()
-        } else {
-          valueStr = valueComment
         }
         let value = null,
           type = null

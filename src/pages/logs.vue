@@ -156,7 +156,7 @@ function formatLogLine(line) {
   const logPlatformColor = '#11a8cd'
   const logModulesColor = '#e5e510'
   const logDatetimeColor = '#0dbc79'
-  let logContentColor = '#fff'
+  let logContentColor = '#ffffff'
   let logBackgroundColor = 'transparent'
 
   if (match) {
@@ -167,7 +167,6 @@ function formatLogLine(line) {
         logContentColor = '#3b8ec9'
         break
       case 'INFO':
-        logContentColor = '#ffffff'
         break
       case 'SUCCESS':
         logContentColor = '#23d18b'
@@ -179,11 +178,9 @@ function formatLogLine(line) {
         logContentColor = '#f14c4c'
         break
       case 'CRITICAL':
-        logContentColor = '#ffffff'
         logBackgroundColor = '#cd3131'
         break
       default:
-        logContentColor = '#ffffff'
         break
     }
 
