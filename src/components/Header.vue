@@ -133,7 +133,7 @@ function isValidUrl(str) {
 
 function goToHelp() {
   if (screenWidth.value < 400) {
-    window.open(helpUrl, '_blank')
+    window.open(helpUrl.value, '_blank')
   } else {
     showHelp.value = true
   }
