@@ -333,13 +333,13 @@ onBeforeUnmount(() => {
   color: #aaa;
 }
 
-.theme-toggle-button {
-  font-size: 22px;
-  padding: 6px;
-  background-color: #2e2e2e;
-  color: white;
-  border: none;
-}
+
+
+
+
+
+
+
 
 .theme-toggle-button:hover {
   background-color: #666;
