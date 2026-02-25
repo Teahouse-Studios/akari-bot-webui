@@ -165,7 +165,7 @@ function stopDrag() {
 }
 
 function iframeOpenNew() {
-  window.open(helpUrl, '_blank')
+  window.open(helpUrl.value, '_blank')
 }
 
 function toggleDarkMode() {
