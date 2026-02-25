@@ -282,8 +282,11 @@ onBeforeUnmount(() => {
 }
 
 .theme-toggle-button {
+  font-size: 22px;
+  padding: 6px;
   background-color: #2e2e2e;
   color: white;
+  border: none;
 }
 
 .dark .theme-toggle {
@@ -332,14 +335,6 @@ onBeforeUnmount(() => {
 .dark .web-ui-text {
   color: #aaa;
 }
-
-
-
-
-
-
-
-
 
 .theme-toggle-button:hover {
   background-color: #666;
