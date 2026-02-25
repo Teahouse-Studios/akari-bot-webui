@@ -52,7 +52,6 @@
 
 <script setup>
 import { ref, onMounted, onBeforeUnmount } from 'vue'
-import axios from '@/axios.mjs'
 import { ElMessage } from 'element-plus'
 import LocalStorageJson from '@/localStorageJson.js'
 import { useI18n } from 'vue-i18n'

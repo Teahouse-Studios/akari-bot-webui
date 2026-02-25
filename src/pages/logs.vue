@@ -243,6 +243,7 @@ function confirmExternal(url) {
   confirmExternalLink(url, t)
 }
 
+const MAX_VISIBLE_LOGS = 16384
 const updateLogs = debounce(() => {
   const rawLines = logData.value.split('\n')
   let buffer = ''
@@ -270,13 +271,15 @@ const updateLogs = debounce(() => {
     )
   })
 
-  if (visibleLogs.value.length > 16384) {
-    visibleLogs.value = visibleLogs.value.slice(-16384)
+  if (visibleLogs.value.length > MAX_VISIBLE_LOGS) {
+    visibleLogs.value = visibleLogs.value.slice(-MAX_VISIBLE_LOGS)
   }
 
   if (autoScroll.value && logViewer.value) {
-    setTimeout(() => {
-      logViewer.value.scrollTop = logViewer.value.scrollHeight
+    setTimeout(() => {	
+      if (logViewer.value) {
+        logViewer.value.scrollTop = logViewer.value.scrollHeight
+      }
     }, 200)
   }
 }, 500)
@@ -307,7 +310,6 @@ function handleSearch() {
 watch(logData, updateLogs)
 
 onMounted(() => {
-  logViewer.value = document.querySelector('#logViewer')
   authenticateToken()
 })
 
