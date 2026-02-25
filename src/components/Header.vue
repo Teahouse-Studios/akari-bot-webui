@@ -133,7 +133,7 @@ function isValidUrl(str) {
 
 function goToHelp() {
   if (screenWidth.value < 400) {
-    window.open(helpUrl, '_blank')
+    window.open(helpUrl.value, '_blank')
   } else {
     showHelp.value = true
   }
@@ -165,7 +165,7 @@ function stopDrag() {
 }
 
 function iframeOpenNew() {
-  window.open(helpUrl, '_blank')
+  window.open(helpUrl.value, '_blank')
 }
 
 function toggleDarkMode() {
@@ -333,13 +333,13 @@ onBeforeUnmount(() => {
   color: #aaa;
 }
 
-.theme-toggle-button {
-  font-size: 22px;
-  padding: 6px;
-  background-color: #2e2e2e;
-  color: white;
-  border: none;
-}
+
+
+
+
+
+
+
 
 .theme-toggle-button:hover {
   background-color: #666;
