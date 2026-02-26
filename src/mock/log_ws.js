@@ -4,7 +4,7 @@ export default function mockLogWebSocket(onMessage) {
     '           _              _   ____        _',
     '     /\\   | |            (_) |  _ \\      | |',
     '    /  \\  | | ____ _ _ __ _  | |_) | ___ | |_',
-    '   / /\\ \\ | |/ / _` | \'__| | |  _ < / _ \\| __|',
+    "   / /\\ \\ | |/ / _` | '__| | |  _ < / _ \\| __|",
     '  / ____ \\|   < (_| | |  | | | |_) | (_) | |_',
     ' /_/    \\_\\_|\\_\\__,_|_|  |_| |____/ \\___/ \\__|',
     '[SERVER][core.server.init:init_async:36][{time0}][INFO]:Initializing database...',
