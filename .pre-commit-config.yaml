@@ -3,4 +3,4 @@ repos:
       rev: v4.0.0-alpha.8
       hooks:
         - id: prettier
-          files: "\\.(js|css)$" 
+          files: "\\.(js|css|vue)$" 
