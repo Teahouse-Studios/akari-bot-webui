@@ -85,6 +85,7 @@ function formatTime(timestamp) {
     zh_tw: 'zh-TW',
     en_us: 'en-US',
     ja_jp: 'ja-JP',
+    ko_kr: 'ko-KR',
   }
 
   const locale = langMap[language] || 'zh-CN'

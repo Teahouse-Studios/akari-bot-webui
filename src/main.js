@@ -10,6 +10,7 @@ import zh_cn from './i18n/zh_cn.json'
 import zh_tw from './i18n/zh_tw.json'
 import en_us from './i18n/en_us.json'
 import ja_jp from './i18n/ja_jp.json'
+import ko_kr from './i18n/ko_kr.json'
 import './styles/theme-akari/var.scss'
 import './styles/theme-akari/dark/var.css'
 
@@ -30,6 +31,7 @@ const i18n = createI18n({
     zh_tw,
     en_us,
     ja_jp,
+    ko_kr,
   },
 })
 
