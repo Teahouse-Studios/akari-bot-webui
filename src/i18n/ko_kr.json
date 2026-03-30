@@ -268,7 +268,7 @@
   "setting.develop_mode.title": "개발자 옵션",
   "setting.restart_bot.button.restart": "재시작",
   "setting.restart_bot.confirm.title": "재시작 확인",
-  "setting.restart_bot.loading.text": "재시작 중... 이 페이지를 새로고침하지 마세요.",
+  "setting.restart_bot.loading.text": "재시작 중… 이 페이지를 새로고침하지 마세요.",
   "setting.restart_bot.message.failed": "대기 시간 초과. 봇 상태를 확인해 주세요.",
   "setting.restart_bot.title": "봇 재시작",
   "setting.select_language.title": "언어",
