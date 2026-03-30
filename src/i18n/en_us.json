@@ -268,7 +268,7 @@
   "setting.develop_mode.title": "Developer Options",
   "setting.restart_bot.button.restart": "Restart",
   "setting.restart_bot.confirm.title": "Restart Confirmation",
-  "setting.restart_bot.loading.text": "Restarting... Do not refresh this page.",
+  "setting.restart_bot.loading.text": "Restarting… Do not refresh this page.",
   "setting.restart_bot.message.failed": "Waiting timeout. Please check the bot status",
   "setting.restart_bot.title": "Restart Bot",
   "setting.select_language.title": "Language",
