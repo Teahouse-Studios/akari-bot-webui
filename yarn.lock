@@ -4450,11 +4450,11 @@ __metadata:
   linkType: hard
 
 "vite-bundle-analyzer@npm:^1.2.1":
-  version: 1.3.6
-  resolution: "vite-bundle-analyzer@npm:1.3.6"
+  version: 1.3.7
+  resolution: "vite-bundle-analyzer@npm:1.3.7"
   bin:
     analyze: dist/bin.js
-  checksum: 10c0/0a999c91fc30cf0fc02784ae252df9de16f29ad4343f09611c0064de454e52c46e59c13dcf2a2325eea04aa960d46ce213e9b14acce6349c56231ef4fb567828
+  checksum: 10c0/47184a0482284c8415fae0861e7ef2292036ef25ac5d115c325f1fc7819fc17a8be591bf6817789dc339c22031f6b47a7a3c1b5bf3922e6a325b0daecefe597a
   languageName: node
   linkType: hard
 
