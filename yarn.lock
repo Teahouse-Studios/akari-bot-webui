@@ -1979,8 +1979,8 @@ __metadata:
   linkType: hard
 
 "element-plus@npm:^2.10.7":
-  version: 2.13.6
-  resolution: "element-plus@npm:2.13.6"
+  version: 2.13.7
+  resolution: "element-plus@npm:2.13.7"
   dependencies:
     "@ctrl/tinycolor": "npm:^4.2.0"
     "@element-plus/icons-vue": "npm:^2.3.2"
@@ -1999,7 +1999,7 @@ __metadata:
     vue-component-type-helpers: "npm:^3.2.4"
   peerDependencies:
     vue: ^3.3.0
-  checksum: 10c0/efaa56edd5f5e562992113a844a1a2f79ad6f68fbbe02cc497e00beb666c065b453e2e2b5701af11362482b93185c3adb213a5d7674d361ab9eb34c26e634921
+  checksum: 10c0/27ceaefae20112db9dcca4ad0ed90bd0ff14c304c5023339af32fc36425c3ed1c20bcad76b866e17b15b6d5413d21b705799f9640b2e4e2bde4b20fc7e082510
   languageName: node
   linkType: hard
 
