@@ -26,7 +26,7 @@
           <strong class="data-title">{{
             $t('dashboard.server_info.bot.label.running_time')
           }}</strong
-          ><span class="data-text">{{ formatRunningTime(bot.running_time || 0) }}</span>
+          ><span class="data-text">{{ formatRunningTime(runningSeconds || 0) }}</span>
         </p>
       </el-card>
       <el-card class="left-bottom-card" shadow="never" v-loading="loading">
@@ -147,7 +147,7 @@ const os = reactive({
 })
 
 const bot = reactive({
-  running_time: 0,
+  started_time: 0,
   python_version: '',
   version: '',
   web_render_status: false,
@@ -173,11 +173,15 @@ const disk = reactive({
 const loading = ref(false)
 const dashboardOverflow = ref(false)
 const abortController = new AbortController()
+const runningSeconds = ref(0)
+let runningTimer = null
 
 function formatRunningTime(seconds) {
-  const hours = Math.floor(seconds / 3600)
-  const minutes = Math.floor((seconds % 3600) / 60)
-  const remainingSeconds = Math.floor(seconds % 60)
+  const s = Math.max(0, Number(seconds) || 0)
+
+  const hours = Math.floor(s / 3600)
+  const minutes = Math.floor((s % 3600) / 60)
+  const remainingSeconds = Math.floor(s % 60)
   return t('dashboard.server_info.text.format_time', {
     hours,
     minutes,
@@ -268,6 +272,7 @@ async function fetchServerInfoData(noCache = false) {
 
     Object.assign(os, data.os)
     Object.assign(bot, data.bot)
+    startRunningTimer()
     Object.assign(cpu, data.cpu)
     Object.assign(memory, data.memory)
     Object.assign(disk, data.disk)
@@ -276,9 +281,38 @@ async function fetchServerInfoData(noCache = false) {
       console.log('Request canceled')
     } else {
       ElMessage.error(t('message.error.fetch') + error.message)
+
+      stopRunningTimer()
+      bot.start_time = 0
+      runningSeconds.value = 0
     }
   } finally {
     loading.value = false
+  }
+}
+
+function updateRunningSeconds() {
+  const now = Math.floor(Date.now() / 1000);
+  const start = bot.started_time || 0;
+  
+  if (start > 0) {
+    runningSeconds.value = Math.max(0, now - start);
+  }
+}
+
+function startRunningTimer() {
+  if (runningTimer) clearInterval(runningTimer);
+
+  if (bot.started_time && bot.started_time > 0) {
+    updateRunningSeconds();
+    runningTimer = setInterval(updateRunningSeconds, 1000);
+  }
+}
+
+function stopRunningTimer() {
+  if (runningTimer) {
+    clearInterval(runningTimer)
+    runningTimer = null
   }
 }
 
@@ -294,6 +328,7 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   window.removeEventListener('resize', checkOverflow)
+  stopRunningTimer()
   abortController.abort()
 })
 </script>
