@@ -29,7 +29,7 @@
     "lodash": "^4.17.23",
     "markdown-it": "^14.1.0",
     "markdown-it-link-attributes": "^4.0.1",
-    "uuid": "^13.0.0",
+    "uuid": "^14.0.0",
     "vue": "^3.5.18",
     "vue-codemirror": "^6.1.1",
     "vue-i18n": "^11.1.11",
