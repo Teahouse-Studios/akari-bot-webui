@@ -2052,8 +2052,8 @@ __metadata:
   linkType: hard
 
 "element-plus@npm:^2.10.7":
-  version: 2.14.1
-  resolution: "element-plus@npm:2.14.1"
+  version: 2.14.2
+  resolution: "element-plus@npm:2.14.2"
   dependencies:
     "@ctrl/tinycolor": "npm:^4.2.0"
     "@element-plus/icons-vue": "npm:^2.3.2"
@@ -2069,10 +2069,10 @@ __metadata:
     lodash-unified: "npm:^1.0.3"
     memoize-one: "npm:^6.0.0"
     normalize-wheel-es: "npm:^1.2.0"
-    vue-component-type-helpers: "npm:^3.3.1"
+    vue-component-type-helpers: "npm:^3.3.3"
   peerDependencies:
     vue: ^3.3.7
-  checksum: 10c0/c3e9f8ddf4979252041c7c9431e14ad80ef87319df5b8f36c2011e3dda41fef2b5445bf5e4ac3576b91a1e894877507d21448ac81534767cd3357ac2eabd84eb
+  checksum: 10c0/251f965988769a92e12ed50c7512c86e4de7928b55af63ec319733e1ea329d390cbad824ba662723a6d491a22e80fab819dda07c7d98c8c2101c032f1f6926f7
   languageName: node
   linkType: hard
 
@@ -4637,10 +4637,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vue-component-type-helpers@npm:^3.3.1":
-  version: 3.3.2
-  resolution: "vue-component-type-helpers@npm:3.3.2"
-  checksum: 10c0/ca1758ca2a4378a4a361fd8b25cc52bf65916a22af50ab7fd862d846bc23534a9cc86ebf0229ffc24195ebf3a26834dec228bbb1477ce9496af3e9dac9c7d592
+"vue-component-type-helpers@npm:^3.3.3":
+  version: 3.3.4
+  resolution: "vue-component-type-helpers@npm:3.3.4"
+  checksum: 10c0/9a2af7e83a63f15e35919ac931a2e249f31f3396f20095bc1a35156e46d9169b0fe7238d6fb34c4b5844bf8f1e53ddda96fd326de6ede865e4f11a16d8561fef
   languageName: node
   linkType: hard
 
