@@ -292,20 +292,20 @@ async function fetchServerInfoData(noCache = false) {
 }
 
 function updateRunningSeconds() {
-  const now = Math.floor(Date.now() / 1000);
-  const start = bot.started_time || 0;
-  
+  const now = Math.floor(Date.now() / 1000)
+  const start = bot.started_time || 0
+
   if (start > 0) {
-    runningSeconds.value = Math.max(0, now - start);
+    runningSeconds.value = Math.max(0, now - start)
   }
 }
 
 function startRunningTimer() {
-  if (runningTimer) clearInterval(runningTimer);
+  if (runningTimer) clearInterval(runningTimer)
 
   if (bot.started_time && bot.started_time > 0) {
-    updateRunningSeconds();
-    runningTimer = setInterval(updateRunningSeconds, 1000);
+    updateRunningSeconds()
+    runningTimer = setInterval(updateRunningSeconds, 1000)
   }
 }
 

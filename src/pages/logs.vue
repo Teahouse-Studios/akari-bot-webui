@@ -47,12 +47,9 @@
         <span v-for="(part, partIndex) in logLine" :key="partIndex" :style="part.style">
           <template v-for="(seg, sIndex) in splitTextIntoSegments(part.text)" :key="sIndex">
             <span v-if="seg.type === 'text'">{{ seg.text }}</span>
-            <a
-              v-else
-              class="external-link"
-              @click.prevent="confirmExternal(seg.url)"
-              >{{ seg.text }}</a
-            >
+            <a v-else class="external-link" @click.prevent="confirmExternal(seg.url)">{{
+              seg.text
+            }}</a>
           </template>
         </span>
       </div>
@@ -209,7 +206,7 @@ function splitTextIntoSegments(text) {
     '[': ']',
     '{': '}',
     "'": "'",
-    '"': '"'
+    '"': '"',
   }
 
   while ((match = urlRegex.exec(text)) !== null) {
@@ -237,7 +234,6 @@ function splitTextIntoSegments(text) {
   }
   return segments
 }
-
 
 function confirmExternal(url) {
   confirmExternalLink(url, t)
@@ -276,7 +272,7 @@ const updateLogs = debounce(() => {
   }
 
   if (autoScroll.value && logViewer.value) {
-    setTimeout(() => {	
+    setTimeout(() => {
       if (logViewer.value) {
         logViewer.value.scrollTop = logViewer.value.scrollHeight
       }

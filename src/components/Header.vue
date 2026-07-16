@@ -11,11 +11,7 @@
     </div>
 
     <div class="header-right">
-      <el-button
-        v-if="hasHelp"
-        class="help-button"
-        @click="goToHelp"
-      >
+      <el-button v-if="hasHelp" class="help-button" @click="goToHelp">
         {{ $t('header.button.doc') }}
       </el-button>
       <el-button class="theme-toggle-button" @click="toggleDarkMode">

@@ -61,7 +61,7 @@
           prop="target_id"
           :label="$t('session.target.table.target_id')"
           sortable
-          min-width="140"
+          min-width="160"
         />
         <el-table-column
           prop="locale"
@@ -116,7 +116,7 @@
             }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column :label="$t('session.target.table.target_data')" min-width="140">
+        <el-table-column :label="$t('session.target.table.target_data')" min-width="160">
           <template #default="{ row }">
             <el-popover placement="top" width="300" :hide-after="0" :trigger="['hover', 'click']">
               <pre>{{ JSON.stringify(row.target_data, null, 2) }}</pre>

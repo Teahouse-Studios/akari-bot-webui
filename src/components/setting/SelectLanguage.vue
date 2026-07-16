@@ -29,9 +29,7 @@ const elementLocale = inject('elementLocale')
 
 const langModules = import.meta.glob('@/i18n/*.json')
 const langList = computed(() =>
-  Object.keys(langModules).map(path =>
-    path.match(/\/([^/]+)\.json$/)[1]
-  )
+  Object.keys(langModules).map((path) => path.match(/\/([^/]+)\.json$/)[1]),
 )
 
 function changeLanguage(lang) {
