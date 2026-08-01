@@ -32,6 +32,14 @@ h3 {
   cursor: default;
 }
 
+.el-row {
+  align-items: stretch;
+}
+
+.el-col > :deep(*) {
+  height: 100%;
+}
+
 @media (max-width: 768px) {
   .el-row {
     row-gap: 16px;

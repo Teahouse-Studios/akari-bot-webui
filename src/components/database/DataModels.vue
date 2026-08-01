@@ -63,6 +63,11 @@ h3 {
   cursor: default;
 }
 
+.data-models {
+  height: 100%;
+  overflow: hidden;
+}
+
 .data-models ::v-deep(.el-card__body) {
   min-height: 300px;
   height: 100%;
