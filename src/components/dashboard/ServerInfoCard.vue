@@ -177,11 +177,11 @@ const runningSeconds = ref(0)
 let runningTimer = null
 
 function formatRunningTime(seconds) {
-  const s = Math.max(0, Number(seconds) || 0)
+  const sec = Math.max(0, Number(seconds) || 0)
 
-  const hours = Math.floor(s / 3600)
-  const minutes = Math.floor((s % 3600) / 60)
-  const remainingSeconds = Math.floor(s % 60)
+  const hours = Math.floor(sec / 3600)
+  const minutes = Math.floor((sec % 3600) / 60)
+  const remainingSeconds = Math.floor(sec % 60)
   return t('dashboard.server_info.text.format_time', {
     hours,
     minutes,

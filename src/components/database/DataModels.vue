@@ -65,7 +65,7 @@ h3 {
 
 .data-models ::v-deep(.el-card__body) {
   min-height: 300px;
-  height: calc(100vh - 150px);
+  height: 100%;
   display: flex;
   flex-direction: column;
 }

@@ -165,6 +165,10 @@ h3 {
   cursor: default;
 }
 
+.sql-console {
+  height: 100%;
+}
+
 .sql-console ::v-deep(.el-card__body) {
   display: flex;
   flex-direction: column;
@@ -254,7 +258,16 @@ h3 {
 
 .result-card {
   min-height: 300px;
-  height: calc(100vh - 450px);
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.result-card ::v-deep(.el-card__body) {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .result-area {

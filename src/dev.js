@@ -11,7 +11,7 @@ export async function getIsDevelopMode() {
   try {
     const res = await axios.get('/api/dev')
     return res?.data?.is_dev === true
-  } catch (err) {
+  } catch {
     return false
   }
 }
