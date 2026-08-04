@@ -22,4 +22,4 @@ yarn build
 
 ## Localization
 
-We use Weblate to host localization translations. welcome to visit [here](https://hosted.weblate.org/engage/akaribot/) to help improve the translations.
+We use Weblate to host localization translations. Welcome to visit [here](https://hosted.weblate.org/engage/akaribot/) to help improve the translations.
