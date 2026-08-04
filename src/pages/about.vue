@@ -53,7 +53,7 @@
 const goToRepo = () => window.open('https://github.com/Teahouse-Studios/akari-bot', '_blank')
 const goToWebUIRepo = () =>
   window.open('https://github.com/Teahouse-Studios/akari-bot-webui', '_blank')
-const goToI18N = () => window.open('https://crowdin.com/project/akari-bot', '_blank')
+const goToI18N = () => window.open('https://hosted.weblate.org/engage/akaribot', '_blank')
 const goToSponsor = () => window.open('https://afdian.com/a/teahouse', '_blank')
 </script>
 
@@ -129,12 +129,12 @@ const goToSponsor = () => window.open('https://afdian.com/a/teahouse', '_blank')
 }
 
 .locale-button {
-  background-color: #419c45;
+  background-color: #1c8f75;
   color: white;
 }
 
 .locale-button:hover {
-  background-color: #45b24a;
+  background-color: #25a587;
   color: white;
 }
 
