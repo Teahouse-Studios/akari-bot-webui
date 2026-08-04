@@ -1,8 +1,8 @@
 <template>
   <div>
-    <h3><i class="mdi mdi-restart"></i> {{ $t('setting.restart_bot.title') }}</h3>
+    <h3><i class="mdi mdi-robot"></i> {{ $t('setting.bot_options.title') }}</h3>
     <el-button type="danger" @click="handleRestart">
-      {{ $t('setting.restart_bot.button.restart') }}
+      <i class="mdi mdi-restart"></i> {{ $t('setting.bot_options.button.restart') }}
     </el-button>
   </div>
 </template>
@@ -25,7 +25,7 @@ const restartBot = async () => {
     if (response.status === 202) {
       const loadingInstance = ElLoading.service({
         fullscreen: true,
-        text: t('setting.restart_bot.loading.text'),
+        text: t('setting.bot_options.restart.loading.text'),
       })
 
       const startTime = Date.now()
@@ -44,7 +44,7 @@ const restartBot = async () => {
           if (elapsed >= pollingTimeout && !hasShownTimeoutError.value) {
             hasShownTimeoutError.value = true
             ElMessage({
-              message: t('setting.restart_bot.message.failed'),
+              message: t('setting.bot_options.restart.message.failed'),
               type: 'error',
               duration: 0,
             })
