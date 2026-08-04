@@ -9,6 +9,7 @@ import { ref, watch, onMounted, onBeforeUnmount } from 'vue'
 import { basicSetup } from 'codemirror'
 import { EditorView } from '@codemirror/view'
 import { EditorState } from '@codemirror/state'
+import { toml } from '@/utils/codemirror/toml-lang.js'
 import { oneDark } from '@codemirror/theme-one-dark'
 
 const props = defineProps({
@@ -29,6 +30,7 @@ const initEditor = () => {
     extensions: [
       basicSetup,
       oneDark,
+      toml(),
       EditorView.updateListener.of((update) => {
         if (update.docChanged) {
           const value = update.state.doc.toString()

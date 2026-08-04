@@ -2811,6 +2811,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"lezer-toml@npm:^1.0.0":
+  version: 1.0.0
+  resolution: "lezer-toml@npm:1.0.0"
+  dependencies:
+    "@lezer/highlight": "npm:^1.0.0"
+    "@lezer/lr": "npm:^1.0.0"
+  checksum: 10c0/fa1973532bb09f5b746d5a932573a98e0db77a9308190f92da5092b79bdad911704c94d7fd0fc2173d93f8baacd1f237e979509c98c0d1b115838b6af02a9c24
+  languageName: node
+  linkType: hard
+
 "lightningcss-android-arm64@npm:1.33.0":
   version: 1.33.0
   resolution: "lightningcss-android-arm64@npm:1.33.0"
@@ -4720,6 +4730,7 @@ __metadata:
     eslint: "npm:^10.0.0"
     eslint-plugin-vue: "npm:^10.4.0"
     husky: "npm:^9.1.7"
+    lezer-toml: "npm:^1.0.0"
     lint-staged: "npm:^17.0.0"
     lodash: "npm:^4.17.23"
     markdown-it: "npm:^15.0.0"

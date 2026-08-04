@@ -26,6 +26,7 @@
     "dompurify": "^3.3.0",
     "echarts": "^6.0.0",
     "element-plus": "^2.10.7",
+    "lezer-toml": "^1.0.0",
     "lodash": "^4.17.23",
     "markdown-it": "^15.0.0",
     "markdown-it-link-attributes": "^4.0.1",

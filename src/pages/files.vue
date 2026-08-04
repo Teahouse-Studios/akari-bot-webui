@@ -195,6 +195,7 @@ import { ElMessageBox, ElMessage } from 'element-plus'
 import { basicSetup } from 'codemirror'
 import { EditorView } from '@codemirror/view'
 import { EditorState } from '@codemirror/state'
+import { toml } from '@/utils/codemirror/toml-lang.js'
 import { html } from '@codemirror/lang-html'
 import { json } from '@codemirror/lang-json'
 import { markdown } from '@codemirror/lang-markdown'
@@ -417,6 +418,8 @@ const getLanguageExtension = (filename) => {
     case 'yml':
     case 'yaml':
       return yaml()
+    case 'toml':
+      return toml()
     default:
       return null
   }
