@@ -22,8 +22,4 @@ yarn build
 
 ## Localization
 
-Unfortunately, the free account of Crowdin cannot create a second integration, and the premium account is too expensive for me to afford :(
-
-If there is a localization problem with the WebUI, please raise an issue.
-
-Do not raise localization issues of AkariBot here, you should go to [Crowdin](https://crowdin.com/project/akari-bot).
+We use Weblate to host localization translations. welcome to visit [here](https://hosted.weblate.org/engage/akaribot/) to help improve the translations.
