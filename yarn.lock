@@ -253,8 +253,8 @@ __metadata:
   linkType: hard
 
 "@codemirror/lang-html@npm:^6.0.0, @codemirror/lang-html@npm:^6.4.10":
-  version: 6.4.11
-  resolution: "@codemirror/lang-html@npm:6.4.11"
+  version: 6.4.12
+  resolution: "@codemirror/lang-html@npm:6.4.12"
   dependencies:
     "@codemirror/autocomplete": "npm:^6.0.0"
     "@codemirror/lang-css": "npm:^6.0.0"
@@ -265,7 +265,7 @@ __metadata:
     "@lezer/common": "npm:^1.0.0"
     "@lezer/css": "npm:^1.1.0"
     "@lezer/html": "npm:^1.3.12"
-  checksum: 10c0/d117b5c91377dd81e6551cbfaf881138787826c0d0c90fc2a7a69550decfc49af193ec1cd5c12b90d91de1acf09c42d4c5fec5bea848d354246b4ec778a4a88f
+  checksum: 10c0/2c12f80ba3be4e6f17ff37be3d102361349bdae8a0abf69f4f949db1a1c1f8f6133710a7583582a1569c401e4fe2e3844b58961aed44006aae1417a8f0c5a3af
   languageName: node
   linkType: hard
 
@@ -295,8 +295,8 @@ __metadata:
   linkType: hard
 
 "@codemirror/lang-markdown@npm:^6.3.4":
-  version: 6.5.1
-  resolution: "@codemirror/lang-markdown@npm:6.5.1"
+  version: 6.5.2
+  resolution: "@codemirror/lang-markdown@npm:6.5.2"
   dependencies:
     "@codemirror/autocomplete": "npm:^6.7.1"
     "@codemirror/lang-html": "npm:^6.0.0"
@@ -305,7 +305,7 @@ __metadata:
     "@codemirror/view": "npm:^6.0.0"
     "@lezer/common": "npm:^1.2.1"
     "@lezer/markdown": "npm:^1.0.0"
-  checksum: 10c0/b6e7404ceb1cb169a64ed623960d75fe4d00a9ba9178eaab2f484359420c2800962fcd29a02f3afed2c9b5e4fb70dbb017b56563be886c75aea1cecb1e3f4c0c
+  checksum: 10c0/cca1ff62998306e56618ea7e468462e356cb856e07d7d6a9a637d60ab3a53d70f9fe869df223e0a688daac4a8a664a9dcf5e699cccebfa17a4ab18475386b68a
   languageName: node
   linkType: hard
 
