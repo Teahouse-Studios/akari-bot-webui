@@ -518,29 +518,29 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@floating-ui/core@npm:^1.7.5":
-  version: 1.7.5
-  resolution: "@floating-ui/core@npm:1.7.5"
+"@floating-ui/core@npm:^1.8.0":
+  version: 1.8.0
+  resolution: "@floating-ui/core@npm:1.8.0"
   dependencies:
-    "@floating-ui/utils": "npm:^0.2.11"
-  checksum: 10c0/f9c52205e198b231d63a387b09c659aab08c46a1899e0b0bbe147b8b4f048b546f15ba17cb5d2a471da9534f1883d979425e13e5c4ceee67be63e4b0abd4db5d
+    "@floating-ui/utils": "npm:^0.2.12"
+  checksum: 10c0/cece958f6fab0f8cd7740cd57988c4f8bc5356dca39dd4c093433d44c91952c3a02c7a54d93d7ed6c078b6544d531a29f66621d2839c8bfbb4467dca6aed7df0
   languageName: node
   linkType: hard
 
-"@floating-ui/dom@npm:^1.7.6":
-  version: 1.7.6
-  resolution: "@floating-ui/dom@npm:1.7.6"
+"@floating-ui/dom@npm:^1.8.0":
+  version: 1.8.0
+  resolution: "@floating-ui/dom@npm:1.8.0"
   dependencies:
-    "@floating-ui/core": "npm:^1.7.5"
-    "@floating-ui/utils": "npm:^0.2.11"
-  checksum: 10c0/5c098e0d7b58c9bc769f276cca1766994c2c9c70c92d091a61bba8b3e9be53c011e0a79a8457fc2fb2f3d91697a26eb52e0a4962ef936dc963b45f58613c212f
+    "@floating-ui/core": "npm:^1.8.0"
+    "@floating-ui/utils": "npm:^0.2.12"
+  checksum: 10c0/c32b2de7a596b69cfffa909c7028825e14f6319be1b45da529f8943c89fe16b75a49c214e800c87ded3f172353d3b99163d50072f11410488e756961b7b629cc
   languageName: node
   linkType: hard
 
-"@floating-ui/utils@npm:^0.2.11":
-  version: 0.2.11
-  resolution: "@floating-ui/utils@npm:0.2.11"
-  checksum: 10c0/f4bcea1559bdbb721ecc8e8ead423ac58d6a5b6e70b602cf0810ba6ad4ed1c77211b207faa88b278a9042f0c743133de08a203ed6741c1b6443423332884d5b3
+"@floating-ui/utils@npm:^0.2.12":
+  version: 0.2.12
+  resolution: "@floating-ui/utils@npm:0.2.12"
+  checksum: 10c0/bb910b90d56991a62011afaf5f8e0c4b7fb6dab69403f4dd17fbd6eb25560b28d533dff9791f270b4f459852e9006a1077b5d73cbedb5e34d9424afc6a828314
   languageName: node
   linkType: hard
 
@@ -1986,12 +1986,12 @@ __metadata:
   linkType: hard
 
 "element-plus@npm:^2.10.7":
-  version: 2.14.3
-  resolution: "element-plus@npm:2.14.3"
+  version: 2.14.4
+  resolution: "element-plus@npm:2.14.4"
   dependencies:
     "@ctrl/tinycolor": "npm:^4.2.0"
     "@element-plus/icons-vue": "npm:^2.3.2"
-    "@floating-ui/dom": "npm:^1.7.6"
+    "@floating-ui/dom": "npm:^1.8.0"
     "@popperjs/core": "npm:@sxzz/popperjs-es@^2.11.8"
     "@types/lodash": "npm:^4.17.24"
     "@types/lodash-es": "npm:^4.17.12"
@@ -2003,10 +2003,10 @@ __metadata:
     lodash-unified: "npm:^1.0.3"
     memoize-one: "npm:^6.0.0"
     normalize-wheel-es: "npm:^1.2.0"
-    vue-component-type-helpers: "npm:^3.3.5"
+    vue-component-type-helpers: "npm:^3.3.9"
   peerDependencies:
     vue: ^3.3.7
-  checksum: 10c0/c6fced354bc528c5cf93c1afd9310e58d742b4bcd21ae518c49eae46798711345bdb2d270eea67e528099a38c5434db582fe89ba9030cd6ae793f8798eb8649b
+  checksum: 10c0/ad97c9a982cdc39f8e6e87128e3410a8fd4584290b55f5ab2bbfc1b8d8dc2529c2877662e953e128b570db3ec5632f56b86dcab92a86254c6e9f5770b432091b
   languageName: node
   linkType: hard
 
@@ -4570,10 +4570,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vue-component-type-helpers@npm:^3.3.5":
-  version: 3.3.7
-  resolution: "vue-component-type-helpers@npm:3.3.7"
-  checksum: 10c0/9b3362fd9f8d94d9c326510d0b5652fbb707a5b3b1c1607307e1c0b131fdad26b53c242d6ad9a89fc800e256c2afbb37e05fecc14cf108e43fb9d7c18396326a
+"vue-component-type-helpers@npm:^3.3.9":
+  version: 3.3.9
+  resolution: "vue-component-type-helpers@npm:3.3.9"
+  checksum: 10c0/ab92901872dde7041efe334a41cc641b046ce94fdf1cf7470b8a3840ffd88fc406459ea1732a7341dd006cdd780200cce6e17eec30ad64ba16b840e0e6020eb1
   languageName: node
   linkType: hard
 
