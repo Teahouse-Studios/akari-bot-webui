@@ -1,6 +1,8 @@
 <template>
   <div v-loading="loading">
     <h3><i class="mdi mdi-lock"></i> {{ $t('setting.change_password.title') }}</h3>
+
+    <!-- 密码表单 -->
     <el-form :model="form" :rules="rules" ref="formRef" label-width="auto">
       <el-form-item
         v-if="!noPassword"
@@ -50,16 +52,26 @@
         </div>
       </el-form-item>
     </el-form>
+
+    <el-dialog v-model="showTotpVerify" width="330px" align-center :close-on-click-modal="false">
+      <TotpInput
+        :loading="totpVerifyLoading"
+        @confirm="onTotpConfirmed"
+        @cancel="showTotpVerify = false"
+        @recovery-success="showTotpVerify = false"
+      />
+    </el-dialog>
   </div>
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, computed } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 import axios from '@/axios.mjs'
 import { IS_DEMO } from '@/const'
 import LocalStorageJson from '@/localStorageJson.js'
+import TotpInput from '@/components/TotpInput.vue'
 
 const { t } = useI18n()
 
@@ -67,6 +79,7 @@ const formRef = ref(null)
 
 const loading = ref(true)
 const noPassword = ref(false)
+const twoFactorEnabled = ref(false)
 
 const form = reactive({
   old_password: '',
@@ -108,36 +121,98 @@ const rules = reactive({
   ],
 })
 
+// TOTP verification for 2FA-enabled accounts
+const showTotpVerify = ref(false)
+const totpVerifyLoading = ref(false)
+
+const isDevelopMode = computed(() => LocalStorageJson.getItem('isDevelopMode') === 'true')
+
 onMounted(async () => {
   try {
     const { data } = await axios.get('/api/password')
     noPassword.value = !data.have_password
   } catch (error) {
     ElMessage.error(t('message.error.fetch') + error.message)
-  } finally {
-    loading.value = false
   }
+
+  // Fetch 2FA status
+  try {
+    const res = await axios.get('/api/2fa/status')
+    twoFactorEnabled.value = res.data.enabled === true
+  } catch {
+    twoFactorEnabled.value = false
+  }
+
+  loading.value = false
 })
+
+async function doUpdatePassword(totpCode) {
+  const requestData = { new_password: form.new_password }
+  if (!noPassword.value) {
+    requestData.password = form.old_password
+  }
+  if (totpCode) {
+    requestData.totp_code = totpCode
+  }
+
+  const response = await axios.put('/api/password', requestData)
+  if (response.status === 205) location.reload()
+}
 
 const handleUpdatePassword = async () => {
   try {
     await formRef.value.validate()
 
-    const requestData = { new_password: form.new_password }
-    if (!noPassword.value) {
-      requestData.password = form.old_password
-    }
+    await proceedWithPasswordUpdate()
+  } catch {
+    // validation error, do nothing
+  }
+}
 
-    const response = await axios.put('/api/password', requestData)
-    if (response.status === 205) location.reload()
+async function proceedWithPasswordUpdate() {
+  try {
+    await doUpdatePassword()
   } catch (error) {
-    if (error.response?.status === 401) {
-      ElMessage.error(t('setting.change_password.message.failed'))
-    } else if (error.response?.status === 403 && IS_DEMO) {
-      ElMessage.error(t('message.error.demo'))
-    } else if (error.message) {
-      ElMessage.error(t('message.error.fetch') + error.message)
+    handlePasswordError(error)
+  }
+}
+
+async function onTotpConfirmed(code) {
+  totpVerifyLoading.value = true
+  try {
+    await doUpdatePassword(code)
+  } catch (error) {
+    handlePasswordError(error)
+  } finally {
+    totpVerifyLoading.value = false
+  }
+}
+
+function isTwoFactorRequired(message) {
+  if (!message) return false
+  const msg = message.toLowerCase()
+  return msg.includes('2fa')
+}
+
+function handlePasswordError(error) {
+  // 后端返回 400 且要求 2FA 验证码时，弹出 TOTP 弹窗
+  if (error.response?.status === 400 && isTwoFactorRequired(error.response?.data?.detail)) {
+    if (!showTotpVerify.value) {
+      // 尚未尝试 TOTP 验证，显示弹窗
+      showTotpVerify.value = true
+      return
     }
+    // 已尝试 TOTP 但验证码错误
+    ElMessage.error(t('login.two_factor.message.failed'))
+    return
+  }
+
+  if (error.response?.status === 401) {
+    ElMessage.error(t('setting.change_password.message.failed'))
+  } else if (error.response?.status === 403 && IS_DEMO) {
+    ElMessage.error(t('message.error.demo'))
+  } else if (error.message) {
+    ElMessage.error(t('message.error.fetch') + error.message)
   }
 }
 
@@ -162,6 +237,20 @@ const confirmClearPassword = async () => {
 }
 
 const handleClearPassword = async () => {
+  // 重新获取最新的 2FA 状态，避免使用过期缓存
+  try {
+    const res = await axios.get('/api/2fa/status')
+    twoFactorEnabled.value = res.data.enabled === true
+  } catch {
+    twoFactorEnabled.value = false
+  }
+
+  // 2FA 开启时不允许清除密码
+  if (twoFactorEnabled.value) {
+    ElMessage.warning(t('setting.change_password.clear_2fa_warning'))
+    return
+  }
+
   try {
     await formRef.value.validateField('old_password')
 

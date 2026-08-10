@@ -1,6 +1,7 @@
 <template>
   <div class="overlay">
-    <div class="password-modal">
+    <!-- 密码输入界面 -->
+    <div v-if="!requireTwoFactor" class="password-modal">
       <span>{{ $t('login.title') }}</span>
       <el-input
         v-model="password"
@@ -19,6 +20,16 @@
         {{ $t('login.button.login') }}
       </el-button>
     </div>
+
+    <div v-else class="password-modal">
+      <TotpInput
+        v-if="requireTwoFactor"
+        :loading="twoFactorLoading"
+        @confirm="verifyTwoFactor"
+        @cancel="cancelTwoFactor"
+        @recovery-success="onRecoverySuccess"
+      />
+    </div>
   </div>
 </template>
 
@@ -28,11 +39,17 @@ import axios from '@/axios.mjs'
 import LocalStorageJson from '@/localStorageJson.js'
 import { ElMessage } from 'element-plus'
 import { useI18n } from 'vue-i18n'
+import TotpInput from '@/components/TotpInput.vue'
 
 const { t } = useI18n()
 
 const password = ref('')
 const loading = ref(false)
+
+const requireTwoFactor = ref(false)
+const twoFactorLoading = ref(false)
+
+// Recovery code
 
 const checkPassword = async () => {
   if (!password.value || !password.value.trim()) {
@@ -56,12 +73,58 @@ const checkPassword = async () => {
       ElMessage.error(t('login.message.error.failed'))
     } else if (error.response?.status === 429) {
       ElMessage.error(t('login.message.error.abuse'))
+    } else if (
+      error.response?.status === 401 &&
+      isTwoFactorRequired(error.response?.data?.detail)
+    ) {
+      requireTwoFactor.value = true
     } else {
       ElMessage.error(t('message.error.fetch') + error.message)
     }
   } finally {
     loading.value = false
   }
+}
+
+function isTwoFactorRequired(message) {
+  if (!message) return false
+  const msg = message.toLowerCase()
+  return msg.includes('2fa')
+}
+
+async function verifyTwoFactor(code) {
+  if (code.length !== 6) return
+  twoFactorLoading.value = true
+  try {
+    const response = await axios.post('/api/login', {
+      password: password.value,
+      totp_code: code,
+    })
+
+    if (response.status === 200) {
+      ElMessage.success(t('login.message.success'))
+      LocalStorageJson.setItem('token', response.data.data)
+      location.reload()
+    }
+  } catch (error) {
+    if (error.response?.status === 403) {
+      ElMessage.error(t('login.two_factor.message.failed'))
+    } else if (error.response?.status === 429) {
+      ElMessage.error(t('login.message.error.abuse'))
+    } else {
+      ElMessage.error(t('message.error.fetch') + (error.message || ''))
+    }
+  } finally {
+    twoFactorLoading.value = false
+  }
+}
+
+function cancelTwoFactor() {
+  requireTwoFactor.value = false
+}
+
+function onRecoverySuccess() {
+  requireTwoFactor.value = false
 }
 </script>
 
@@ -117,5 +180,35 @@ const checkPassword = async () => {
 }
 .dark .forgot-password:hover {
   color: white;
+}
+
+/* 2FA modal styles */
+.two-factor-modal {
+  background: white;
+  padding: 30px;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 300px;
+}
+.dark .two-factor-modal {
+  background: #333;
+  color: white;
+}
+
+.two-factor-desc {
+  font-size: 13px;
+  color: #909399;
+  margin: 0;
+}
+.dark .two-factor-desc {
+  color: #aaa;
+}
+
+.two-factor-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
 }
 </style>
