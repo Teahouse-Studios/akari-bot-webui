@@ -126,29 +126,59 @@
       v-model="disableDialogVisible"
       width="400px"
       align-center
+      :close-on-click-modal="false"
+      @close="onDisableDialogClose"
     >
       <el-form :model="disableForm" label-width="auto">
-        <el-form-item :label="$t('setting.change_password.input.old_password')">
+        <el-form-item :label="$t('login.input.password')">
           <el-input
             v-model="disableForm.password"
             type="password"
             :placeholder="$t('login.input.password')"
           />
         </el-form-item>
-        <el-form-item :label="$t('setting.two_factor_auth.input.code')">
-          <el-input
-            v-model="disableForm.code"
-            :placeholder="$t('setting.two_factor_auth.input.code')"
-            maxlength="6"
-            minlength="6"
-          />
+
+        <!-- TOTP 码输入 -->
+        <el-form-item v-if="!disableUseRecovery" :label="$t('setting.two_factor_auth.input.code')">
+          <div class="code-input-wrapper">
+            <el-input
+              v-model="disableForm.code"
+              :placeholder="$t('setting.two_factor_auth.input.code')"
+              maxlength="6"
+              minlength="6"
+            />
+            <span class="recovery-link" @click="switchDisableToRecovery">
+              {{ $t('totp.button.use_recovery') }}
+            </span>
+          </div>
         </el-form-item>
+
+        <!-- 恢复码输入 -->
+        <template v-if="disableUseRecovery">
+          <p class="totp-desc">{{ $t('login.two_factor.recovery_description') }}</p>
+          <el-form-item :label="$t('login.two_factor.recovery_code')">
+            <el-input
+              v-model="disableForm.code"
+              :placeholder="$t('login.two_factor.recovery_code')"
+            />
+          </el-form-item>
+          <div class="code-input-wrapper" style="justify-content: flex-end">
+            <el-button @click="switchDisableToTotp" size="small">
+              {{ $t('totp.button.back') }}
+            </el-button>
+          </div>
+        </template>
       </el-form>
       <template #footer>
         <el-button @click="disableDialogVisible = false">
           {{ $t('button.cancel') }}
         </el-button>
-        <el-button type="danger" @click="disableTwoFactor" :loading="disabling">
+        <el-button
+          type="danger"
+          @click="disableTwoFactor"
+          :loading="disabling"
+          :disabled="!canSubmitDisable"
+        >
           {{ $t('setting.two_factor_auth.button.confirm_disable') }}
         </el-button>
       </template>
@@ -160,29 +190,59 @@
       v-model="resetRecoveryDialogVisible"
       width="400px"
       align-center
+      :close-on-click-modal="false"
+      @close="onResetRecoveryDialogClose"
     >
       <el-form :model="resetRecoveryForm" label-width="auto">
-        <el-form-item :label="$t('setting.change_password.input.old_password')">
+        <el-form-item :label="$t('login.input.password')">
           <el-input
             v-model="resetRecoveryForm.password"
             type="password"
             :placeholder="$t('login.input.password')"
           />
         </el-form-item>
-        <el-form-item :label="$t('setting.two_factor_auth.input.code')">
-          <el-input
-            v-model="resetRecoveryForm.code"
-            :placeholder="$t('setting.two_factor_auth.input.code')"
-            maxlength="6"
-            minlength="6"
-          />
+
+        <!-- TOTP 码输入 -->
+        <el-form-item v-if="!resetUseRecovery" :label="$t('setting.two_factor_auth.input.code')">
+          <div class="code-input-wrapper">
+            <el-input
+              v-model="resetRecoveryForm.code"
+              :placeholder="$t('setting.two_factor_auth.input.code')"
+              maxlength="6"
+              minlength="6"
+            />
+            <span class="recovery-link" @click="switchResetToRecovery">
+              {{ $t('totp.button.use_recovery') }}
+            </span>
+          </div>
         </el-form-item>
+
+        <!-- 恢复码输入 -->
+        <template v-if="resetUseRecovery">
+          <p class="totp-desc">{{ $t('login.two_factor.recovery_description') }}</p>
+          <el-form-item :label="$t('login.two_factor.recovery_code')">
+            <el-input
+              v-model="resetRecoveryForm.code"
+              :placeholder="$t('login.two_factor.recovery_code')"
+            />
+          </el-form-item>
+          <div class="code-input-wrapper" style="justify-content: flex-end">
+            <el-button @click="switchResetToTotp" size="small">
+              {{ $t('totp.button.back') }}
+            </el-button>
+          </div>
+        </template>
       </el-form>
       <template #footer>
         <el-button @click="resetRecoveryDialogVisible = false">
           {{ $t('button.cancel') }}
         </el-button>
-        <el-button type="primary" @click="resetRecoveryCodes" :loading="resettingRecovery">
+        <el-button
+          type="primary"
+          @click="resetRecoveryCodes"
+          :loading="resettingRecovery"
+          :disabled="!canSubmitResetRecovery"
+        >
           {{ $t('button.confirm') }}
         </el-button>
       </template>
@@ -234,6 +294,27 @@ const resetRecoveryForm = ref({
   code: '',
 })
 const resettingRecovery = ref(false)
+
+// Recovery mode toggles
+const disableUseRecovery = ref(false)
+const resetUseRecovery = ref(false)
+
+// Computed: whether the submit button should be enabled
+const canSubmitDisable = computed(() => {
+  if (!disableForm.value.password) return false
+  if (disableUseRecovery.value) {
+    return disableForm.value.code.trim() !== ''
+  }
+  return disableForm.value.code.length === 6
+})
+
+const canSubmitResetRecovery = computed(() => {
+  if (!resetRecoveryForm.value.password) return false
+  if (resetUseRecovery.value) {
+    return resetRecoveryForm.value.code.trim() !== ''
+  }
+  return resetRecoveryForm.value.code.length === 6
+})
 
 function copyAll() {
   const text = recoveryCodes.value.join('\n')
@@ -333,30 +414,56 @@ function copySecret() {
 
 function showDisableDialog() {
   disableForm.value = { password: '', code: '' }
+  disableUseRecovery.value = false
   disableDialogVisible.value = true
 }
 
+function switchDisableToRecovery() {
+  disableForm.value.code = ''
+  disableUseRecovery.value = true
+}
+
+function switchDisableToTotp() {
+  disableForm.value.code = ''
+  disableUseRecovery.value = false
+}
+
+function onDisableDialogClose() {
+  disableUseRecovery.value = false
+}
+
 async function disableTwoFactor() {
-  if (!disableForm.value.password || !disableForm.value.code) {
+  if (!disableForm.value.password) {
+    ElMessage.warning(t('setting.two_factor_auth.validate.required'))
+    return
+  }
+  if (disableUseRecovery.value && !disableForm.value.code.trim()) {
+    ElMessage.warning(t('setting.two_factor_auth.validate.required'))
+    return
+  }
+  if (!disableUseRecovery.value && disableForm.value.code.length !== 6) {
     ElMessage.warning(t('setting.two_factor_auth.validate.required'))
     return
   }
   disabling.value = true
   try {
-    const response = await axios.post('/api/2fa/disable', {
+    const requestData = {
       password: disableForm.value.password,
-      code: disableForm.value.code,
-    })
-    ElMessage.success(response.data.message || t('setting.two_factor_auth.message.disabled'))
+    }
+    if (disableUseRecovery.value) {
+      requestData.recovery_code = disableForm.value.code
+    } else {
+      requestData.totp_code = disableForm.value.code
+    }
+    const response = await axios.post('/api/2fa/disable', requestData)
+    ElMessage.success(t('setting.two_factor_auth.message.disabled'))
     disableDialogVisible.value = false
     await fetchStatus()
   } catch (error) {
     if (error.response?.status === 403 && IS_DEMO) {
       ElMessage.error(t('message.error.demo'))
     } else {
-      ElMessage.error(
-        error.response?.data?.message || t('setting.two_factor_auth.message.disable_failed'),
-      )
+      ElMessage.error(t('setting.two_factor_auth.message.disable_failed'))
     }
   } finally {
     disabling.value = false
@@ -365,28 +472,54 @@ async function disableTwoFactor() {
 
 function showResetRecoveryDialog() {
   resetRecoveryForm.value = { password: '', code: '' }
+  resetUseRecovery.value = false
   resetRecoveryDialogVisible.value = true
 }
 
+function switchResetToRecovery() {
+  resetRecoveryForm.value.code = ''
+  resetUseRecovery.value = true
+}
+
+function switchResetToTotp() {
+  resetRecoveryForm.value.code = ''
+  resetUseRecovery.value = false
+}
+
+function onResetRecoveryDialogClose() {
+  resetUseRecovery.value = false
+}
+
 async function resetRecoveryCodes() {
-  if (!resetRecoveryForm.value.password || !resetRecoveryForm.value.code) {
+  if (!resetRecoveryForm.value.password) {
+    ElMessage.warning(t('setting.two_factor_auth.validate.required'))
+    return
+  }
+  if (resetUseRecovery.value && !resetRecoveryForm.value.code.trim()) {
+    ElMessage.warning(t('setting.two_factor_auth.validate.required'))
+    return
+  }
+  if (!resetUseRecovery.value && resetRecoveryForm.value.code.length !== 6) {
     ElMessage.warning(t('setting.two_factor_auth.validate.required'))
     return
   }
   resettingRecovery.value = true
   try {
-    const response = await axios.post('/api/2fa/recovery-codes/reset', {
+    const requestData = {
       password: resetRecoveryForm.value.password,
-      code: resetRecoveryForm.value.code,
-    })
+    }
+    if (resetUseRecovery.value) {
+      requestData.recovery_code = resetRecoveryForm.value.code
+    } else {
+      requestData.totp_code = resetRecoveryForm.value.code
+    }
+    const response = await axios.post('/api/2fa/recovery-codes/reset', requestData)
     if (response.data.recovery_codes && response.data.recovery_codes.length > 0) {
       recoveryCodes.value = response.data.recovery_codes
       resetRecoveryDialogVisible.value = false
       showRecoveryCodes.value = true
-      ElMessage.success(t('setting.two_factor_auth.message.recovery_reset_success'))
-    } else {
-      ElMessage.success(t('setting.two_factor_auth.message.recovery_reset_success'))
     }
+    ElMessage.success(t('setting.two_factor_auth.message.recovery_reset_success'))
   } catch (error) {
     if (error.response?.status === 403 && IS_DEMO) {
       ElMessage.error(t('message.error.demo'))
@@ -521,5 +654,37 @@ async function resetRecoveryCodes() {
 
 .dark .code-value {
   color: #e0e0e0;
+}
+
+.code-input-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.recovery-link {
+  color: #666;
+  cursor: pointer;
+  font-size: 13px;
+  text-decoration: underline;
+  transition: color 0.2s;
+  align-self: flex-start;
+}
+
+.recovery-link:hover {
+  color: #333;
+}
+
+.dark .recovery-link {
+  color: #ccc;
+}
+.dark .recovery-link:hover {
+  color: white;
+}
+
+.totp-desc {
+  font-size: 13px;
+  color: #909399;
+  margin: 0 0 8px 0;
 }
 </style>
