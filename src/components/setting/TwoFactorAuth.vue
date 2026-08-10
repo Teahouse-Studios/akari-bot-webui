@@ -16,9 +16,14 @@
         <i class="mdi mdi-check-circle"></i>
         {{ $t('setting.two_factor_auth.status.enabled') }}
       </p>
-      <el-button type="danger" @click="showDisableDialog">
-        {{ $t('setting.two_factor_auth.button.disable') }}
-      </el-button>
+      <div>
+        <el-button type="danger" @click="showDisableDialog">
+          {{ $t('setting.two_factor_auth.button.disable') }}
+        </el-button>
+        <el-button type="warning" @click="showResetRecoveryDialog">
+          {{ $t('setting.two_factor_auth.button.reset_recovery') }}
+        </el-button>
+      </div>
     </div>
 
     <!-- 设置两步验证的向导弹窗 -->
@@ -148,6 +153,40 @@
         </el-button>
       </template>
     </el-dialog>
+
+    <!-- 重置恢复码的对话框 -->
+    <el-dialog
+      :title="$t('setting.two_factor_auth.reset_recovery.title')"
+      v-model="resetRecoveryDialogVisible"
+      width="400px"
+      align-center
+    >
+      <el-form :model="resetRecoveryForm" label-width="auto">
+        <el-form-item :label="$t('setting.change_password.input.old_password')">
+          <el-input
+            v-model="resetRecoveryForm.password"
+            type="password"
+            :placeholder="$t('login.input.password')"
+          />
+        </el-form-item>
+        <el-form-item :label="$t('setting.two_factor_auth.input.code')">
+          <el-input
+            v-model="resetRecoveryForm.code"
+            :placeholder="$t('setting.two_factor_auth.input.code')"
+            maxlength="6"
+            minlength="6"
+          />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="resetRecoveryDialogVisible = false">
+          {{ $t('button.cancel') }}
+        </el-button>
+        <el-button type="primary" @click="resetRecoveryCodes" :loading="resettingRecovery">
+          {{ $t('button.confirm') }}
+        </el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -187,6 +226,14 @@ const disableForm = ref({
 // Recovery codes
 const showRecoveryCodes = ref(false)
 const recoveryCodes = ref([])
+
+// Reset recovery codes
+const resetRecoveryDialogVisible = ref(false)
+const resetRecoveryForm = ref({
+  password: '',
+  code: '',
+})
+const resettingRecovery = ref(false)
 
 function copyAll() {
   const text = recoveryCodes.value.join('\n')
@@ -313,6 +360,41 @@ async function disableTwoFactor() {
     }
   } finally {
     disabling.value = false
+  }
+}
+
+function showResetRecoveryDialog() {
+  resetRecoveryForm.value = { password: '', code: '' }
+  resetRecoveryDialogVisible.value = true
+}
+
+async function resetRecoveryCodes() {
+  if (!resetRecoveryForm.value.password || !resetRecoveryForm.value.code) {
+    ElMessage.warning(t('setting.two_factor_auth.validate.required'))
+    return
+  }
+  resettingRecovery.value = true
+  try {
+    const response = await axios.post('/api/2fa/recovery-codes/reset', {
+      password: resetRecoveryForm.value.password,
+      code: resetRecoveryForm.value.code,
+    })
+    if (response.data.recovery_codes && response.data.recovery_codes.length > 0) {
+      recoveryCodes.value = response.data.recovery_codes
+      resetRecoveryDialogVisible.value = false
+      showRecoveryCodes.value = true
+      ElMessage.success(t('setting.two_factor_auth.message.recovery_reset_success'))
+    } else {
+      ElMessage.success(t('setting.two_factor_auth.message.recovery_reset_success'))
+    }
+  } catch (error) {
+    if (error.response?.status === 403 && IS_DEMO) {
+      ElMessage.error(t('message.error.demo'))
+    } else {
+      ElMessage.error(t('setting.two_factor_auth.message.reset_recovery_failed'))
+    }
+  } finally {
+    resettingRecovery.value = false
   }
 }
 </script>

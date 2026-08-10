@@ -58,7 +58,7 @@
         :loading="totpVerifyLoading"
         @confirm="onTotpConfirmed"
         @cancel="showTotpVerify = false"
-        @recovery-success="showTotpVerify = false"
+        @recovery-verify="onRecoveryConfirmed"
       />
     </el-dialog>
   </div>
@@ -146,13 +146,17 @@ onMounted(async () => {
   loading.value = false
 })
 
-async function doUpdatePassword(totpCode) {
+async function doUpdatePassword(code, isRecovery = false) {
   const requestData = { new_password: form.new_password }
   if (!noPassword.value) {
     requestData.password = form.old_password
   }
-  if (totpCode) {
-    requestData.totp_code = totpCode
+  if (code) {
+    if (isRecovery) {
+      requestData.recovery_code = code
+    } else {
+      requestData.totp_code = code
+    }
   }
 
   const response = await axios.put('/api/password', requestData)
@@ -181,6 +185,17 @@ async function onTotpConfirmed(code) {
   totpVerifyLoading.value = true
   try {
     await doUpdatePassword(code)
+  } catch (error) {
+    handlePasswordError(error)
+  } finally {
+    totpVerifyLoading.value = false
+  }
+}
+
+async function onRecoveryConfirmed(recoveryCode) {
+  totpVerifyLoading.value = true
+  try {
+    await doUpdatePassword(recoveryCode, true)
   } catch (error) {
     handlePasswordError(error)
   } finally {

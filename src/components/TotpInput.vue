@@ -36,13 +36,13 @@
       @keyup.enter="handleRecoveryVerify"
     />
     <div>
-      <el-button @click="handleRecoveryBack" :disabled="recoveryLoading">
+      <el-button @click="handleRecoveryBack" :disabled="loading">
         {{ $t('totp.button.back') }}
       </el-button>
       <el-button
         type="primary"
         @click="handleRecoveryVerify"
-        :loading="recoveryLoading"
+        :loading="loading"
         :disabled="!recoveryCode.trim()"
       >
         {{ $t('button.confirm') }}
@@ -53,8 +53,6 @@
 
 <script setup>
 import { ref } from 'vue'
-import axios from '@/axios.mjs'
-import { ElMessage } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()
@@ -63,12 +61,11 @@ const props = defineProps({
   loading: { type: Boolean, default: false },
 })
 
-const emit = defineEmits(['confirm', 'cancel', 'recovery-success'])
+const emit = defineEmits(['confirm', 'cancel', 'recovery-verify', 'recovery-success'])
 
 const code = ref('')
 const showRecoveryInput = ref(false)
 const recoveryCode = ref('')
-const recoveryLoading = ref(false)
 
 function handleConfirm() {
   if (code.value.length !== 6) return
@@ -86,22 +83,7 @@ function handleRecoveryBack() {
 
 async function handleRecoveryVerify() {
   if (!recoveryCode.value.trim()) return
-  recoveryLoading.value = true
-  try {
-    const response = await axios.post('/api/2fa/disable', {
-      recovery_code: recoveryCode.value.trim(),
-    })
-    ElMessage.success(t('login.two_factor.message.recovery_success'))
-    emit('recovery-success')
-  } catch (error) {
-    if (error.response?.status === 403) {
-      ElMessage.error(t('login.two_factor.message.failed'))
-    } else {
-      ElMessage.error(t('message.error.fetch') + (error.message || ''))
-    }
-  } finally {
-    recoveryLoading.value = false
-  }
+  emit('recovery-verify', recoveryCode.value.trim())
 }
 
 function reset() {

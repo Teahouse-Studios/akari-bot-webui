@@ -27,7 +27,7 @@
         :loading="twoFactorLoading"
         @confirm="verifyTwoFactor"
         @cancel="cancelTwoFactor"
-        @recovery-success="onRecoverySuccess"
+        @recovery-verify="verifyWithRecovery"
       />
     </div>
   </div>
@@ -123,8 +123,30 @@ function cancelTwoFactor() {
   requireTwoFactor.value = false
 }
 
-function onRecoverySuccess() {
-  requireTwoFactor.value = false
+async function verifyWithRecovery(recoveryCode) {
+  twoFactorLoading.value = true
+  try {
+    const response = await axios.post('/api/login', {
+      password: password.value,
+      recovery_code: recoveryCode,
+    })
+
+    if (response.status === 200) {
+      ElMessage.success(t('login.message.success'))
+      LocalStorageJson.setItem('token', response.data.data)
+      location.reload()
+    }
+  } catch (error) {
+    if (error.response?.status === 403) {
+      ElMessage.error(t('login.two_factor.message.failed'))
+    } else if (error.response?.status === 429) {
+      ElMessage.error(t('login.message.error.abuse'))
+    } else {
+      ElMessage.error(t('message.error.fetch') + (error.message || ''))
+    }
+  } finally {
+    twoFactorLoading.value = false
+  }
 }
 </script>
 
