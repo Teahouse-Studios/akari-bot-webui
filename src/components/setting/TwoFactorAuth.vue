@@ -36,13 +36,6 @@
       @close="cancelSetup"
     >
       <div class="setup-section">
-        <el-alert
-          :title="$t('setting.two_factor_auth.setup.alert')"
-          type="warning"
-          show-icon
-          :closable="false"
-          class="setup-alert"
-        />
         <p>{{ $t('setting.two_factor_auth.setup.scan_qr') }}</p>
         <div class="qr-section">
           <img
