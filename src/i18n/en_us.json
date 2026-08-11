@@ -266,6 +266,7 @@
     "setting.change_password.input.new_password": "New",
     "setting.change_password.input.old_password": "Old",
     "setting.change_password.input.set_password": "Set",
+    "setting.change_password.message.clear_2fa_warning": "Please disable 2FA before clearing the password",
     "setting.change_password.message.failed": "Incorrect password. Please try again",
     "setting.change_password.message.success.clear": "Password cleared",
     "setting.change_password.message.success.update": "Password updated successfully",
