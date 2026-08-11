@@ -311,7 +311,7 @@
   "setting.two_factor_auth.setup.title": "设置两步验证",
   "setting.two_factor_auth.status.disabled": "两步验证未启用",
   "setting.two_factor_auth.status.enabled": "两步验证已启用",
-  "setting.two_factor_auth.title": "两步验证",
+  "setting.two_factor_auth.title": "两步验证（2FA）",
   "setting.two_factor_auth.validate.required": "请输入密码和验证码",
   "sidebar.item.about": "关于",
   "sidebar.item.chat": "聊天",
