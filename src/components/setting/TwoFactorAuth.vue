@@ -30,7 +30,7 @@
     <el-dialog
       :title="$t('setting.two_factor_auth.setup.title')"
       v-model="setupDialogVisible"
-      width="400px"
+      width="420px"
       align-center
       :close-on-click-modal="false"
       @close="cancelSetup"
