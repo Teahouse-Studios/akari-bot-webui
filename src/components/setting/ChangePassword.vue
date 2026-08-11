@@ -262,7 +262,7 @@ const handleClearPassword = async () => {
 
   // 2FA 开启时不允许清除密码
   if (twoFactorEnabled.value) {
-    ElMessage.warning(t('setting.change_password.clear_2fa_warning'))
+    ElMessage.warning(t('setting.change_password.message.clear_2fa_warning'))
     return
   }
 
