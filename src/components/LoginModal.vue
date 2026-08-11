@@ -27,7 +27,7 @@
         :loading="twoFactorLoading"
         @confirm="verifyTwoFactor"
         @cancel="cancelTwoFactor"
-        @recovery-verify="verifyWithRecovery"
+        @backup-verify="verifyWithBackup"
       />
     </div>
   </div>
@@ -49,7 +49,7 @@ const loading = ref(false)
 const requireTwoFactor = ref(false)
 const twoFactorLoading = ref(false)
 
-// Recovery code
+// Backup code
 
 const checkPassword = async () => {
   if (!password.value || !password.value.trim()) {
@@ -123,12 +123,12 @@ function cancelTwoFactor() {
   requireTwoFactor.value = false
 }
 
-async function verifyWithRecovery(recoveryCode) {
+async function verifyWithBackup(backupCode) {
   twoFactorLoading.value = true
   try {
     const response = await axios.post('/api/login', {
       password: password.value,
-      recovery_code: recoveryCode,
+      backup_code: backupCode,
     })
 
     if (response.status === 200) {

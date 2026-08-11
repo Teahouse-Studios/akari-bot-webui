@@ -1,5 +1,5 @@
 <template>
-  <div v-if="!showRecoveryInput" class="totp-input-container">
+  <div v-if="!showBackupInput" class="totp-input-container">
     <span class="totp-title">{{ $t('login.two_factor.title') }}</span>
     <p class="totp-desc">{{ $t('login.two_factor.description') }}</p>
     <el-input
@@ -9,8 +9,8 @@
       minlength="6"
       @keyup.enter="handleConfirm"
     />
-    <span class="recovery-link" @click="handleRecoveryClick">
-      {{ $t('totp.button.use_recovery') }}
+    <span class="backup-link" @click="handleBackupClick">
+      {{ $t('totp.button.use_backup') }}
     </span>
     <div>
       <el-button @click="$emit('cancel')" :disabled="loading">
@@ -28,22 +28,22 @@
   </div>
 
   <div v-else class="totp-input-container">
-    <span class="totp-title">{{ $t('login.two_factor.recovery_title') }}</span>
-    <p class="totp-desc">{{ $t('login.two_factor.recovery_description') }}</p>
+    <span class="totp-title">{{ $t('login.two_factor.backup_title') }}</span>
+    <p class="totp-desc">{{ $t('login.two_factor.backup_description') }}</p>
     <el-input
-      v-model="recoveryCode"
-      :placeholder="$t('login.two_factor.recovery_code')"
-      @keyup.enter="handleRecoveryVerify"
+      v-model="backupCode"
+      :placeholder="$t('login.two_factor.backup_code')"
+      @keyup.enter="handleBackupVerify"
     />
     <div>
-      <el-button @click="handleRecoveryBack" :disabled="loading">
-        {{ $t('totp.button.back') }}
+      <el-button @click="handleBackupBack" :disabled="loading">
+        {{ $t('button.back') }}
       </el-button>
       <el-button
         type="primary"
-        @click="handleRecoveryVerify"
+        @click="handleBackupVerify"
         :loading="loading"
-        :disabled="!recoveryCode.trim()"
+        :disabled="!backupCode.trim()"
       >
         {{ $t('button.confirm') }}
       </el-button>
@@ -61,35 +61,35 @@ const props = defineProps({
   loading: { type: Boolean, default: false },
 })
 
-const emit = defineEmits(['confirm', 'cancel', 'recovery-verify', 'recovery-success'])
+const emit = defineEmits(['confirm', 'cancel', 'backup-verify', 'backup-success'])
 
 const code = ref('')
-const showRecoveryInput = ref(false)
-const recoveryCode = ref('')
+const showBackupInput = ref(false)
+const backupCode = ref('')
 
 function handleConfirm() {
   if (code.value.length !== 6) return
   emit('confirm', code.value)
 }
 
-function handleRecoveryClick() {
-  showRecoveryInput.value = true
+function handleBackupClick() {
+  showBackupInput.value = true
 }
 
-function handleRecoveryBack() {
-  showRecoveryInput.value = false
-  recoveryCode.value = ''
+function handleBackupBack() {
+  showBackupInput.value = false
+  backupCode.value = ''
 }
 
-async function handleRecoveryVerify() {
-  if (!recoveryCode.value.trim()) return
-  emit('recovery-verify', recoveryCode.value.trim())
+async function handleBackupVerify() {
+  if (!backupCode.value.trim()) return
+  emit('backup-verify', backupCode.value.trim())
 }
 
 function reset() {
   code.value = ''
-  showRecoveryInput.value = false
-  recoveryCode.value = ''
+  showBackupInput.value = false
+  backupCode.value = ''
 }
 
 defineExpose({ reset })
@@ -114,7 +114,7 @@ defineExpose({ reset })
   margin: 0;
 }
 
-.recovery-link {
+.backup-link {
   color: #666;
   cursor: pointer;
   font-size: 14px;
@@ -122,14 +122,14 @@ defineExpose({ reset })
   transition: color 0.2s;
 }
 
-.recovery-link:hover {
+.backup-link:hover {
   color: #333;
 }
 
-.dark .recovery-link {
+.dark .backup-link {
   color: #ccc;
 }
-.dark .recovery-link:hover {
+.dark .backup-link:hover {
   color: white;
 }
 
