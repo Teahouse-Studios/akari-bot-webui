@@ -137,7 +137,7 @@ onMounted(async () => {
 
   // Fetch 2FA status
   try {
-    const res = await axios.get('/api/2fa/status')
+    const res = await axios.get('/api/totp')
     twoFactorEnabled.value = res.data.enabled === true
   } catch {
     twoFactorEnabled.value = false
@@ -254,7 +254,7 @@ const confirmClearPassword = async () => {
 const handleClearPassword = async () => {
   // 重新获取最新的 2FA 状态，避免使用过期缓存
   try {
-    const res = await axios.get('/api/2fa/status')
+    const res = await axios.get('/api/totp')
     twoFactorEnabled.value = res.data.enabled === true
   } catch {
     twoFactorEnabled.value = false

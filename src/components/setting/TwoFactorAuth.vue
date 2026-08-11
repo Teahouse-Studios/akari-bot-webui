@@ -337,7 +337,7 @@ onMounted(async () => {
 async function fetchStatus() {
   loading.value = true
   try {
-    const response = await axios.get('/api/2fa/status')
+    const response = await axios.get('/api/totp')
     enabled.value = response.data.enabled === true
   } catch (error) {
     ElMessage.error(t('message.error.fetch') + (error.message || ''))
@@ -356,7 +356,7 @@ async function startSetup() {
 
 async function doStartSetup() {
   try {
-    const response = await axios.post('/api/2fa/setup')
+    const response = await axios.post('/api/totp/setup')
     secret.value = response.data.secret
     qrUri.value = response.data.uri
     setupCode.value = ''
@@ -370,7 +370,7 @@ async function enableTwoFactor() {
   if (setupCode.value.length !== 6) return
   enabling.value = true
   try {
-    const response = await axios.post('/api/2fa/enable', {
+    const response = await axios.post('/api/totp/enable', {
       secret: secret.value,
       code: setupCode.value,
     })
@@ -455,7 +455,7 @@ async function disableTwoFactor() {
     } else {
       requestData.totp_code = disableForm.value.code
     }
-    const response = await axios.post('/api/2fa/disable', requestData)
+    const response = await axios.post('/api/totp/disable', requestData)
     ElMessage.success(t('setting.two_factor_auth.message.disabled'))
     disableDialogVisible.value = false
     await fetchStatus()
@@ -513,7 +513,7 @@ async function resetRecoveryCodes() {
     } else {
       requestData.totp_code = resetRecoveryForm.value.code
     }
-    const response = await axios.post('/api/2fa/recovery-codes/reset', requestData)
+    const response = await axios.post('/api/totp/recovery-codes/reset', requestData)
     if (response.data.recovery_codes && response.data.recovery_codes.length > 0) {
       recoveryCodes.value = response.data.recovery_codes
       resetRecoveryDialogVisible.value = false
