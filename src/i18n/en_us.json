@@ -304,7 +304,6 @@
     "setting.two_factor_auth.message.secret_copied": "The key has been copied to the clipboard",
     "setting.two_factor_auth.message.verify_failed": "Verification failed. Please check if the authentication code is correct",
     "setting.two_factor_auth.reset_backup.title": "Reset backup codes",
-    "setting.two_factor_auth.setup.alert": "Please keep your key safe. If you lose the key, you will not be able to log in.",
     "setting.two_factor_auth.setup.enter_code": "Please enter the 6-digit authentication code displayed in the authenticator app:",
     "setting.two_factor_auth.setup.scan_qr": "Please use an authenticator app (such as Google Authenticator) to scan the QR code.",
     "setting.two_factor_auth.setup.secret_label": "Or enter the key manually:",

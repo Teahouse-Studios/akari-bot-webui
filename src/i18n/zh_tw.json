@@ -304,7 +304,6 @@
     "setting.two_factor_auth.message.secret_copied": "密鑰已複製到剪貼簿",
     "setting.two_factor_auth.message.verify_failed": "驗證失敗，請檢查驗證碼是否正確",
     "setting.two_factor_auth.reset_backup.title": "重設備用碼",
-    "setting.two_factor_auth.setup.alert": "請妥善保管密鑰。若遺失密鑰，你將無法登入。",
     "setting.two_factor_auth.setup.enter_code": "請輸入驗證器 App 中顯示的 6 位元驗證碼：",
     "setting.two_factor_auth.setup.scan_qr": "請使用驗證器 App（如 Google Authenticator）掃描二維碼。",
     "setting.two_factor_auth.setup.secret_label": "或手動輸入密鑰：",

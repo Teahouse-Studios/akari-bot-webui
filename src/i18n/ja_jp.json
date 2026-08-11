@@ -304,7 +304,6 @@
     "setting.two_factor_auth.message.secret_copied": "キーがクリップボードにコピーされました",
     "setting.two_factor_auth.message.verify_failed": "認証に失敗しました。認証コードが正しいかご確認ください",
     "setting.two_factor_auth.reset_backup.title": "バックアップ コードをリセット",
-    "setting.two_factor_auth.setup.alert": "キーは大切に保管してください。キーを紛失するとログインできなくなります。",
     "sidebar.item.about": "これについて",
     "sidebar.item.chat": "チャット",
     "sidebar.item.config": "設定",
