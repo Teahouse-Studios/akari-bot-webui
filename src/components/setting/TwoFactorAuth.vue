@@ -20,8 +20,8 @@
         <el-button type="danger" @click="showDisableDialog">
           {{ $t('setting.two_factor_auth.button.disable') }}
         </el-button>
-        <el-button type="warning" @click="showResetRecoveryDialog">
-          {{ $t('setting.two_factor_auth.button.reset_recovery') }}
+        <el-button type="warning" @click="showResetBackupDialog">
+          {{ $t('setting.two_factor_auth.button.reset_backup') }}
         </el-button>
       </div>
     </div>
@@ -92,28 +92,28 @@
       </div>
     </el-dialog>
 
-    <!-- 恢复码展示弹窗 -->
+    <!-- 备用码展示弹窗 -->
     <el-dialog
-      :title="$t('recovery_codes.title')"
-      v-model="showRecoveryCodes"
+      :title="$t('backup_codes.title')"
+      v-model="showBackupCodes"
       width="450px"
       align-center
       :close-on-click-modal="false"
-      @close="handleRecoveryClose"
+      @close="handleBackupClose"
     >
-      <div class="recovery-codes-content">
-        <p>{{ $t('recovery_codes.description') }}</p>
+      <div class="backup-codes-content">
+        <p>{{ $t('backup_codes.description') }}</p>
         <div class="codes-grid">
-          <div v-for="(code, index) in recoveryCodes" :key="index" class="code-item">
+          <div v-for="(code, index) in backupCodes" :key="index" class="code-item">
             <code class="code-value">{{ code }}</code>
           </div>
         </div>
-        <div class="recovery-actions">
+        <div class="backup-actions">
           <el-button @click="copyAll">
             <i class="mdi mdi-content-copy"></i>
-            {{ $t('recovery_codes.button.copy_all') }}
+            {{ $t('backup_codes.button.copy_all') }}
           </el-button>
-          <el-button type="primary" @click="handleRecoveryClose">
+          <el-button type="primary" @click="handleBackupClose">
             {{ $t('button.confirm') }}
           </el-button>
         </div>
@@ -139,7 +139,7 @@
         </el-form-item>
 
         <!-- TOTP 码输入 -->
-        <el-form-item v-if="!disableUseRecovery" :label="$t('setting.two_factor_auth.input.code')">
+        <el-form-item v-if="!disableUseBackup" :label="$t('setting.two_factor_auth.input.code')">
           <div class="code-input-wrapper">
             <el-input
               v-model="disableForm.code"
@@ -147,24 +147,24 @@
               maxlength="6"
               minlength="6"
             />
-            <span class="recovery-link" @click="switchDisableToRecovery">
-              {{ $t('totp.button.use_recovery') }}
+            <span class="backup-link" @click="switchDisableToBackup">
+              {{ $t('totp.button.use_backup') }}
             </span>
           </div>
         </el-form-item>
 
-        <!-- 恢复码输入 -->
-        <template v-if="disableUseRecovery">
-          <p class="totp-desc">{{ $t('login.two_factor.recovery_description') }}</p>
-          <el-form-item :label="$t('login.two_factor.recovery_code')">
+        <!-- 备用码输入 -->
+        <template v-if="disableUseBackup">
+          <p class="totp-desc">{{ $t('login.two_factor.backup_description') }}</p>
+          <el-form-item :label="$t('login.two_factor.backup_code')">
             <el-input
               v-model="disableForm.code"
-              :placeholder="$t('login.two_factor.recovery_code')"
+              :placeholder="$t('login.two_factor.backup_code')"
             />
           </el-form-item>
           <div class="code-input-wrapper" style="justify-content: flex-end">
             <el-button @click="switchDisableToTotp" size="small">
-              {{ $t('totp.button.back') }}
+              {{ $t('button.back') }}
             </el-button>
           </div>
         </template>
@@ -184,64 +184,64 @@
       </template>
     </el-dialog>
 
-    <!-- 重置恢复码的对话框 -->
+    <!-- 重置备用码的对话框 -->
     <el-dialog
-      :title="$t('setting.two_factor_auth.reset_recovery.title')"
-      v-model="resetRecoveryDialogVisible"
+      :title="$t('setting.two_factor_auth.reset_backup.title')"
+      v-model="resetBackupDialogVisible"
       width="400px"
       align-center
       :close-on-click-modal="false"
-      @close="onResetRecoveryDialogClose"
+      @close="onResetBackupDialogClose"
     >
-      <el-form :model="resetRecoveryForm" label-width="auto">
+      <el-form :model="resetBackupForm" label-width="auto">
         <el-form-item :label="$t('login.input.password')">
           <el-input
-            v-model="resetRecoveryForm.password"
+            v-model="resetBackupForm.password"
             type="password"
             :placeholder="$t('login.input.password')"
           />
         </el-form-item>
 
         <!-- TOTP 码输入 -->
-        <el-form-item v-if="!resetUseRecovery" :label="$t('setting.two_factor_auth.input.code')">
+        <el-form-item v-if="!resetUseBackup" :label="$t('setting.two_factor_auth.input.code')">
           <div class="code-input-wrapper">
             <el-input
-              v-model="resetRecoveryForm.code"
+              v-model="resetBackupForm.code"
               :placeholder="$t('setting.two_factor_auth.input.code')"
               maxlength="6"
               minlength="6"
             />
-            <span class="recovery-link" @click="switchResetToRecovery">
-              {{ $t('totp.button.use_recovery') }}
+            <span class="backup-link" @click="switchResetToBackup">
+              {{ $t('totp.button.use_backup') }}
             </span>
           </div>
         </el-form-item>
 
-        <!-- 恢复码输入 -->
-        <template v-if="resetUseRecovery">
-          <p class="totp-desc">{{ $t('login.two_factor.recovery_description') }}</p>
-          <el-form-item :label="$t('login.two_factor.recovery_code')">
+        <!-- 备用码输入 -->
+        <template v-if="resetUseBackup">
+          <p class="totp-desc">{{ $t('login.two_factor.backup_description') }}</p>
+          <el-form-item :label="$t('login.two_factor.backup_code')">
             <el-input
-              v-model="resetRecoveryForm.code"
-              :placeholder="$t('login.two_factor.recovery_code')"
+              v-model="resetBackupForm.code"
+              :placeholder="$t('login.two_factor.backup_code')"
             />
           </el-form-item>
           <div class="code-input-wrapper" style="justify-content: flex-end">
             <el-button @click="switchResetToTotp" size="small">
-              {{ $t('totp.button.back') }}
+              {{ $t('button.back') }}
             </el-button>
           </div>
         </template>
       </el-form>
       <template #footer>
-        <el-button @click="resetRecoveryDialogVisible = false">
+        <el-button @click="resetBackupDialogVisible = false">
           {{ $t('button.cancel') }}
         </el-button>
         <el-button
           type="primary"
-          @click="resetRecoveryCodes"
-          :loading="resettingRecovery"
-          :disabled="!canSubmitResetRecovery"
+          @click="resetBackupCodes"
+          :loading="resettingBackup"
+          :disabled="!canSubmitResetBackup"
         >
           {{ $t('button.confirm') }}
         </el-button>
@@ -283,48 +283,48 @@ const disableForm = ref({
   code: '',
 })
 
-// Recovery codes
-const showRecoveryCodes = ref(false)
-const recoveryCodes = ref([])
+// Backup codes
+const showBackupCodes = ref(false)
+const backupCodes = ref([])
 
-// Reset recovery codes
-const resetRecoveryDialogVisible = ref(false)
-const resetRecoveryForm = ref({
+// Reset backup codes
+const resetBackupDialogVisible = ref(false)
+const resetBackupForm = ref({
   password: '',
   code: '',
 })
-const resettingRecovery = ref(false)
+const resettingBackup = ref(false)
 
-// Recovery mode toggles
-const disableUseRecovery = ref(false)
-const resetUseRecovery = ref(false)
+// Backup mode toggles
+const disableUseBackup = ref(false)
+const resetUseBackup = ref(false)
 
 // Computed: whether the submit button should be enabled
 const canSubmitDisable = computed(() => {
   if (!disableForm.value.password) return false
-  if (disableUseRecovery.value) {
+  if (disableUseBackup.value) {
     return disableForm.value.code.trim() !== ''
   }
   return disableForm.value.code.length === 6
 })
 
-const canSubmitResetRecovery = computed(() => {
-  if (!resetRecoveryForm.value.password) return false
-  if (resetUseRecovery.value) {
-    return resetRecoveryForm.value.code.trim() !== ''
+const canSubmitResetBackup = computed(() => {
+  if (!resetBackupForm.value.password) return false
+  if (resetUseBackup.value) {
+    return resetBackupForm.value.code.trim() !== ''
   }
-  return resetRecoveryForm.value.code.length === 6
+  return resetBackupForm.value.code.length === 6
 })
 
 function copyAll() {
-  const text = recoveryCodes.value.join('\n')
+  const text = backupCodes.value.join('\n')
   navigator.clipboard.writeText(text).then(() => {
-    ElMessage.success(t('recovery_codes.message.copied'))
+    ElMessage.success(t('backup_codes.message.copied'))
   })
 }
 
-function handleRecoveryClose() {
-  showRecoveryCodes.value = false
+function handleBackupClose() {
+  showBackupCodes.value = false
 }
 
 const pendingAction = ref(null) // 'enable' | 'disable'
@@ -374,11 +374,11 @@ async function enableTwoFactor() {
       secret: secret.value,
       code: setupCode.value,
     })
-    // Show recovery codes if returned
-    if (response.data.recovery_codes && response.data.recovery_codes.length > 0) {
-      recoveryCodes.value = response.data.recovery_codes
+    // Show backup codes if returned
+    if (response.data.backup_codes && response.data.backup_codes.length > 0) {
+      backupCodes.value = response.data.backup_codes
       setupDialogVisible.value = false
-      showRecoveryCodes.value = true
+      showBackupCodes.value = true
     } else {
       ElMessage.success(response.data.message || t('setting.two_factor_auth.message.enabled'))
     }
@@ -414,22 +414,22 @@ function copySecret() {
 
 function showDisableDialog() {
   disableForm.value = { password: '', code: '' }
-  disableUseRecovery.value = false
+  disableUseBackup.value = false
   disableDialogVisible.value = true
 }
 
-function switchDisableToRecovery() {
+function switchDisableToBackup() {
   disableForm.value.code = ''
-  disableUseRecovery.value = true
+  disableUseBackup.value = true
 }
 
 function switchDisableToTotp() {
   disableForm.value.code = ''
-  disableUseRecovery.value = false
+  disableUseBackup.value = false
 }
 
 function onDisableDialogClose() {
-  disableUseRecovery.value = false
+  disableUseBackup.value = false
 }
 
 async function disableTwoFactor() {
@@ -437,11 +437,11 @@ async function disableTwoFactor() {
     ElMessage.warning(t('setting.two_factor_auth.validate.required'))
     return
   }
-  if (disableUseRecovery.value && !disableForm.value.code.trim()) {
+  if (disableUseBackup.value && !disableForm.value.code.trim()) {
     ElMessage.warning(t('setting.two_factor_auth.validate.required'))
     return
   }
-  if (!disableUseRecovery.value && disableForm.value.code.length !== 6) {
+  if (!disableUseBackup.value && disableForm.value.code.length !== 6) {
     ElMessage.warning(t('setting.two_factor_auth.validate.required'))
     return
   }
@@ -450,8 +450,8 @@ async function disableTwoFactor() {
     const requestData = {
       password: disableForm.value.password,
     }
-    if (disableUseRecovery.value) {
-      requestData.recovery_code = disableForm.value.code
+    if (disableUseBackup.value) {
+      requestData.backup_code = disableForm.value.code
     } else {
       requestData.totp_code = disableForm.value.code
     }
@@ -470,64 +470,64 @@ async function disableTwoFactor() {
   }
 }
 
-function showResetRecoveryDialog() {
-  resetRecoveryForm.value = { password: '', code: '' }
-  resetUseRecovery.value = false
-  resetRecoveryDialogVisible.value = true
+function showResetBackupDialog() {
+  resetBackupForm.value = { password: '', code: '' }
+  resetUseBackup.value = false
+  resetBackupDialogVisible.value = true
 }
 
-function switchResetToRecovery() {
-  resetRecoveryForm.value.code = ''
-  resetUseRecovery.value = true
+function switchResetToBackup() {
+  resetBackupForm.value.code = ''
+  resetUseBackup.value = true
 }
 
 function switchResetToTotp() {
-  resetRecoveryForm.value.code = ''
-  resetUseRecovery.value = false
+  resetBackupForm.value.code = ''
+  resetUseBackup.value = false
 }
 
-function onResetRecoveryDialogClose() {
-  resetUseRecovery.value = false
+function onResetBackupDialogClose() {
+  resetUseBackup.value = false
 }
 
-async function resetRecoveryCodes() {
-  if (!resetRecoveryForm.value.password) {
+async function resetBackupCodes() {
+  if (!resetBackupForm.value.password) {
     ElMessage.warning(t('setting.two_factor_auth.validate.required'))
     return
   }
-  if (resetUseRecovery.value && !resetRecoveryForm.value.code.trim()) {
+  if (resetUseBackup.value && !resetBackupForm.value.code.trim()) {
     ElMessage.warning(t('setting.two_factor_auth.validate.required'))
     return
   }
-  if (!resetUseRecovery.value && resetRecoveryForm.value.code.length !== 6) {
+  if (!resetUseBackup.value && resetBackupForm.value.code.length !== 6) {
     ElMessage.warning(t('setting.two_factor_auth.validate.required'))
     return
   }
-  resettingRecovery.value = true
+  resettingBackup.value = true
   try {
     const requestData = {
-      password: resetRecoveryForm.value.password,
+      password: resetBackupForm.value.password,
     }
-    if (resetUseRecovery.value) {
-      requestData.recovery_code = resetRecoveryForm.value.code
+    if (resetUseBackup.value) {
+      requestData.backup_code = resetBackupForm.value.code
     } else {
-      requestData.totp_code = resetRecoveryForm.value.code
+      requestData.totp_code = resetBackupForm.value.code
     }
-    const response = await axios.post('/api/totp/recovery-codes/reset', requestData)
-    if (response.data.recovery_codes && response.data.recovery_codes.length > 0) {
-      recoveryCodes.value = response.data.recovery_codes
-      resetRecoveryDialogVisible.value = false
-      showRecoveryCodes.value = true
+    const response = await axios.post('/api/totp/backup-codes/reset', requestData)
+    if (response.data.backup_codes && response.data.backup_codes.length > 0) {
+      backupCodes.value = response.data.backup_codes
+      resetBackupDialogVisible.value = false
+      showBackupCodes.value = true
     }
-    ElMessage.success(t('setting.two_factor_auth.message.recovery_reset_success'))
+    ElMessage.success(t('setting.two_factor_auth.message.backup_reset_success'))
   } catch (error) {
     if (error.response?.status === 403 && IS_DEMO) {
       ElMessage.error(t('message.error.demo'))
     } else {
-      ElMessage.error(t('setting.two_factor_auth.message.reset_recovery_failed'))
+      ElMessage.error(t('setting.two_factor_auth.message.reset_backup_failed'))
     }
   } finally {
-    resettingRecovery.value = false
+    resettingBackup.value = false
   }
 }
 </script>
@@ -615,7 +615,7 @@ async function resetRecoveryCodes() {
   margin-bottom: 20px;
 }
 
-.recovery-codes-content {
+.backup-codes-content {
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -662,7 +662,7 @@ async function resetRecoveryCodes() {
   gap: 8px;
 }
 
-.recovery-link {
+.backup-link {
   color: #666;
   cursor: pointer;
   font-size: 13px;
@@ -671,14 +671,14 @@ async function resetRecoveryCodes() {
   align-self: flex-start;
 }
 
-.recovery-link:hover {
+.backup-link:hover {
   color: #333;
 }
 
-.dark .recovery-link {
+.dark .backup-link {
   color: #ccc;
 }
-.dark .recovery-link:hover {
+.dark .backup-link:hover {
   color: white;
 }
 

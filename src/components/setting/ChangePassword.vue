@@ -58,7 +58,7 @@
         :loading="totpVerifyLoading"
         @confirm="onTotpConfirmed"
         @cancel="showTotpVerify = false"
-        @recovery-verify="onRecoveryConfirmed"
+        @backup-verify="onBackupConfirmed"
       />
     </el-dialog>
   </div>
@@ -146,14 +146,14 @@ onMounted(async () => {
   loading.value = false
 })
 
-async function doUpdatePassword(code, isRecovery = false) {
+async function doUpdatePassword(code, isBackup = false) {
   const requestData = { new_password: form.new_password }
   if (!noPassword.value) {
     requestData.password = form.old_password
   }
   if (code) {
-    if (isRecovery) {
-      requestData.recovery_code = code
+    if (isBackup) {
+      requestData.backup_code = code
     } else {
       requestData.totp_code = code
     }
@@ -192,10 +192,10 @@ async function onTotpConfirmed(code) {
   }
 }
 
-async function onRecoveryConfirmed(recoveryCode) {
+async function onBackupConfirmed(backupCode) {
   totpVerifyLoading.value = true
   try {
-    await doUpdatePassword(recoveryCode, true)
+    await doUpdatePassword(backupCode, true)
   } catch (error) {
     handlePasswordError(error)
   } finally {
