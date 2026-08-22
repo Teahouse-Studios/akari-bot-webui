@@ -121,13 +121,30 @@ export default function setupMock() {
       target_data: {},
       blocked: false,
       target_id: 'Web|Console|0',
+      union_id: 'UTID|00000000000000000000000000000001',
+      bound_ids: ['Web|Console|0'],
       muted: false,
       custom_admins: [],
       modules: ['wiki'],
       banned_users: [],
       locale: 'zh_cn',
     },
+    {
+      target_data: {},
+      blocked: false,
+      target_id: 'Discord|123456789',
+      union_id: 'UTID|00000000000000000000000000000002',
+      bound_ids: ['Discord|123456789', 'QQ|10001'],
+      muted: true,
+      custom_admins: ['USID|00000000000000000000000000000002'],
+      modules: ['wiki', 'petal'],
+      banned_users: ['USID|00000000000000000000000000000003'],
+      locale: 'en_us',
+    },
   ]
+
+  const filterByBoundIds = (items, matcher) =>
+    items.filter((item) => (item.bound_ids || [item.target_id]).some((id) => matcher(id)))
 
   mock.onGet('/api/target').reply((config) => {
     const { prefix, status, id } = config.params || {}
@@ -135,7 +152,7 @@ export default function setupMock() {
     let filtered = mockTargets
 
     if (prefix) {
-      filtered = filtered.filter((item) => item.target_id.startsWith(`${prefix}|`))
+      filtered = filterByBoundIds(filtered, (targetId) => targetId.startsWith(`${prefix}|`))
     }
 
     if (status === 'muted') {
@@ -145,7 +162,9 @@ export default function setupMock() {
     }
 
     if (id) {
-      filtered = filtered.filter((item) => item.target_id.toLowerCase().includes(id.toLowerCase()))
+      filtered = filterByBoundIds(filtered, (targetId) =>
+        targetId.toLowerCase().includes(id.toLowerCase()),
+      )
     }
 
     return [
@@ -153,6 +172,34 @@ export default function setupMock() {
       {
         target_list: filtered,
         total: filtered.length,
+      },
+    ]
+  })
+
+  mock.onGet(/\/api\/target\/group\/.+$/).reply((config) => {
+    const unionId = decodeURIComponent(config.url.split('/api/target/group/')[1])
+    const target = mockTargets.find((item) => item.union_id === unionId)
+    if (!target) {
+      return [404, { detail: 'Not found' }]
+    }
+    return [
+      200,
+      {
+        target_group: {
+          union_id: target.union_id,
+          member_count: target.bound_ids.length,
+          members: target.bound_ids.map((target_id, index) => ({
+            target_id,
+            channel_id: index + 1,
+          })),
+          blocked: target.blocked,
+          muted: target.muted,
+          locale: target.locale,
+          modules: target.modules,
+          custom_admins: target.custom_admins,
+          banned_users: target.banned_users,
+          target_data: target.target_data,
+        },
       },
     ]
   })
@@ -167,12 +214,25 @@ export default function setupMock() {
   const mockSenders = [
     {
       sender_id: 'Web|0',
+      union_id: 'USID|00000000000000000000000000000001',
+      bound_ids: ['Web|0'],
       sender_data: {},
       blocked: false,
       superuser: true,
       petal: 0,
       warns: 0,
       trusted: false,
+    },
+    {
+      sender_id: 'QQ|10001',
+      union_id: 'USID|00000000000000000000000000000002',
+      bound_ids: ['QQ|10001', 'Discord|987654'],
+      sender_data: {},
+      blocked: false,
+      superuser: false,
+      petal: 10,
+      warns: 2,
+      trusted: true,
     },
   ]
 
@@ -182,7 +242,7 @@ export default function setupMock() {
     let filtered = mockSenders
 
     if (prefix) {
-      filtered = filtered.filter((item) => item.sender_id.startsWith(`${prefix}|`))
+      filtered = filterByBoundIds(filtered, (senderId) => senderId.startsWith(`${prefix}|`))
     }
 
     if (status === 'superuser') {
@@ -194,7 +254,9 @@ export default function setupMock() {
     }
 
     if (id) {
-      filtered = filtered.filter((item) => item.sender_id.toLowerCase().includes(id.toLowerCase()))
+      filtered = filterByBoundIds(filtered, (senderId) =>
+        senderId.toLowerCase().includes(id.toLowerCase()),
+      )
     }
 
     return [
@@ -202,6 +264,30 @@ export default function setupMock() {
       {
         sender_list: filtered,
         total: filtered.length,
+      },
+    ]
+  })
+
+  mock.onGet(/\/api\/sender\/group\/.+$/).reply((config) => {
+    const unionId = decodeURIComponent(config.url.split('/api/sender/group/')[1])
+    const sender = mockSenders.find((item) => item.union_id === unionId)
+    if (!sender) {
+      return [404, { detail: 'Not found' }]
+    }
+    return [
+      200,
+      {
+        sender_group: {
+          union_id: sender.union_id,
+          member_count: sender.bound_ids.length,
+          members: sender.bound_ids,
+          blocked: sender.blocked,
+          trusted: sender.trusted,
+          superuser: sender.superuser,
+          warns: sender.warns,
+          petal: sender.petal,
+          sender_data: sender.sender_data,
+        },
       },
     ]
   })

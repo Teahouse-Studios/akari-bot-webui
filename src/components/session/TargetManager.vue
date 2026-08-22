@@ -61,8 +61,26 @@
           prop="target_id"
           :label="$t('session.target.table.target_id')"
           sortable
-          min-width="160"
-        />
+          min-width="220"
+        >
+          <template #default="{ row }">
+            <span>{{ row.target_id }}</span>
+            <el-tag v-if="isGroup(row)" type="primary" size="small" style="margin-left: 5px">
+              {{ $t('session.target.tag.group') }}
+            </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column :label="$t('session.target.table.group')" min-width="160">
+          <template #default="{ row }">
+            <template v-if="isGroup(row)">
+              <span>{{ row.bound_ids.length }}</span>
+              <el-button size="mini" type="text" style="margin-left: 5px" @click="viewGroup(row)">
+                <i class="mdi mdi-message-group"></i> {{ $t('session.group.view') }}
+              </el-button>
+            </template>
+            <span v-else>-</span>
+          </template>
+        </el-table-column>
         <el-table-column
           prop="locale"
           :label="$t('session.target.table.locale')"
@@ -192,6 +210,32 @@
     </el-card>
 
     <el-dialog
+      v-model="groupDialogVisible"
+      :title="$t('session.target.title.group_detail')"
+      width="500px"
+    >
+      <div v-loading="groupLoading" class="tag-container">
+        <el-tag
+          v-for="member in selectedGroupMembers"
+          :key="member.target_id"
+          style="margin: 4px"
+          type="info"
+          round
+        >
+          {{ member.target_id }}
+          <el-tooltip :content="$t('session.group.tooltip.channel')" placement="top">
+            <span style="margin-left: 4px; color: #909399">#{{ member.channel_id }}</span>
+          </el-tooltip>
+        </el-tag>
+        <el-empty
+          v-if="!groupLoading && selectedGroupMembers.length === 0"
+          :description="$t('session.group.empty')"
+          :image-size="60"
+        />
+      </div>
+    </el-dialog>
+
+    <el-dialog
       v-model="editDialogVisible"
       :title="$t('session.target.title.edit_target_data')"
       :close-on-press-escape="false"
@@ -199,6 +243,14 @@
       width="600px"
     >
       <el-form :model="editForm" label-width="auto">
+        <el-alert
+          v-if="editGroupMemberCount > 1"
+          type="warning"
+          :closable="false"
+          show-icon
+          style="margin-bottom: 16px"
+          :title="t('session.target.alert.edit_group', { count: editGroupMemberCount })"
+        />
         <el-col :span="12">
           <el-form-item :label="$t('session.target.table.locale')">
             <el-input v-model="editForm.locale" />
@@ -318,6 +370,7 @@ const editForm = reactive({
 
 const targetList = ref([])
 const allModules = ref([])
+const unionMap = ref(new Map())
 const selectedModules = ref([])
 const selectedAdmins = ref([])
 const selectedBanned = ref([])
@@ -325,6 +378,10 @@ const selectedBanned = ref([])
 const moduleDialogVisible = ref(false)
 const adminDialogVisible = ref(false)
 const bannedDialogVisible = ref(false)
+const groupDialogVisible = ref(false)
+const groupLoading = ref(false)
+const selectedGroupMembers = ref([])
+const editGroupMemberCount = ref(0)
 const editDialogVisible = ref(false)
 
 const selectedPrefix = ref('')
@@ -358,6 +415,13 @@ const fetchData = async () => {
         item.custom_admins = Array.isArray(item.custom_admins) ? item.custom_admins : []
         return item
       })
+      const map = new Map()
+      for (const item of response.data.target_list) {
+        if (item.union_id) {
+          map.set(item.union_id, Array.isArray(item.bound_ids) ? item.bound_ids : [])
+        }
+      }
+      unionMap.value = map
       totalItems.value = response.data.total || 0
     }
   } catch (error) {
@@ -409,25 +473,60 @@ const viewModules = (row) => {
   moduleDialogVisible.value = true
 }
 
+const isGroup = (row) => (row.bound_ids?.length ?? 1) > 1
+
+const resolveDisplayIds = (ids) => {
+  if (!Array.isArray(ids)) {
+    return []
+  }
+  return ids.map((id) => {
+    const bound = unionMap.value.get(id)
+    return bound && bound.length > 0 ? bound[0] : id
+  })
+}
+
+const viewGroup = async (row) => {
+  groupDialogVisible.value = true
+  groupLoading.value = true
+  selectedGroupMembers.value = []
+  try {
+    const response = await axios.get(`/api/target/group/${row.union_id}`, {
+      signal: abortController.signal,
+    })
+    if (response.status === 200 && response.data.target_group) {
+      selectedGroupMembers.value = response.data.target_group.members || []
+    }
+  } catch (error) {
+    if (axios.isCancel(error)) {
+      console.log('Request canceled')
+    } else {
+      ElMessage.error(t('message.error.fetch') + error.message)
+    }
+  } finally {
+    groupLoading.value = false
+  }
+}
+
 const viewAdmins = (row) => {
-  selectedAdmins.value = row.custom_admins || []
+  selectedAdmins.value = resolveDisplayIds(row.custom_admins || [])
   adminDialogVisible.value = true
 }
 
 const viewBanned = (row) => {
-  selectedBanned.value = row.banned_users || []
+  selectedBanned.value = resolveDisplayIds(row.banned_users || [])
   bannedDialogVisible.value = true
 }
 
 const editTarget = (row) => {
+  editGroupMemberCount.value = row.bound_ids?.length ?? 1
   Object.assign(editForm, {
     target_id: row.target_id,
     locale: row.locale,
     muted: row.muted,
     blocked: row.blocked,
     modules: row.modules ? [...row.modules] : [],
-    custom_admins: row.custom_admins ? [...row.custom_admins] : [],
-    banned_users: row.banned_users ? [...row.banned_users] : [],
+    custom_admins: row.custom_admins ? resolveDisplayIds(row.custom_admins) : [],
+    banned_users: row.banned_users ? resolveDisplayIds(row.banned_users) : [],
     target_data: row.target_data ? { ...row.target_data } : {},
   })
   targetDataString.value = JSON.stringify(editForm.target_data, null, 2)
@@ -447,7 +546,7 @@ const submitEdit = async () => {
   payload.target_data = parsedTargetData
 
   try {
-    await axios.patch(`api/target/${target_id}`, payload)
+    await axios.patch(`/api/target/${target_id}`, payload)
     ElMessage.success(t('session.message.success.edit'))
     editDialogVisible.value = false
     fetchData()
@@ -468,6 +567,8 @@ const deleteTarget = async (row) => {
   } catch (error) {
     if (error.response?.status === 403 && IS_DEMO) {
       ElMessage.error(t('message.error.demo'))
+    } else if (error.response?.status === 409) {
+      ElMessage.error(error.response.data?.detail || t('session.message.delete_blocked'))
     } else {
       ElMessage.error(t('message.error.fetch') + error.message)
     }
@@ -475,8 +576,11 @@ const deleteTarget = async (row) => {
 }
 
 const confirmDelete = (row) => {
+  const memberCount = row.bound_ids?.length ?? 1
   ElMessageBox.confirm(
-    t('session.target.confirm.message', { target_id: row.target_id }),
+    memberCount > 1
+      ? t('session.target.confirm.delete_group', { target_id: row.target_id, count: memberCount })
+      : t('session.target.confirm.message', { target_id: row.target_id }),
     t('confirm.warning'),
     {
       confirmButtonText: t('button.confirm'),

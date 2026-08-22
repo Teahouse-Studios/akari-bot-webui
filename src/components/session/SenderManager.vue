@@ -62,8 +62,26 @@
           prop="sender_id"
           :label="$t('session.sender.table.sender_id')"
           sortable
-          min-width="140"
-        />
+          min-width="200"
+        >
+          <template #default="{ row }">
+            <span>{{ row.sender_id }}</span>
+            <el-tag v-if="isGroup(row)" type="primary" size="small" style="margin-left: 5px">
+              {{ $t('session.sender.tag.group') }}
+            </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column :label="$t('session.sender.table.group')" min-width="160">
+          <template #default="{ row }">
+            <template v-if="isGroup(row)">
+              <span>{{ row.bound_ids.length }}</span>
+              <el-button size="mini" type="text" style="margin-left: 5px" @click="viewGroup(row)">
+                <i class="mdi mdi-account-group"></i> {{ $t('session.group.view') }}
+              </el-button>
+            </template>
+            <span v-else>-</span>
+          </template>
+        </el-table-column>
         <el-table-column
           prop="warns"
           :label="$t('session.sender.table.warns')"
@@ -125,6 +143,29 @@
     </el-card>
 
     <el-dialog
+      v-model="groupDialogVisible"
+      :title="$t('session.sender.title.group_detail')"
+      width="500px"
+    >
+      <div v-loading="groupLoading" class="tag-container">
+        <el-tag
+          v-for="member in selectedGroupMembers"
+          :key="member"
+          style="margin: 4px"
+          type="info"
+          round
+        >
+          {{ member }}
+        </el-tag>
+        <el-empty
+          v-if="!groupLoading && selectedGroupMembers.length === 0"
+          :description="$t('session.group.empty')"
+          :image-size="60"
+        />
+      </div>
+    </el-dialog>
+
+    <el-dialog
       v-model="editDialogVisible"
       :title="$t('session.sender.title.edit_sender_data')"
       :close-on-press-escape="false"
@@ -132,6 +173,14 @@
       width="600px"
     >
       <el-form :model="editForm" label-width="auto">
+        <el-alert
+          v-if="editGroupMemberCount > 1"
+          type="warning"
+          :closable="false"
+          show-icon
+          style="margin-bottom: 16px"
+          :title="t('session.sender.alert.edit_group', { count: editGroupMemberCount })"
+        />
         <el-row :gutter="24">
           <el-col :span="6">
             <el-form-item :label="$t('session.sender.table.superuser')">
@@ -210,9 +259,13 @@ const platformIdPart = ref('')
 
 const editDialogVisible = ref(false)
 const senderDataString = ref('')
+const groupDialogVisible = ref(false)
+const groupLoading = ref(false)
+const selectedGroupMembers = ref([])
+const editGroupMemberCount = ref(0)
 
 const loading = ref(false)
-let debounceTimer = null
+const debounceTimer = ref(null)
 
 const abortController = new AbortController()
 
@@ -230,7 +283,15 @@ const fetchData = async () => {
       },
     })
     if (response.status === 200) {
-      senderList.value = response.data.sender_list
+      senderList.value = response.data.sender_list.map((item) => ({
+        ...item,
+        sender_data:
+          item.sender_data &&
+          typeof item.sender_data === 'object' &&
+          !Array.isArray(item.sender_data)
+            ? item.sender_data
+            : {},
+      }))
       totalItems.value = response.data.total || 0
     }
   } catch (error) {
@@ -250,8 +311,8 @@ const refreshData = async () => {
 }
 
 const debouncedRefresh = () => {
-  clearTimeout(debounceTimer)
-  debounceTimer = setTimeout(() => {
+  clearTimeout(debounceTimer.value)
+  debounceTimer.value = setTimeout(() => {
     refreshData()
   }, 500)
 }
@@ -282,7 +343,32 @@ const handleBlockedChange = (value) => {
   }
 }
 
+const isGroup = (row) => (row.bound_ids?.length ?? 1) > 1
+
+const viewGroup = async (row) => {
+  groupDialogVisible.value = true
+  groupLoading.value = true
+  selectedGroupMembers.value = []
+  try {
+    const response = await axios.get(`/api/sender/group/${row.union_id}`, {
+      signal: abortController.signal,
+    })
+    if (response.status === 200 && response.data.sender_group) {
+      selectedGroupMembers.value = response.data.sender_group.members || []
+    }
+  } catch (error) {
+    if (axios.isCancel(error)) {
+      console.log('Request canceled')
+    } else {
+      ElMessage.error(t('message.error.fetch') + error.message)
+    }
+  } finally {
+    groupLoading.value = false
+  }
+}
+
 const editSender = (row) => {
+  editGroupMemberCount.value = row.bound_ids?.length ?? 1
   Object.assign(editForm, {
     sender_id: row.sender_id,
     superuser: row.superuser,
@@ -330,6 +416,8 @@ const deleteSender = async (row) => {
   } catch (error) {
     if (error.response?.status === 403 && IS_DEMO) {
       ElMessage.error(t('message.error.demo'))
+    } else if (error.response?.status === 409) {
+      ElMessage.error(error.response.data?.detail || t('session.message.delete_blocked'))
     } else {
       ElMessage.error(t('message.error.fetch') + error.message)
     }
@@ -337,8 +425,11 @@ const deleteSender = async (row) => {
 }
 
 const confirmDelete = (row) => {
+  const memberCount = row.bound_ids?.length ?? 1
   ElMessageBox.confirm(
-    t('session.sender.confirm.message', { sender_id: row.sender_id }),
+    memberCount > 1
+      ? t('session.sender.confirm.delete_group', { sender_id: row.sender_id, count: memberCount })
+      : t('session.sender.confirm.message', { sender_id: row.sender_id }),
     t('confirm.warning'),
     {
       confirmButtonText: t('button.confirm'),
@@ -400,6 +491,16 @@ h3 {
 .filter-item {
   flex: 1 1 0;
   min-width: 200px;
+}
+
+.el-dialog .tag-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  overflow-y: auto;
+  max-height: 200px;
+  padding: 10px 0;
+  max-width: 100%;
 }
 
 .pagination-wrapper {
