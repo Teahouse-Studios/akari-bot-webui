@@ -76,7 +76,7 @@
             <template v-if="isGroup(row)">
               <span>{{ row.bound_ids.length }}</span>
               <el-button size="mini" type="text" style="margin-left: 5px" @click="viewGroup(row)">
-                <i class="mdi mdi-account-group"></i> {{ $t('session.group.view') }}
+                {{ $t('button.view') }}
               </el-button>
             </template>
             <span v-else>-</span>

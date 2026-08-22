@@ -75,7 +75,7 @@
             <template v-if="isGroup(row)">
               <span>{{ row.bound_ids.length }}</span>
               <el-button size="mini" type="text" style="margin-left: 5px" @click="viewGroup(row)">
-                <i class="mdi mdi-message-group"></i> {{ $t('session.group.view') }}
+                <i class="mdi mdi-message-group"></i> {{ $t('button.view') }}
               </el-button>
             </template>
             <span v-else>-</span>
@@ -96,7 +96,7 @@
               type="primary"
               style="margin-left: 5px"
               @click="viewModules(row)"
-              ><i class="mdi mdi-eye"></i> {{ $t('session.button.view') }}</el-button
+              ><i class="mdi mdi-eye"></i> {{ $t('button.view') }}</el-button
             >
           </template>
         </el-table-column>
@@ -109,7 +109,7 @@
               type="primary"
               style="margin-left: 5px"
               @click="viewAdmins(row)"
-              ><i class="mdi mdi-eye"></i> {{ $t('session.button.view') }}</el-button
+              ><i class="mdi mdi-eye"></i> {{ $t('button.view') }}</el-button
             >
           </template>
         </el-table-column>
@@ -122,7 +122,7 @@
               type="primary"
               style="margin-left: 5px"
               @click="viewBanned(row)"
-              ><i class="mdi mdi-eye"></i> {{ $t('session.button.view') }}</el-button
+              ><i class="mdi mdi-eye"></i> {{ $t('button.view') }}</el-button
             >
           </template>
         </el-table-column>
