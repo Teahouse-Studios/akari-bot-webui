@@ -195,6 +195,28 @@
                 </div>
               </div>
             </div>
+
+            <div
+              v-else-if="block.type === 'nodes'"
+              class="chat-nodes"
+              @click="openNodesDialog(block)"
+            >
+              <div class="chat-nodes-title">
+                <i class="mdi mdi-forward"></i>
+                <span>{{ block.content.name }}</span>
+              </div>
+              <div
+                v-for="(node, nodeIdx) in block.content.nodes.slice(0, 3)"
+                :key="nodeIdx"
+                class="chat-nodes-preview"
+              >
+                <span class="chat-nodes-preview-index">{{ nodeIdx + 1 }}.</span>
+                <span class="chat-nodes-preview-text">{{ nodesPreviewText(node) }}</span>
+              </div>
+              <div v-if="block.content.nodes.length > 3" class="chat-nodes-more">
+                {{ $t('chat.nodes.more', { count: block.content.nodes.length - 3 }) }}
+              </div>
+            </div>
           </template>
 
           <div v-if="debug" class="debug-uuid">{{ msg.id }}</div>
@@ -305,6 +327,115 @@
   <div class="chat-tip">
     {{ $t('chat.tip') }}
   </div>
+
+  <el-dialog
+    v-model="nodesDialogVisible"
+    :title="activeNodes?.name || ''"
+    width="640px"
+    class="nodes-dialog"
+    append-to-body
+  >
+    <div class="nodes-dialog-list">
+      <div
+        v-for="(node, nodeIdx) in activeNodes?.nodes || []"
+        :key="nodeIdx"
+        class="nodes-dialog-item"
+      >
+        <div class="nodes-dialog-item-index">{{ nodeIdx + 1 }}</div>
+        <div class="nodes-dialog-item-content">
+          <template v-for="(block, blockIdx) in node" :key="blockIdx">
+            <SafeHtml
+              v-if="block.type === 'text'"
+              :html="block.html"
+              @click="handleMarkdownClick"
+              class="chat-message-content"
+            />
+
+            <img
+              v-else-if="block.type === 'image'"
+              :src="block.content"
+              class="chat-img"
+              alt=""
+              @click="showImagePreview(block.content)"
+            />
+
+            <audio
+              v-else-if="block.type === 'voice'"
+              class="chat-voice"
+              controls
+              preload="metadata"
+              :src="block.content"
+            ></audio>
+
+            <span v-else-if="block.type === 'action_text'" class="chat-action-text-disabled">
+              {{ block.show }}
+            </span>
+
+            <div v-else-if="block.type === 'button_frame'" class="chat-button-frame">
+              <div v-for="(row, rowIdx) in block.content" :key="rowIdx" class="chat-button-row">
+                <template v-for="(btn, btnIdx) in row" :key="btnIdx">
+                  <a
+                    v-if="isExternalUrl(btn.value)"
+                    class="chat-button chat-button-link"
+                    @click.prevent
+                  >
+                    {{ btn.show }}
+                  </a>
+                  <button v-else type="button" class="chat-button" disabled>
+                    {{ btn.show }}
+                  </button>
+                </template>
+              </div>
+            </div>
+
+            <div v-else-if="block.type === 'embed'" class="chat-embed">
+              <div
+                class="chat-embed-colorbar"
+                :style="{ backgroundColor: colorToHex(block.content.color) }"
+              ></div>
+              <div class="chat-embed-content">
+                <div class="chat-embed-title">{{ block.content.title }}</div>
+
+                <div v-if="block.content.description" class="chat-embed-description">
+                  {{ block.content.description }}
+                </div>
+
+                <div
+                  v-if="block.content.fields && block.content.fields.length"
+                  class="chat-embed-fields"
+                >
+                  <div
+                    v-for="(field, fieldIdx) in block.content.fields"
+                    :key="fieldIdx"
+                    class="chat-embed-field"
+                    :class="{ 'chat-embed-field-inline': field.inline }"
+                  >
+                    <div class="chat-embed-field-name">{{ field.name }}</div>
+                    <div class="chat-embed-field-value">{{ field.value }}</div>
+                  </div>
+                </div>
+
+                <img
+                  v-if="block.content.image"
+                  :src="block.content.image"
+                  class="chat-embed-image"
+                  alt=""
+                  @click="showImagePreview(block.content.image)"
+                />
+                <img
+                  v-if="block.content.thumbnail"
+                  :src="block.content.thumbnail"
+                  class="chat-embed-thumbnail"
+                  alt=""
+                  @click="showImagePreview(block.content.thumbnail)"
+                />
+              </div>
+            </div>
+          </template>
+        </div>
+      </div>
+    </div>
+  </el-dialog>
 </template>
 
 <script setup>
@@ -340,6 +471,8 @@ const showFullscreenPreviewAnim = ref(false)
 const isMobileView = ref(window.innerWidth < 1024)
 const previewImageSrc = ref('')
 const activeReactionMsg = ref(null)
+const nodesDialogVisible = ref(false)
+const activeNodes = ref(null)
 const abortController = ref(new AbortController())
 const debug = ref(false)
 const isDarkMode = ref(LocalStorageJson.getItem('isDarkMode') === 'true')
@@ -499,6 +632,19 @@ const normalizeMessageBlocks = (data) => {
           return item.content && typeof item.content === 'object'
             ? { type: 'embed', content: item.content }
             : null
+        case 'nodes': {
+          const content = item.content
+          if (!content || typeof content !== 'object' || !Array.isArray(content.nodes)) {
+            return null
+          }
+          return {
+            type: 'nodes',
+            content: {
+              name: typeof content.name === 'string' ? content.name : '',
+              nodes: content.nodes.map((chain) => normalizeMessageBlocks(chain)),
+            },
+          }
+        }
         default:
           return null
       }
@@ -519,6 +665,30 @@ const renderMessageText = (data) => {
     })
     .filter((s) => s !== '')
     .join('\n')
+}
+
+const nodesPreviewText = (node) => {
+  if (!Array.isArray(node)) return ''
+  const parts = []
+  for (const block of node) {
+    if (!block) continue
+    if (block.type === 'text' && typeof block.content === 'string') {
+      const oneLine = block.content.replace(/\s+/g, ' ').trim()
+      if (oneLine) parts.push(oneLine)
+    } else if (block.type === 'action_text') {
+      const show = block.show || block.content || ''
+      if (show) parts.push(show)
+    } else if (block.type === 'image') {
+      parts.push(t('chat.nodes.image'))
+    } else if (block.type === 'voice') {
+      parts.push(t('chat.nodes.voice'))
+    } else if (block.type === 'button_frame') {
+      parts.push(t('chat.nodes.button'))
+    } else if (block.type === 'embed') {
+      parts.push(block.content?.title || t('chat.nodes.embed'))
+    }
+  }
+  return parts.join(' ')
 }
 
 const isExternalUrl = (value) => typeof value === 'string' && /^https?:\/\//i.test(value)
@@ -890,6 +1060,11 @@ const handleMarkdownClick = (event) => {
   } else if (target.tagName === 'IMG') {
     showImagePreview(target.src)
   }
+}
+
+const openNodesDialog = (block) => {
+  activeNodes.value = block?.content || null
+  nodesDialogVisible.value = true
 }
 
 const SafeHtml = {
@@ -1641,5 +1816,98 @@ a.chat-embed-title-link:hover {
 
 .dark .chat-tip {
   color: #aaa;
+}
+
+.chat-nodes {
+  margin: 4px 0;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: var(--el-fill-color-light);
+  cursor: pointer;
+  min-width: 220px;
+  max-width: 320px;
+  transition: background-color 0.2s;
+}
+
+.chat-nodes:hover {
+  background: var(--el-fill-color);
+}
+
+.chat-nodes-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  word-break: break-word;
+}
+
+.chat-nodes-preview {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  opacity: 0.9;
+  padding: 2px 0;
+}
+
+.chat-nodes-preview-index {
+  flex-shrink: 0;
+  color: var(--el-color-primary);
+}
+
+.chat-nodes-preview-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chat-nodes-more {
+  margin-top: 6px;
+  font-size: 12px;
+  opacity: 0.7;
+}
+
+.chat-action-text-disabled {
+  color: inherit;
+  cursor: default;
+  white-space: nowrap;
+}
+
+.nodes-dialog-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.nodes-dialog-item {
+  display: flex;
+  gap: 10px;
+  padding: 10px;
+  border: 1px solid var(--el-border-color);
+  border-radius: 8px;
+  background: var(--el-fill-color-lighter);
+}
+
+.nodes-dialog-item-index {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--el-color-primary);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.nodes-dialog-item-content {
+  flex: 1;
+  min-width: 0;
+  word-break: break-word;
 }
 </style>
