@@ -61,10 +61,13 @@
         <div class="verify-section">
           <p>{{ $t('setting.two_factor_auth.setup.enter_code') }}</p>
           <el-input
-            v-model="setupCode"
+            v-model="filteredSetupCode"
             :placeholder="$t('setting.two_factor_auth.input.code')"
             maxlength="6"
             minlength="6"
+            inputmode="numeric"
+            pattern="[0-9]*"
+            autocomplete="one-time-code"
             class="code-input"
             @keyup.enter="enableTwoFactor"
           />
@@ -135,10 +138,13 @@
         <el-form-item v-if="!disableUseBackup" :label="$t('setting.two_factor_auth.input.code')">
           <div class="code-input-wrapper">
             <el-input
-              v-model="disableForm.code"
+              v-model="filteredDisableCode"
               :placeholder="$t('setting.two_factor_auth.input.code')"
               maxlength="6"
               minlength="6"
+              inputmode="numeric"
+              pattern="[0-9]*"
+              autocomplete="one-time-code"
             />
             <span class="backup-link" @click="switchDisableToBackup">
               {{ $t('totp.button.use_backup') }}
@@ -199,10 +205,13 @@
         <el-form-item v-if="!resetUseBackup" :label="$t('setting.two_factor_auth.input.code')">
           <div class="code-input-wrapper">
             <el-input
-              v-model="resetBackupForm.code"
+              v-model="filteredResetBackupCode"
               :placeholder="$t('setting.two_factor_auth.input.code')"
               maxlength="6"
               minlength="6"
+              inputmode="numeric"
+              pattern="[0-9]*"
+              autocomplete="one-time-code"
             />
             <span class="backup-link" @click="switchResetToBackup">
               {{ $t('totp.button.use_backup') }}
@@ -270,10 +279,26 @@ const secret = ref('')
 const qrUri = ref('')
 const setupCode = ref('')
 
+// 仅允许输入 0-9 数字，最多 6 位
+const filteredSetupCode = computed({
+  get: () => setupCode.value,
+  set: (value) => {
+    setupCode.value = (value ?? '').replace(/\D/g, '').slice(0, 6)
+  },
+})
+
 const disableDialogVisible = ref(false)
 const disableForm = ref({
   password: '',
   code: '',
+})
+
+// 仅允许输入 0-9 数字，最多 6 位
+const filteredDisableCode = computed({
+  get: () => disableForm.value.code,
+  set: (value) => {
+    disableForm.value.code = (value ?? '').replace(/\D/g, '').slice(0, 6)
+  },
 })
 
 // Backup codes
@@ -288,6 +313,14 @@ const resetBackupForm = ref({
 })
 const resettingBackup = ref(false)
 
+// 仅允许输入 0-9 数字，最多 6 位
+const filteredResetBackupCode = computed({
+  get: () => resetBackupForm.value.code,
+  set: (value) => {
+    resetBackupForm.value.code = (value ?? '').replace(/\D/g, '').slice(0, 6)
+  },
+})
+
 // Backup mode toggles
 const disableUseBackup = ref(false)
 const resetUseBackup = ref(false)
@@ -298,7 +331,7 @@ const canSubmitDisable = computed(() => {
   if (disableUseBackup.value) {
     return disableForm.value.code.trim() !== ''
   }
-  return disableForm.value.code.length === 6
+  return /^\d{6}$/.test(disableForm.value.code)
 })
 
 const canSubmitResetBackup = computed(() => {
@@ -306,7 +339,7 @@ const canSubmitResetBackup = computed(() => {
   if (resetUseBackup.value) {
     return resetBackupForm.value.code.trim() !== ''
   }
-  return resetBackupForm.value.code.length === 6
+  return /^\d{6}$/.test(resetBackupForm.value.code)
 })
 
 function copyAll() {

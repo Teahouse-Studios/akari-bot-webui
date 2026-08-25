@@ -3,10 +3,13 @@
     <span class="totp-title">{{ $t('login.two_factor.title') }}</span>
     <p class="totp-desc">{{ $t('login.two_factor.description') }}</p>
     <el-input
-      v-model="code"
+      v-model="filteredCode"
       :placeholder="$t('setting.two_factor_auth.input.code')"
       maxlength="6"
       minlength="6"
+      inputmode="numeric"
+      pattern="[0-9]*"
+      autocomplete="one-time-code"
       @keyup.enter="handleConfirm"
     />
     <span class="backup-link" @click="handleBackupClick">
@@ -52,7 +55,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()
@@ -66,6 +69,14 @@ const emit = defineEmits(['confirm', 'cancel', 'backup-verify', 'backup-success'
 const code = ref('')
 const showBackupInput = ref(false)
 const backupCode = ref('')
+
+// 仅允许输入 0-9 数字，最多 6 位
+const filteredCode = computed({
+  get: () => code.value,
+  set: (value) => {
+    code.value = (value ?? '').replace(/\D/g, '').slice(0, 6)
+  },
+})
 
 function handleConfirm() {
   if (code.value.length !== 6) return

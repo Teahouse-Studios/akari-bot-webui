@@ -69,7 +69,134 @@
         :data-id="msg.id"
       >
         <div class="chat-message" :class="msg.from">
-          <SafeHtml :html="msg.html" @click="handleMarkdownClick" class="chat-message-content" />
+          <template v-for="(block, blockIdx) in msg.blocks" :key="blockIdx">
+            <SafeHtml
+              v-if="block.type === 'text'"
+              :html="block.html"
+              @click="handleMarkdownClick"
+              class="chat-message-content"
+            />
+
+            <img
+              v-else-if="block.type === 'image'"
+              :src="block.content"
+              class="chat-img"
+              alt=""
+              @click="showImagePreview(block.content)"
+            />
+
+            <audio
+              v-else-if="block.type === 'voice'"
+              class="chat-voice"
+              controls
+              preload="metadata"
+              :src="block.content"
+            ></audio>
+
+            <span
+              v-else-if="block.type === 'action_text'"
+              class="chat-action-text"
+              @click="handleActionTextClick(block)"
+            >
+              {{ block.show }}
+            </span>
+
+            <div v-else-if="block.type === 'button_frame'" class="chat-button-frame">
+              <div v-for="(row, rowIdx) in block.content" :key="rowIdx" class="chat-button-row">
+                <template v-for="(btn, btnIdx) in row" :key="btnIdx">
+                  <a
+                    v-if="isExternalUrl(btn.value)"
+                    :href="btn.value"
+                    target="_blank"
+                    rel="noopener"
+                    class="chat-button chat-button-link"
+                    @click="handleExternalButtonClick($event, btn.value)"
+                  >
+                    {{ btn.show }}
+                  </a>
+                  <button
+                    v-else
+                    type="button"
+                    class="chat-button"
+                    :class="{ 'chat-button-clicked': btn._clicked }"
+                    :disabled="btn._clicked"
+                    @click="handleButtonClick(btn)"
+                  >
+                    {{ btn.show }}
+                  </button>
+                </template>
+              </div>
+            </div>
+
+            <div v-else-if="block.type === 'embed'" class="chat-embed">
+              <div
+                class="chat-embed-colorbar"
+                :style="{ backgroundColor: colorToHex(block.content.color) }"
+              ></div>
+              <div class="chat-embed-content">
+                <a
+                  v-if="block.content.url"
+                  :href="block.content.url"
+                  target="_blank"
+                  rel="noopener"
+                  class="chat-embed-title chat-embed-title-link"
+                >
+                  {{ block.content.title }}
+                </a>
+                <div v-else class="chat-embed-title">{{ block.content.title }}</div>
+
+                <div v-if="block.content.description" class="chat-embed-description">
+                  {{ block.content.description }}
+                </div>
+
+                <div
+                  v-if="block.content.fields && block.content.fields.length"
+                  class="chat-embed-fields"
+                >
+                  <div
+                    v-for="(field, fieldIdx) in block.content.fields"
+                    :key="fieldIdx"
+                    class="chat-embed-field"
+                    :class="{ 'chat-embed-field-inline': field.inline }"
+                  >
+                    <div class="chat-embed-field-name">{{ field.name }}</div>
+                    <div class="chat-embed-field-value">{{ field.value }}</div>
+                  </div>
+                </div>
+
+                <img
+                  v-if="block.content.image"
+                  :src="block.content.image"
+                  class="chat-embed-image"
+                  alt=""
+                  @click="showImagePreview(block.content.image)"
+                />
+                <img
+                  v-if="block.content.thumbnail"
+                  :src="block.content.thumbnail"
+                  class="chat-embed-thumbnail"
+                  alt=""
+                  @click="showImagePreview(block.content.thumbnail)"
+                />
+
+                <div
+                  v-if="block.content.author || block.content.footer || block.content.timestamp"
+                  class="chat-embed-footer"
+                >
+                  <span v-if="block.content.author" class="chat-embed-author">
+                    {{ block.content.author }}
+                  </span>
+                  <span v-if="block.content.timestamp" class="chat-embed-timestamp">
+                    {{ formatTimestamp(block.content.timestamp) }}
+                  </span>
+                  <span v-if="block.content.footer" class="chat-embed-footer-text">
+                    {{ block.content.footer }}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </template>
+
           <div v-if="debug" class="debug-uuid">{{ msg.id }}</div>
         </div>
         <div class="chat-reactions">
@@ -107,7 +234,7 @@
             </template>
           </el-popover>
         </div>
-        <div class="chat-actions" v-if="msg.text.replace(/\[image:[^\]]+\]/g, '').trim()">
+        <div class="chat-actions" v-if="msg.text && msg.text.trim()">
           <i
             v-if="msg.typingStatus"
             :class="[
@@ -125,7 +252,7 @@
 
           <el-tooltip
             :content="
-              msg.from === 'bot' && /\[image:[^\]]+\]/.test(msg.text)
+              msg.from === 'bot' && msgHasImage(msg)
                 ? $t('chat.button.copy_text')
                 : $t('button.copy')
             "
@@ -141,6 +268,7 @@
 
     <div class="send-box">
       <el-input
+        ref="chatInput"
         v-model="inputText"
         :placeholder="$t('chat.input.send')"
         @keydown.enter="handleEnterKey"
@@ -195,6 +323,7 @@ import LocalStorageJson from '@/localStorageJson.js'
 
 const { t } = useI18n()
 const inputText = ref('')
+const chatInput = ref(null)
 const messages = ref([])
 const chatBox = ref(null)
 const websocket = ref(null)
@@ -293,9 +422,19 @@ const scrollToBottom = () => {
 }
 
 const renderMarkdown = (text) => {
-  const raw = md.render(text).replace(/\[image:([^\]]+)\]/g, (match, src) => {
+  if (!text) return ''
+
+  let raw = md.render(text).replace(/\[image:([^\]]+)\]/g, (match, src) => {
     return `<img src="${src}" class="chat-img" />`
   })
+
+  const leadingNewlines = text.match(/^\n+/)
+  if (leadingNewlines) {
+    const count = leadingNewlines[0].length
+    raw = '<br />'.repeat(count) + raw
+  }
+
+  raw = raw.replace(/(?:<br\s*\/?>\s*)+$/, '')
 
   return DOMPurify.sanitize(raw, {
     ALLOWED_TAGS: [
@@ -324,29 +463,161 @@ const renderMarkdown = (text) => {
   })
 }
 
-const renderResponse = (data) => {
-  if (Array.isArray(data)) {
-    return data
-      .map((item) => {
-        if (item.type === 'text') {
-          return item.content
-        }
-        if (item.type === 'image') {
-          const base64Content = item.content
-          if (
-            base64Content.startsWith('data:image/png;base64,') ||
-            base64Content.startsWith('data:image/jpeg;base64,') ||
-            base64Content.startsWith('data:image/gif;base64,')
-          ) {
-            return `[image:${base64Content}]`
+const isDataImage = (src) => typeof src === 'string' && /^data:image\//i.test(src)
+
+const normalizeMessageBlocks = (data) => {
+  const list = Array.isArray(data) ? data : data == null ? [] : [data]
+  return list
+    .map((item, idx) => {
+      if (!item || typeof item !== 'object') return null
+      switch (item.type) {
+        case 'text': {
+          if (typeof item.content !== 'string') return null
+          let html = renderMarkdown(item.content)
+          if (list[idx + 1]?.type === 'text') {
+            html += '<br />'
           }
-          return ''
+          return { type: 'text', content: item.content, html }
         }
-        return ''
-      })
-      .join('\n')
+        case 'image':
+          return isDataImage(item.content) ? { type: 'image', content: item.content } : null
+        case 'voice':
+          return typeof item.content === 'string' ? { type: 'voice', content: item.content } : null
+        case 'action_text':
+          return typeof item.content === 'string'
+            ? {
+                type: 'action_text',
+                content: item.content,
+                show: typeof item.show === 'string' ? item.show : item.content,
+              }
+            : null
+        case 'button_frame':
+          return Array.isArray(item.content)
+            ? { type: 'button_frame', content: item.content }
+            : null
+        case 'embed':
+          return item.content && typeof item.content === 'object'
+            ? { type: 'embed', content: item.content }
+            : null
+        default:
+          return null
+      }
+    })
+    .filter(Boolean)
+}
+
+const renderMessageText = (data) => {
+  const list = Array.isArray(data) ? data : data == null ? [] : [data]
+  return list
+    .map((item) => {
+      if (!item || typeof item !== 'object') return ''
+      if (item.type === 'text' && typeof item.content === 'string') return item.content
+      if (item.type === 'action_text' && typeof item.content === 'string') {
+        return item.content
+      }
+      return ''
+    })
+    .filter((s) => s !== '')
+    .join('\n')
+}
+
+const isExternalUrl = (value) => typeof value === 'string' && /^https?:\/\//i.test(value)
+
+const colorToHex = (color) => {
+  const toHex = (n) =>
+    '#' +
+    (Number.isFinite(n) ? Math.floor(n) & 0xffffff : 0x0091ff)
+      .toString(16)
+      .padStart(6, '0')
+      .toUpperCase()
+
+  if (typeof color === 'number') return toHex(color)
+
+  if (typeof color === 'string') {
+    const s = color.trim()
+    if (/^#[0-9a-fA-F]{6}$/.test(s) || /^#[0-9a-fA-F]{3}$/.test(s)) return s.toUpperCase()
+    if (/^0x[0-9a-fA-F]+$/.test(s)) return toHex(parseInt(s, 16))
+    const n = Number(s)
+    if (Number.isFinite(n)) return toHex(n)
   }
-  return data
+
+  return '#0091FF'
+}
+
+const formatTimestamp = (ts) => {
+  const n = Number(ts)
+  if (!Number.isFinite(n) || n <= 0) return ''
+  return new Date(n * 1000).toLocaleString()
+}
+
+const msgHasImage = (msg) =>
+  Array.isArray(msg?.blocks) && msg.blocks.some((b) => b && b.type === 'image')
+
+const focusChatInput = () => {
+  nextTick(() => {
+    chatInput.value?.focus()
+  })
+}
+
+const sendUserMessage = (text) => {
+  const content = typeof text === 'string' ? text : ''
+  if (!content) return
+
+  const uuid = uuidv4()
+  messages.value.push({
+    from: 'user',
+    blocks: [{ type: 'text', content, html: renderMarkdown(content) }],
+    text: content,
+    id: uuid,
+    showEmojiPicker: false,
+    reactions: {},
+    userReactions: [],
+  })
+
+  if (!IS_DEMO) {
+    websocket.value?.send(
+      JSON.stringify({
+        action: 'send',
+        message: [{ type: 'text', content }],
+        id: uuid,
+      }),
+    )
+  }
+  inputText.value = ''
+  scrollToBottom()
+}
+
+const handleActionTextClick = (block) => {
+  const text = block && typeof block.content === 'string' ? block.content : ''
+  if (!text) return
+
+  inputText.value = text
+  focusChatInput()
+}
+
+const handleButtonClick = (btn) => {
+  if (!btn || typeof btn !== 'object' || btn._clicked) return
+
+  const value = typeof btn.value === 'string' ? btn.value : ''
+  if (!value) return
+
+  const uuid = uuidv4()
+  if (!IS_DEMO) {
+    websocket.value?.send(
+      JSON.stringify({
+        action: 'send',
+        message: [{ type: 'text', content: value }],
+        id: uuid,
+        reply_id: btn.reply_id ?? null,
+      }),
+    )
+  }
+  btn._clicked = true
+}
+
+const handleExternalButtonClick = (event, url) => {
+  event.preventDefault()
+  confirmExternalLink(url, t)
 }
 
 const handleHeartbeatResponse = () => {
@@ -430,10 +701,11 @@ const connectWebSocket = async () => {
         const parsed = JSON.parse(data)
         if (parsed.action === 'send') {
           const uuid = parsed.id || uuidv4()
+          const content = parsed.message?.[0]?.content ?? ''
           messages.value.push({
             from: 'user',
-            text: parsed.message[0].content,
-            html: renderMarkdown(parsed.message[0].content),
+            blocks: [{ type: 'text', content, html: renderMarkdown(content) }],
+            text: content,
             id: uuid,
             showEmojiPicker: false,
             reactions: {},
@@ -526,8 +798,8 @@ const connectWebSocket = async () => {
       if (data.action === 'send') {
         messages.value.push({
           from: 'bot',
-          text: renderResponse(data.message),
-          html: renderMarkdown(renderResponse(data.message)),
+          blocks: normalizeMessageBlocks(data.message),
+          text: renderMessageText(data.message),
           id: data.id || uuidv4(),
           typingStatus: null,
           showEmojiPicker: false,
@@ -569,29 +841,7 @@ const authenticateToken = () => {
 const sendMessage = () => {
   const text = inputText.value.trim()
   if (!text) return
-
-  const uuid = uuidv4()
-  messages.value.push({
-    from: 'user',
-    text,
-    html: renderMarkdown(text),
-    id: uuid,
-    showEmojiPicker: false,
-    reactions: {},
-    userReactions: [],
-  })
-
-  if (!IS_DEMO) {
-    websocket.value?.send(
-      JSON.stringify({
-        action: 'send',
-        message: [{ type: 'text', content: text }],
-        id: uuid,
-      }),
-    )
-  }
-  inputText.value = ''
-  scrollToBottom()
+  sendUserMessage(text)
 }
 
 const resetChat = () => {
@@ -787,7 +1037,7 @@ const toggleReaction = (msg, emoji) => {
 
 const copyMessage = async (msg) => {
   try {
-    const textWithoutImages = msg.text.replace(/\[image:[^\]]+\]/g, '').trim()
+    const textWithoutImages = (msg.text || '').trim()
     if (!textWithoutImages) {
       ElMessage.warning(t('chat.message.warning.nothing_to_copy'))
       return
@@ -857,6 +1107,7 @@ onBeforeUnmount(() => {
 
 <style>
 .chat-img {
+  display: block;
   max-width: 80%;
   max-height: 300px;
   margin: 8px 0;
@@ -900,6 +1151,184 @@ onBeforeUnmount(() => {
   color: white;
   background-color: #3a3a3a;
   border: 1px solid #555;
+}
+
+.chat-voice {
+  max-width: 100%;
+  margin: 8px 0;
+  display: block;
+}
+
+.chat-message-content {
+  display: contents;
+}
+
+.chat-message-content a {
+  color: var(--el-color-primary);
+}
+
+.chat-action-text {
+  color: var(--el-color-primary);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.chat-action-text:hover {
+  text-decoration: underline;
+}
+
+.chat-button-frame {
+  margin: 8px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.chat-button-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.chat-button {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 14px;
+  border: 1px solid var(--el-border-color);
+  border-radius: 4px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 20px;
+  text-decoration: none;
+  transition:
+    background-color 0.2s,
+    color 0.2s,
+    border-color 0.2s;
+}
+
+.chat-button-link {
+  text-decoration: underline;
+}
+
+.chat-button:hover {
+  color: var(--el-color-primary);
+  border-color: var(--el-color-primary);
+}
+
+.chat-button:active,
+.chat-button-clicked {
+  background-color: var(--el-color-primary);
+  border-color: var(--el-color-primary);
+  color: white;
+}
+
+.chat-button-clicked:hover,
+.chat-button:disabled:hover {
+  color: white;
+}
+
+.chat-button:disabled {
+  cursor: default;
+}
+
+.chat-embed {
+  display: flex;
+  max-width: 340px;
+  margin: 8px 0;
+  border-radius: 6px;
+  background: var(--el-fill-color-light);
+  overflow: hidden;
+}
+
+.chat-embed-colorbar {
+  width: 4px;
+  flex-shrink: 0;
+}
+
+.chat-embed-content {
+  flex: 1;
+  min-width: 0;
+  padding: 10px 14px;
+}
+
+.chat-embed-title {
+  font-size: 15px;
+  font-weight: 600;
+  word-break: break-word;
+}
+
+a.chat-embed-title-link {
+  color: var(--el-color-primary);
+  text-decoration: none;
+}
+
+a.chat-embed-title-link:hover {
+  text-decoration: underline;
+}
+
+.chat-embed-description {
+  margin-top: 4px;
+  font-size: 13px;
+  opacity: 0.9;
+  word-break: break-word;
+  white-space: pre-wrap;
+}
+
+.chat-embed-fields {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  margin-top: 8px;
+}
+
+.chat-embed-field {
+  width: 100%;
+  min-width: 0;
+}
+
+.chat-embed-field.chat-embed-field-inline {
+  width: auto;
+  flex: 1 1 40%;
+}
+
+.chat-embed-field-name {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.chat-embed-field-value {
+  font-size: 13px;
+  opacity: 0.9;
+  word-break: break-word;
+  white-space: pre-wrap;
+}
+
+.chat-embed-image {
+  display: block;
+  max-width: 100%;
+  margin-top: 8px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.chat-embed-thumbnail {
+  display: block;
+  max-width: 80px;
+  max-height: 80px;
+  margin-top: 8px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.chat-embed-footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+  font-size: 12px;
+  opacity: 0.8;
 }
 </style>
 
