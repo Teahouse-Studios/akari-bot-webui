@@ -86,12 +86,20 @@
             />
 
             <audio
-              v-else-if="block.type === 'voice'"
-              class="chat-voice"
+              v-else-if="block.type === 'audio'"
+              class="chat-audio"
               controls
               preload="metadata"
               :src="block.content"
             ></audio>
+
+            <video
+              v-else-if="block.type === 'video'"
+              class="chat-video"
+              controls
+              preload="metadata"
+              :src="block.content"
+            ></video>
 
             <span
               v-else-if="block.type === 'action_text'"
@@ -360,12 +368,20 @@
             />
 
             <audio
-              v-else-if="block.type === 'voice'"
-              class="chat-voice"
+              v-else-if="block.type === 'audio'"
+              class="chat-audio"
               controls
               preload="metadata"
               :src="block.content"
             ></audio>
+
+            <video
+              v-else-if="block.type === 'video'"
+              class="chat-video"
+              controls
+              preload="metadata"
+              :src="block.content"
+            ></video>
 
             <span v-else-if="block.type === 'action_text'" class="chat-action-text-disabled">
               {{ block.show }}
@@ -614,8 +630,10 @@ const normalizeMessageBlocks = (data) => {
         }
         case 'image':
           return isDataImage(item.content) ? { type: 'image', content: item.content } : null
-        case 'voice':
-          return typeof item.content === 'string' ? { type: 'voice', content: item.content } : null
+        case 'audio':
+          return typeof item.content === 'string' ? { type: 'audio', content: item.content } : null
+        case 'video':
+          return typeof item.content === 'string' ? { type: 'video', content: item.content } : null
         case 'action_text':
           return typeof item.content === 'string'
             ? {
@@ -680,8 +698,10 @@ const nodesPreviewText = (node) => {
       if (show) parts.push(show)
     } else if (block.type === 'image') {
       parts.push(t('chat.nodes.image'))
-    } else if (block.type === 'voice') {
-      parts.push(t('chat.nodes.voice'))
+    } else if (block.type === 'audio') {
+      parts.push(t('chat.nodes.audio'))
+    } else if (block.type === 'video') {
+      parts.push(t('chat.nodes.video'))
     } else if (block.type === 'button_frame') {
       parts.push(t('chat.nodes.button'))
     } else if (block.type === 'embed') {
@@ -1328,10 +1348,18 @@ onBeforeUnmount(() => {
   border: 1px solid #555;
 }
 
-.chat-voice {
+.chat-audio {
   max-width: 100%;
   margin: 8px 0;
   display: block;
+}
+
+.chat-video {
+  display: block;
+  max-width: 100%;
+  max-height: 400px;
+  margin: 8px 0;
+  background-color: #000;
 }
 
 .chat-message-content {
