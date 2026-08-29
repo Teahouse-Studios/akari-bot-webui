@@ -1683,6 +1683,17 @@ a.chat-embed-title-link:hover {
   color: white;
 }
 
+.chat-message.user,
+.chat-message.user .chat-message-content {
+  color: inherit;
+}
+
+.chat-message.user a,
+.chat-message.user .chat-message-content a {
+  color: currentColor !important;
+  text-decoration: underline;
+}
+
 .debug-uuid {
   margin-top: 4px;
   font-size: 10px;
