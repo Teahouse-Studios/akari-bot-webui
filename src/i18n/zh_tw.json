@@ -95,7 +95,7 @@
     "database.models.label.name": "欄位名稱",
     "database.models.label.nullable": "是否為空",
     "database.models.label.type": "型別",
-    "database.models.title": "模型列表",
+    "database.models.title": "模型清單",
     "database.sql.history.title": "歷史記錄",
     "database.sql.result.title": "運行結果",
     "emojipicker.group.activities": "活動與事件",
