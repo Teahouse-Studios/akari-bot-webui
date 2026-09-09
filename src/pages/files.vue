@@ -304,7 +304,7 @@ const goToPath = (idx) => {
   fetchFiles()
 }
 
-const handleUploadError = (err, _file, _fileList) => {
+const handleUploadError = (err) => {
   if (err.status === 413) {
     ElMessage.error(t('files.message.upload.error.too_large'))
   } else if (err.status === 403) {

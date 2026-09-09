@@ -50,7 +50,7 @@ async function refreshData() {
     }
 
     await Promise.all(tasks)
-  } catch (error) {
+  } catch {
     // empty
   } finally {
     loading.value = false

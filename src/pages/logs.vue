@@ -119,7 +119,7 @@ async function connectWebSocket() {
   try {
     const response = await fetch('/api/init')
     if (response.ok) config = await response.json()
-  } catch (e) {
+  } catch {
     // empty
   }
 

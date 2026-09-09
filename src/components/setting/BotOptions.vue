@@ -39,7 +39,7 @@ const restartBot = async () => {
           } else {
             throw new Error('Not ready')
           }
-        } catch (err) {
+        } catch {
           const elapsed = Date.now() - startTime
           if (elapsed >= pollingTimeout && !hasShownTimeoutError.value) {
             hasShownTimeoutError.value = true
@@ -71,7 +71,7 @@ const handleRestart = async () => {
       type: 'warning',
     })
     await restartBot()
-  } catch (error) {
+  } catch {
     return
   }
 }

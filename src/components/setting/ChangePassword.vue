@@ -65,7 +65,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, computed } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 import axios from '@/axios.mjs'
@@ -124,8 +124,6 @@ const rules = reactive({
 // TOTP verification for 2FA-enabled accounts
 const showTotpVerify = ref(false)
 const totpVerifyLoading = ref(false)
-
-const isDevelopMode = computed(() => LocalStorageJson.getItem('isDevelopMode') === 'true')
 
 onMounted(async () => {
   try {

@@ -537,7 +537,7 @@ const submitEdit = async () => {
   let parsedTargetData = {}
   try {
     parsedTargetData = JSON.parse(targetDataString.value)
-  } catch (e) {
+  } catch {
     ElMessage.error(t('session.message.invalid_json'))
     return
   }

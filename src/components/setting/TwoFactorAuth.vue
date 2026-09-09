@@ -253,16 +253,15 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed, watch } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import axios from '@/axios.mjs'
 import { ElMessage } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 import { IS_DEMO } from '@/const'
-import LocalStorageJson from '@/localStorageJson.js'
 
 const { t } = useI18n()
 
-const props = defineProps({
+defineProps({
   hasPassword: {
     type: Boolean,
     default: true,
@@ -352,9 +351,6 @@ function copyAll() {
 function handleBackupClose() {
   showBackupCodes.value = false
 }
-
-const pendingAction = ref(null) // 'enable' | 'disable'
-const isDevelopMode = computed(() => LocalStorageJson.getItem('isDevelopMode') === 'true')
 
 onMounted(async () => {
   await fetchStatus()
@@ -481,7 +477,7 @@ async function disableTwoFactor() {
     } else {
       requestData.totp_code = disableForm.value.code
     }
-    const response = await axios.post('/api/totp/disable', requestData)
+    await axios.post('/api/totp/disable', requestData)
     ElMessage.success(t('setting.two_factor_auth.message.disabled'))
     disableDialogVisible.value = false
     await fetchStatus()

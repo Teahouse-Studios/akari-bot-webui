@@ -332,7 +332,7 @@ const confirmAddConfig = async () => {
     addDialogVisible.value = false
     resetAddDialog()
     updateTomlFromParsed()
-  } catch (error) {
+  } catch {
     // empty
   }
 }
