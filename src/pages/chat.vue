@@ -1,5 +1,11 @@
 <template>
-  <div class="chat-container">
+  <div
+    class="chat-container"
+    :class="{ 'drag-over': isDraggingOver }"
+    @dragover.prevent="handleDragOver"
+    @dragleave="handleDragLeave"
+    @drop.prevent="handleImageDrop"
+  >
     <div class="chat-header">
       <div
         :style="{
@@ -296,27 +302,66 @@
       </div>
     </div>
 
+    <div v-if="pendingImages.length" class="pending-images-bar">
+      <div class="pending-images">
+        <div v-for="(image, imageIdx) in pendingImages" :key="image.id" class="pending-image">
+          <img :src="image.dataUrl" :alt="image.name" @click="showImagePreview(image.dataUrl)" />
+          <el-button
+            class="remove-image-button"
+            circle
+            size="small"
+            :title="$t('chat.button.remove_image')"
+            @click="removePendingImage(imageIdx)"
+          >
+            <i class="mdi mdi-close"></i>
+          </el-button>
+        </div>
+      </div>
+    </div>
+
     <div class="send-box">
-      <el-input
-        ref="chatInput"
-        v-model="inputText"
-        :placeholder="$t('chat.input.send')"
-        @keydown.enter="handleEnterKey"
-        class="chat-send-input"
-        type="textarea"
-        resize="none"
-        clearable
-        autosize
-        :disabled="connectionStatus != 'connected'"
+      <input
+        ref="imageFileInput"
+        class="chat-image-input"
+        type="file"
+        accept="image/*"
+        multiple
+        @change="handleImageSelected"
       />
-      <el-button
-        type="primary"
-        @click="sendMessage"
-        style="margin-left: 10px"
-        :disabled="connectionStatus != 'connected' || inputText.trim() === ''"
-      >
-        {{ $t('chat.button.send') }}
-      </el-button>
+      <div class="chat-composer-row">
+        <el-tooltip :content="$t('chat.button.image')" placement="top">
+          <el-button
+            class="image-button"
+            circle
+            :disabled="connectionStatus != 'connected' || pendingImages.length >= MAX_IMAGES"
+            @click="openImagePicker"
+          >
+            <i class="mdi mdi-image-plus-outline"></i>
+          </el-button>
+        </el-tooltip>
+        <el-input
+          ref="chatInput"
+          v-model="inputText"
+          :placeholder="$t('chat.input.send')"
+          @keydown.enter="handleEnterKey"
+          class="chat-send-input"
+          type="textarea"
+          resize="none"
+          clearable
+          autosize
+          :disabled="connectionStatus != 'connected'"
+        />
+        <el-button
+          type="primary"
+          @click="sendMessage"
+          style="margin-left: 10px"
+          :disabled="
+            connectionStatus != 'connected' || (!inputText.trim() && !pendingImages.length)
+          "
+        >
+          {{ $t('chat.button.send') }}
+        </el-button>
+      </div>
     </div>
     <div
       v-if="fullscreenPreviewVisible"
@@ -471,6 +516,9 @@ import LocalStorageJson from '@/localStorageJson.js'
 const { t } = useI18n()
 const inputText = ref('')
 const chatInput = ref(null)
+const imageFileInput = ref(null)
+const pendingImages = ref([])
+const MAX_IMAGES = 10
 const messages = ref([])
 const chatBox = ref(null)
 const websocket = ref(null)
@@ -482,10 +530,13 @@ const heartbeatRetryCount = ref(0)
 const heartbeatInterval = ref(30000)
 const heartbeatTimeout = ref(5000)
 const heartbeatAttempt = ref(3)
+const reconnectTimer = ref(null)
+const isUnmounted = ref(false)
 const fullscreenPreviewVisible = ref(false)
 const showFullscreenPreviewAnim = ref(false)
 const isMobileView = ref(window.innerWidth < 1024)
 const previewImageSrc = ref('')
+const isDraggingOver = ref(false)
 const activeReactionMsg = ref(null)
 const nodesDialogVisible = ref(false)
 const activeNodes = ref(null)
@@ -613,6 +664,86 @@ const renderMarkdown = (text) => {
 }
 
 const isDataImage = (src) => typeof src === 'string' && /^data:image\//i.test(src)
+const MAX_IMAGE_BYTES = 10 * 1024 * 1024
+
+const openImagePicker = () => {
+  if (connectionStatus.value === 'connected') imageFileInput.value?.click()
+}
+
+const removePendingImage = (index) => {
+  pendingImages.value.splice(index, 1)
+}
+
+const readImageFile = (file) =>
+  new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => {
+      if (typeof reader.result !== 'string' || !isDataImage(reader.result)) {
+        reject(new Error(t('chat.message.error.image_read')))
+        return
+      }
+      resolve({ name: file.name, dataUrl: reader.result, id: uuidv4() })
+    }
+    reader.onerror = () => reject(new Error(t('chat.message.error.image_read')))
+    reader.readAsDataURL(file)
+  })
+
+const addImageFiles = async (files) => {
+  const list = Array.from(files || [])
+  if (!list.length) return
+
+  const availableSlots = MAX_IMAGES - pendingImages.value.length
+  if (list.length > availableSlots) {
+    ElMessage.error(t('chat.message.error.image_count'))
+  }
+
+  const selectedFiles = list.slice(0, Math.max(availableSlots, 0))
+  const loadedImages = []
+  for (const file of selectedFiles) {
+    if (!file.type.startsWith('image/')) {
+      ElMessage.error(t('chat.message.error.image_type'))
+      continue
+    }
+    if (file.size > MAX_IMAGE_BYTES) {
+      ElMessage.error(t('chat.message.error.image_size'))
+      continue
+    }
+
+    try {
+      loadedImages.push(await readImageFile(file))
+    } catch (error) {
+      ElMessage.error(error.message)
+    }
+  }
+
+  pendingImages.value.push(...loadedImages)
+}
+
+const handleImageSelected = (event) => {
+  const input = event.target
+  const files = Array.from(input.files || [])
+  input.value = ''
+  addImageFiles(files)
+}
+
+const handleDragOver = (event) => {
+  const hasFiles = event.dataTransfer && Array.from(event.dataTransfer.types).includes('Files')
+  if (connectionStatus.value !== 'connected' || !hasFiles) return
+  event.dataTransfer.dropEffect = 'copy'
+  isDraggingOver.value = true
+}
+
+const handleDragLeave = (event) => {
+  if (!event.currentTarget.contains(event.relatedTarget)) {
+    isDraggingOver.value = false
+  }
+}
+
+const handleImageDrop = (event) => {
+  isDraggingOver.value = false
+  if (connectionStatus.value !== 'connected') return
+  addImageFiles(event.dataTransfer?.files)
+}
 
 const normalizeMessageBlocks = (data) => {
   const list = Array.isArray(data) ? data : data == null ? [] : [data]
@@ -749,15 +880,23 @@ const focusChatInput = () => {
   })
 }
 
-const sendUserMessage = (text) => {
-  const content = typeof text === 'string' ? text : ''
-  if (!content) return
+const sendUserMessage = (text, images = pendingImages.value) => {
+  const messageText = typeof text === 'string' ? text : ''
+
+  const blocks = []
+  if (messageText) {
+    blocks.push({ type: 'text', content: messageText, html: renderMarkdown(messageText) })
+  }
+  for (const image of images) {
+    blocks.push({ type: 'image', content: image.dataUrl })
+  }
+  if (!blocks.length) return
 
   const uuid = uuidv4()
   messages.value.push({
     from: 'user',
-    blocks: [{ type: 'text', content, html: renderMarkdown(content) }],
-    text: content,
+    blocks,
+    text: messageText,
     id: uuid,
     showEmojiPicker: false,
     reactions: {},
@@ -768,12 +907,13 @@ const sendUserMessage = (text) => {
     websocket.value?.send(
       JSON.stringify({
         action: 'send',
-        message: [{ type: 'text', content }],
+        message: blocks.map(({ type, content: blockContent }) => ({ type, content: blockContent })),
         id: uuid,
       }),
     )
   }
   inputText.value = ''
+  pendingImages.value = []
   scrollToBottom()
 }
 
@@ -833,6 +973,16 @@ const disconnectWebSocket = () => {
   }
 }
 
+const scheduleReconnect = () => {
+  if (IS_DEMO || isUnmounted.value || reconnectTimer.value) return
+
+  connectionStatus.value = 'connecting'
+  reconnectTimer.value = setTimeout(() => {
+    reconnectTimer.value = null
+    connectWebSocket()
+  }, 1000)
+}
+
 const stopHeartbeat = () => {
   clearInterval(heartbeatTimer.value)
   clearTimeout(heartbeatTimeoutTimer.value)
@@ -859,6 +1009,7 @@ const sendHeartbeat = (immediate = false) => {
       disconnectWebSocket()
       connectionStatus.value = 'disconnected'
       ElMessage.error(t('message.error.connect.server'))
+      scheduleReconnect()
     } else {
       sendHeartbeat(true)
     }
@@ -891,10 +1042,11 @@ const connectWebSocket = async () => {
         const parsed = JSON.parse(data)
         if (parsed.action === 'send') {
           const uuid = parsed.id || uuidv4()
-          const content = parsed.message?.[0]?.content ?? ''
+          const blocks = normalizeMessageBlocks(parsed.message)
+          const content = renderMessageText(parsed.message)
           messages.value.push({
             from: 'user',
-            blocks: [{ type: 'text', content, html: renderMarkdown(content) }],
+            blocks,
             text: content,
             id: uuid,
             showEmojiPicker: false,
@@ -911,6 +1063,14 @@ const connectWebSocket = async () => {
     return
   }
 
+  if (
+    websocket.value &&
+    (websocket.value.readyState === WebSocket.OPEN ||
+      websocket.value.readyState === WebSocket.CONNECTING)
+  ) {
+    return
+  }
+
   connectionStatus.value = 'connecting'
   let config = {}
   try {
@@ -919,7 +1079,7 @@ const connectWebSocket = async () => {
       config = await response.json()
       commandPrefix.value = config.command_prefix || '~'
     }
-  } catch (e) {
+  } catch {
     // empty
   }
 
@@ -934,9 +1094,10 @@ const connectWebSocket = async () => {
     const wsProtocol = url.protocol === 'https:' ? 'wss:' : 'ws:'
     const wsUrl = `${wsProtocol}//${url.hostname}${url.port ? `:${url.port}` : ''}/ws/chat`
 
-    websocket.value = new WebSocket(wsUrl)
+    const socket = new WebSocket(wsUrl)
+    websocket.value = socket
 
-    websocket.value.onopen = () => {
+    socket.onopen = () => {
       const interval = parseFloat(config.heartbeat_interval)
       const timeout = parseFloat(config.heartbeat_timeout)
       const attempt = parseInt(config.heartbeat_attempt)
@@ -948,8 +1109,15 @@ const connectWebSocket = async () => {
       startHeartbeat()
     }
 
-    websocket.value.onmessage = (event) => {
-      const data = JSON.parse(event.data)
+    socket.onmessage = (event) => {
+      let data
+      try {
+        data = JSON.parse(event.data)
+      } catch {
+        return
+      }
+
+      if (!data || typeof data !== 'object') return
 
       clearTimeout(heartbeatTimeoutTimer.value)
       heartbeatRetryCount.value = 0
@@ -1001,6 +1169,11 @@ const connectWebSocket = async () => {
         return
       }
 
+      if (data.action === 'error') {
+        ElMessage.error(data.message || t('chat.message.error.send'))
+        return
+      }
+
       if (data.action === 'typing') {
         const msg = messages.value.find((m) => m.id === data.id)
         if (msg) {
@@ -1014,13 +1187,21 @@ const connectWebSocket = async () => {
       }
     }
 
-    websocket.value.onerror = () => {
+    socket.onerror = () => {
       connectionStatus.value = 'disconnected'
       ElMessage.error(t('message.error.connect.server'))
+    }
+
+    socket.onclose = () => {
+      if (websocket.value !== socket) return
+      stopHeartbeat()
+      websocket.value = null
+      scheduleReconnect()
     }
   } catch (e) {
     connectionStatus.value = 'disconnected'
     ElMessage.error(t('message.error.connect') + e.message)
+    scheduleReconnect()
   }
 }
 
@@ -1030,17 +1211,14 @@ const authenticateToken = () => {
 
 const sendMessage = () => {
   const text = inputText.value.trim()
-  if (!text) return
-  sendUserMessage(text)
+  sendUserMessage(text, pendingImages.value)
 }
 
 const resetChat = () => {
   connectionStatus.value = 'connecting'
   messages.value = []
 
-  if (websocket.value && websocket.value.readyState === WebSocket.OPEN) {
-    websocket.value.close()
-  }
+  disconnectWebSocket()
 
   authenticateToken()
 }
@@ -1288,6 +1466,9 @@ onMounted(() => {
 })
 
 onBeforeUnmount(() => {
+  isUnmounted.value = true
+  clearTimeout(reconnectTimer.value)
+  reconnectTimer.value = null
   stopHeartbeat()
   if (websocket.value) {
     websocket.value.close()
@@ -1541,6 +1722,11 @@ a.chat-embed-title-link:hover {
   overflow-y: auto;
 }
 
+.chat-container.drag-over {
+  outline: 2px dashed var(--el-color-primary);
+  outline-offset: -4px;
+}
+
 .chat-header {
   height: 50px;
   display: flex;
@@ -1785,13 +1971,82 @@ a.chat-embed-title-link:hover {
   height: auto;
   min-height: 50px;
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  align-items: stretch;
   padding: 10px 20px;
   background: #f3f3f3;
   border-top: 1px solid #e0e0e0;
 }
 
+.chat-image-input {
+  display: none;
+}
+
+.image-button {
+  flex-shrink: 0;
+  margin-right: 8px;
+}
+
+.pending-images {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.pending-images-bar {
+  padding: 10px 20px;
+  background: #f3f3f3;
+  border-top: 1px solid #e0e0e0;
+}
+
+.pending-images-bar .pending-images {
+  margin-bottom: 0;
+}
+
+.pending-image {
+  position: relative;
+  flex: 0 0 42px;
+  height: 42px;
+}
+
+.pending-image img {
+  width: 42px;
+  height: 42px;
+  display: block;
+  border: 1px solid var(--el-border-color);
+  border-radius: 5px;
+  object-fit: cover;
+  cursor: pointer;
+}
+
+.remove-image-button {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  width: 20px;
+  height: 20px;
+  min-height: 20px;
+  padding: 0;
+}
+
+.chat-composer-row {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.chat-send-input {
+  min-width: 0;
+  flex: 1;
+}
+
 .dark .send-box {
+  border-top: 1px solid #1f1f1f;
+  background: #333;
+}
+
+.dark .pending-images-bar {
   border-top: 1px solid #1f1f1f;
   background: #333;
 }
