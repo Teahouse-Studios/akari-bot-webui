@@ -39,10 +39,14 @@ export default function setupMock() {
       boot_time: Math.floor(Date.now() / 1000) - 42314,
     },
     bot: {
+      started_time: Math.floor(Date.now() / 1000) - 42314,
       running_time: 42314,
       python_version: '3.12.8',
       version: 'badf00d',
-      web_render_status: false,
+      web_render_status: true,
+      jobqueue_backend: 'websocket',
+      command_parsed: 1234,
+      message_parsed: 5678,
     },
     cpu: {
       cpu_brand: 'AMD EPYC 9654',
@@ -58,40 +62,103 @@ export default function setupMock() {
       used: 829.4,
       percent: 81.0,
     },
+    processes: {
+      items: [
+        { name: 'Server', pid: 101, memory: 314572800, metric: 'USS', threads: 24 },
+        { name: 'daemon', pid: 100, memory: 52428800, metric: 'RSS', threads: 3 },
+        { name: 'jobqueue-hub', pid: null, memory: 20971520, metric: 'RSS', threads: 2 },
+        { name: 'QQ', pid: 118, memory: 187904819, metric: 'RSS', threads: 12 },
+        { name: 'Discord', pid: 124, memory: 96468992, metric: 'RSS', threads: 9 },
+      ],
+      failures: [{ name: 'Telegram', reason: 'timeout' }],
+      error: null,
+    },
   })
 
-  mock.onGet('/api/analytics').reply(() => {
-    const now = new Date()
+  const mockAnalyticsModules = [
+    'wiki',
+    'ai',
+    'ping',
+    'help',
+    'search',
+    'translate',
+    'meme',
+    'petal',
+    '',
+  ]
+  const mockPlatforms = ['QQ', 'Discord', 'Telegram', 'Web']
+  const mockCommands = ['help', 'ping', 'wiki', 'ai', 'meme', 'petal', 'translate', 'dice']
 
-    const isoWithMs = new Date(now.getTime() - 12 * 60 * 60 * 1000).toISOString()
+  // 伪随机：同一 days 下生成稳定的演示数据
+  const pseudoRandom = (seed) => {
+    const value = Math.sin(seed) * 10000
+    return value - Math.floor(value)
+  }
 
-    const isoWithMicros = isoWithMs.replace('Z', '000+00:00')
+  const buildAnalyticsRecords = (days) => {
+    const windowMs = days * 24 * 60 * 60 * 1000
+    const now = Date.now()
+    const total = Math.min(600, Math.max(24, days * 12))
+    const records = []
+
+    for (let i = 0; i < total; i += 1) {
+      const seed = i + days
+      const timestamp = new Date(now - windowMs * pseudoRandom(seed * 1.37))
+      records.push({
+        id: i + 1,
+        module_name:
+          mockAnalyticsModules[Math.floor(pseudoRandom(seed * 2.11) * mockAnalyticsModules.length)],
+        module_type: 'normal',
+        target_id: `${mockPlatforms[Math.floor(pseudoRandom(seed * 3.07) * mockPlatforms.length)]}|Console|0`,
+        sender_id: 'Web|0',
+        command: mockCommands[Math.floor(pseudoRandom(seed * 5.53) * mockCommands.length)],
+        timestamp: timestamp.toISOString().replace('Z', '000+00:00'),
+      })
+    }
+
+    return records.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp))
+  }
+
+  mock.onGet('/api/analytics').reply((config) => {
+    const days = Math.max(1, Number(config.params?.days) || 1)
+    const data = buildAnalyticsRecords(days)
 
     return [
       200,
       {
-        count: 2,
-        change_rate: 2,
-        data: [
-          {
-            id: 1,
-            module_name: 'ping',
-            module_type: 'normal',
-            target_id: 'Web|Console|0',
-            sender_id: 'Web|0',
-            command: 'analytics',
-            timestamp: isoWithMicros,
-          },
-          {
-            id: 2,
-            module_name: 'help',
-            module_type: 'normal',
-            target_id: 'Web|Console|0',
-            sender_id: 'Web|0',
-            command: 'ping',
-            timestamp: isoWithMicros,
-          },
-        ],
+        count: data.length,
+        change_rate: 0.25,
+        data,
+      },
+    ]
+  })
+
+  mock.onGet('/api/analytics/modules').reply((config) => {
+    const days = Math.max(1, Number(config.params?.days) || 1)
+    const limit = Math.min(200, Math.max(1, Number(config.params?.limit) || 50))
+    const records = buildAnalyticsRecords(days)
+
+    const countByModule = new Map()
+    records.forEach((record) => {
+      countByModule.set(record.module_name, (countByModule.get(record.module_name) || 0) + 1)
+    })
+
+    const modules = [...countByModule.entries()]
+      .map(([module_name, count]) => ({
+        module_name,
+        count,
+        percent: Math.round((count / records.length) * 10000) / 100,
+      }))
+      .sort((a, b) => b.count - a.count || a.module_name.localeCompare(b.module_name))
+
+    return [
+      200,
+      {
+        days,
+        count: records.length,
+        change_rate: 0.25,
+        total_modules: modules.length,
+        modules: modules.slice(0, limit),
       },
     ]
   })
@@ -302,4 +369,177 @@ export default function setupMock() {
     modules: [],
   })
   mock.onPost('/api/restart').reply(202, {})
+
+  // WebRender：config 来自 WebUI 进程，status 来自服务端
+  const mockWebRenderConfig = {
+    enable: true,
+    browser_type: 'chrome',
+    browser_executable_path: '',
+    headless: true,
+    remote_only: false,
+    remote_url: '',
+  }
+
+  // 演示用：故意让 contexts 与 contexts_total 不一致，以便展示 leaked 告警
+  const mockWebRenderStatus = {
+    available: true,
+    browser_initialized: true,
+    browser_mode: 'headless',
+    headless: true,
+    keep_pages_open: false,
+    debug_mode: false,
+    remote_only: false,
+    remote_configured: false,
+    remote_timeout: 30,
+    export_logs: true,
+    logs_path: './logs',
+    name: 'AkariBot WebRender™',
+    contexts: [{ index: 0, pages: ['https://example.test/', 'https://bot.teahouse.team/'] }],
+    contexts_total: 2,
+    leaked: true,
+  }
+
+  const mockScreenshot =
+    'iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAYAAABw4pVUAAAAXklEQVR42u3QMQEAAAgDoJnc6BpjDyQgd1MFAgQIECBAgAABAgQIECBAgAABAgQIECBAgAABAgQIECBAgAABAgQIECBAgAABAgQIECBAgAABAgQIECBAgAABAj4NLQAB0m8W6QAAAABJRU5ErkJggg=='
+
+  const mockWebRenderBriefStatus = {
+    available: true,
+    browser_initialized: true,
+  }
+
+  mock.onGet('/api/webrender').reply(200, {
+    config: mockWebRenderConfig,
+    status: mockWebRenderStatus,
+  })
+
+  mock.onPost('/api/webrender/control').reply((config) => {
+    let body = {}
+    try {
+      body = JSON.parse(config.data || '{}')
+    } catch {
+      return [400, { detail: 'invalid_json' }]
+    }
+
+    const action = body.action
+    if (!['start', 'stop', 'restart'].includes(action)) {
+      return [422, { detail: 'invalid_action' }]
+    }
+
+    if (action === 'stop') {
+      mockWebRenderStatus.available = false
+      mockWebRenderStatus.browser_initialized = false
+      mockWebRenderStatus.contexts = []
+      mockWebRenderStatus.contexts_total = 0
+      mockWebRenderStatus.leaked = false
+    } else {
+      mockWebRenderStatus.available = true
+      mockWebRenderStatus.browser_initialized = true
+    }
+
+    return [
+      200,
+      {
+        ok: true,
+        error: null,
+        status: {
+          available: mockWebRenderStatus.available,
+          browser_initialized: mockWebRenderStatus.browser_initialized,
+        },
+      },
+    ]
+  })
+
+  mock.onPost('/api/webrender/test').reply((config) => {
+    let body = {}
+    try {
+      body = JSON.parse(config.data || '{}')
+    } catch {
+      return [400, { detail: 'invalid_json' }]
+    }
+
+    const mode = body.mode || 'status'
+    const outputType = body.output_type || 'jpeg'
+
+    if (!['status', 'source', 'screenshot'].includes(mode)) {
+      return [422, { detail: 'invalid_mode' }]
+    }
+
+    if (!mockWebRenderConfig.enable) {
+      return [422, { detail: 'web_render_disabled' }]
+    }
+
+    if (mode === 'status') {
+      return [
+        200,
+        {
+          ok: mockWebRenderStatus.available,
+          mode,
+          elapsed: 0.01,
+          status: mockWebRenderBriefStatus,
+          source: null,
+          source_truncated: false,
+          images: [],
+          output_type: outputType,
+          error: mockWebRenderStatus.available ? null : 'browser_unavailable',
+        },
+      ]
+    }
+
+    if (!mockWebRenderStatus.available) {
+      return [
+        200,
+        {
+          ok: false,
+          mode,
+          elapsed: 0.05,
+          status: mockWebRenderBriefStatus,
+          source: null,
+          source_truncated: false,
+          images: [],
+          output_type: outputType,
+          error: 'browser_unavailable',
+        },
+      ]
+    }
+
+    if (mode === 'source') {
+      if (!body.url) {
+        return [422, { detail: 'missing_target' }]
+      }
+      const source = `<!DOCTYPE html>\n<html lang="${body.locale || 'zh_cn'}">\n  <head>\n    <title>${body.url}</title>\n  </head>\n  <body>\n    <pre>Mock source of ${body.url}</pre>\n  </body>\n</html>`
+      return [
+        200,
+        {
+          ok: true,
+          mode,
+          elapsed: 1.23,
+          status: mockWebRenderBriefStatus,
+          source: body.raw_text ? `Mock source of ${body.url}` : source,
+          source_truncated: false,
+          images: [],
+          output_type: outputType,
+          error: null,
+        },
+      ]
+    }
+
+    if (!body.url && !body.content) {
+      return [422, { detail: 'missing_target' }]
+    }
+
+    return [
+      200,
+      {
+        ok: true,
+        mode,
+        elapsed: 1.82,
+        status: mockWebRenderBriefStatus,
+        source: null,
+        source_truncated: false,
+        images: [mockScreenshot],
+        output_type: outputType,
+        error: null,
+      },
+    ]
+  })
 }

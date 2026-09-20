@@ -1,193 +1,69 @@
 <template>
-  <el-row :gutter="20" class="responsive-row">
-    <el-col :span="10" :xs="24">
-      <el-card class="left-top-card" shadow="never" v-loading="loading">
-        <h3>
-          <i class="mdi mdi-robot-outline"></i>
-          {{ $t('dashboard.server_info.bot.title') }}
-        </h3>
-        <p>
-          <strong class="data-title">{{
-            $t('dashboard.server_info.bot.label.python_version')
-          }}</strong
-          ><span class="data-text">{{ bot.python_version || '-' }}</span>
-        </p>
-        <p>
-          <strong class="data-title">{{ $t('dashboard.server_info.bot.label.bot_version') }}</strong
-          ><span class="data-text">{{ formatBotVersion(bot.version) }}</span>
-        </p>
-        <p>
-          <strong class="data-title">{{
-            $t('dashboard.server_info.bot.label.web_render_status')
-          }}</strong
-          ><span class="data-text">{{ bot.web_render_status ? $t('true') : $t('false') }}</span>
-        </p>
-        <p>
-          <strong class="data-title">{{
-            $t('dashboard.server_info.bot.label.running_time')
-          }}</strong
-          ><span class="data-text">{{ formatRunningTime(runningSeconds || 0) }}</span>
-        </p>
-      </el-card>
-      <el-card class="left-bottom-card" shadow="never" v-loading="loading">
-        <h3>
-          <i class="mdi mdi-laptop"></i>
-          {{ $t('dashboard.server_info.system.title') }}
-        </h3>
-        <p>
-          <strong class="data-title">{{ $t('dashboard.server_info.system.label.machine') }}</strong
-          ><span class="data-text"
-            >{{ os.system || '-' }} {{ os.machine ? '-' : '' }} {{ os.machine || '' }}</span
-          >
-        </p>
-        <p>
-          <strong class="data-title">{{ $t('dashboard.server_info.system.label.version') }}</strong
-          ><span class="data-text">{{ os.version || '-' }}</span>
-        </p>
-        <p>
-          <strong class="data-title">{{
-            $t('dashboard.server_info.system.label.boot_time')
-          }}</strong
-          ><span class="data-text">{{ formatTime(os.boot_time || 0) }}</span>
-        </p>
-      </el-card>
-    </el-col>
+  <el-card class="info-card" shadow="never" v-loading="loading">
+    <h3>
+      <i class="mdi mdi-robot-outline"></i>
+      {{ $t('dashboard.server_info.bot.title') }}
+    </h3>
+    <p>
+      <strong class="data-title">{{ $t('dashboard.server_info.bot.label.bot_version') }}</strong
+      ><span class="data-text">{{ formatBotVersion(bot.version) }}</span>
+    </p>
+    <p>
+      <strong class="data-title">{{ $t('dashboard.server_info.bot.label.python_version') }}</strong
+      ><span class="data-text">{{ bot.python_version || '-' }}</span>
+    </p>
 
-    <el-col :span="14" :xs="24">
-      <el-card class="right-card" shadow="never" v-loading="loading">
-        <h3>
-          <i class="mdi mdi-memory"></i>
-          {{ $t('dashboard.server_info.cpu.title') }}
-        </h3>
-        <p>
-          <strong class="data-title">{{ $t('dashboard.server_info.cpu.label.brand') }}</strong>
-        </p>
-        <p>
-          <span class="data-text">{{ cpu.cpu_brand || '-' }}</span>
-        </p>
-        <h3>
-          <i class="mdi mdi-sd"></i>
-          {{ $t('dashboard.server_info.memory.title') }}
-        </h3>
-        <p>
-          <span class="data-text"
-            >{{ memory.used ? memory.used.toFixed() : 0 }} MB /
-            {{ memory.total ? memory.total.toFixed() : 0 }} MB</span
-          >
-        </p>
-        <h3>
-          <i class="mdi mdi-server-outline"></i>
-          {{ $t('dashboard.server_info.disk.title') }}
-        </h3>
-        <p>
-          <span class="data-text"
-            >{{ disk.used ? disk.used.toFixed(1) : 0 }} GB /
-            {{ disk.total ? disk.total.toFixed(1) : 0 }} GB</span
-          >
-        </p>
-        <br />
-        <div
-          :class="[
-            'memory-dashboards',
-            { leftAlign: dashboardOverflow, centerAlign: !dashboardOverflow },
-          ]"
-        >
-          <el-progress
-            type="dashboard"
-            :percentage="cpu.cpu_percent ? cpu.cpu_percent.toFixed(1) : 0"
-            :color="getProgressColor(cpu.cpu_percent)"
-          >
-            <template #default="{ percentage }">
-              <span class="percentage-value">{{ percentage }}%</span>
-              <span class="percentage-label">{{ $t('dashboard.server_info.cpu.title') }}</span>
-            </template>
-          </el-progress>
-          <el-progress
-            type="dashboard"
-            :percentage="memory.percent ? memory.percent.toFixed(1) : 0"
-            :color="getProgressColor(memory.percent)"
-          >
-            <template #default="{ percentage }">
-              <span class="percentage-value">{{ percentage }}%</span>
-              <span class="percentage-label">{{ $t('dashboard.server_info.memory.title') }}</span>
-            </template>
-          </el-progress>
-          <el-progress
-            type="dashboard"
-            :percentage="disk.percent ? disk.percent.toFixed(1) : 0"
-            :color="getProgressColor(disk.percent)"
-          >
-            <template #default="{ percentage }">
-              <span class="percentage-value">{{ percentage }}%</span>
-              <span class="percentage-label">{{ $t('dashboard.server_info.disk.title') }}</span>
-            </template>
-          </el-progress>
-        </div>
-      </el-card>
-    </el-col>
-  </el-row>
+    <h3>
+      <i class="mdi mdi-memory"></i>
+      {{ $t('dashboard.server_info.cpu.title') }}
+    </h3>
+    <p>
+      <strong class="data-title">{{ $t('dashboard.server_info.cpu.label.brand') }}</strong
+      ><span class="data-text">{{ cpu.cpu_brand || '-' }}</span>
+    </p>
+
+    <h3>
+      <i class="mdi mdi-laptop"></i>
+      {{ $t('dashboard.server_info.system.title') }}
+    </h3>
+    <p>
+      <strong class="data-title">{{ $t('dashboard.server_info.system.label.machine') }}</strong
+      ><span class="data-text"
+        >{{ os.system || '-' }} {{ os.machine ? '-' : '' }} {{ os.machine || '' }}</span
+      >
+    </p>
+    <p>
+      <strong class="data-title">{{ $t('dashboard.server_info.system.label.version') }}</strong
+      ><span class="data-text">{{ os.version || '-' }}</span>
+    </p>
+    <p>
+      <strong class="data-title">{{ $t('dashboard.server_info.system.label.boot_time') }}</strong
+      ><span class="data-text">{{ formatTime(os.boot_time || 0) }}</span>
+    </p>
+  </el-card>
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, onBeforeUnmount, nextTick } from 'vue'
-import axios from '@/axios.mjs'
 import LocalStorageJson from '@/localStorageJson.js'
-import { ElMessage } from 'element-plus'
-import { useI18n } from 'vue-i18n'
 
-const { t } = useI18n()
-
-const progressColors = ['#1989fa', '#e6a23c', '#f56c6c']
-
-const os = reactive({
-  system: '',
-  version: '',
-  machine: '',
-  boot_time: 0,
+defineProps({
+  os: {
+    type: Object,
+    default: () => ({}),
+  },
+  bot: {
+    type: Object,
+    default: () => ({}),
+  },
+  cpu: {
+    type: Object,
+    default: () => ({}),
+  },
+  loading: {
+    type: Boolean,
+    default: false,
+  },
 })
-
-const bot = reactive({
-  started_time: 0,
-  python_version: '',
-  version: '',
-  web_render_status: false,
-})
-
-const cpu = reactive({
-  cpu_brand: '',
-  cpu_percent: 0,
-})
-
-const memory = reactive({
-  total: 0,
-  used: 0,
-  percent: 0,
-})
-
-const disk = reactive({
-  total: 0,
-  used: 0,
-  percent: 0,
-})
-
-const loading = ref(false)
-const dashboardOverflow = ref(false)
-const abortController = new AbortController()
-const runningSeconds = ref(0)
-let runningTimer = null
-
-function formatRunningTime(seconds) {
-  const sec = Math.max(0, Number(seconds) || 0)
-
-  const hours = Math.floor(sec / 3600)
-  const minutes = Math.floor((sec % 3600) / 60)
-  const remainingSeconds = Math.floor(sec % 60)
-  return t('dashboard.server_info.text.format_time', {
-    hours,
-    minutes,
-    seconds: remainingSeconds,
-  })
-}
 
 function formatBotVersion(version) {
   if (!version) return '-'
@@ -235,134 +111,21 @@ function formatTime(timestamp) {
     hour12: false,
   }).format(date)
 }
-
-function getProgressColor(percentage) {
-  if (percentage >= 90) return progressColors[2]
-  if (percentage >= 60) return progressColors[1]
-  return progressColors[0]
-}
-
-function checkOverflow() {
-  nextTick(() => {
-    const el = document.querySelector('.memory-dashboards')
-    if (el) {
-      dashboardOverflow.value = el.scrollWidth > el.clientWidth
-    }
-  })
-}
-
-async function fetchServerInfoData(noCache = false) {
-  loading.value = true
-
-  const headers = {}
-  if (noCache) {
-    Object.assign(headers, {
-      'Cache-Control': 'no-cache, no-store, must-revalidate',
-      Pragma: 'no-cache',
-      Expires: '0',
-    })
-  }
-
-  try {
-    const response = await axios.get('/api/server-info', {
-      headers,
-      signal: abortController.signal,
-    })
-    const data = response.data
-
-    Object.assign(os, data.os)
-    Object.assign(bot, data.bot)
-    startRunningTimer()
-    Object.assign(cpu, data.cpu)
-    Object.assign(memory, data.memory)
-    Object.assign(disk, data.disk)
-  } catch (error) {
-    if (axios.isCancel(error)) {
-      console.log('Request canceled')
-    } else {
-      ElMessage.error(t('message.error.fetch') + error.message)
-
-      stopRunningTimer()
-      bot.start_time = 0
-      runningSeconds.value = 0
-    }
-  } finally {
-    loading.value = false
-  }
-}
-
-function updateRunningSeconds() {
-  const now = Math.floor(Date.now() / 1000)
-  const start = bot.started_time || 0
-
-  if (start > 0) {
-    runningSeconds.value = Math.max(0, now - start)
-  }
-}
-
-function startRunningTimer() {
-  if (runningTimer) clearInterval(runningTimer)
-
-  if (bot.started_time && bot.started_time > 0) {
-    updateRunningSeconds()
-    runningTimer = setInterval(updateRunningSeconds, 1000)
-  }
-}
-
-function stopRunningTimer() {
-  if (runningTimer) {
-    clearInterval(runningTimer)
-    runningTimer = null
-  }
-}
-
-defineExpose({
-  fetchServerInfoData,
-})
-
-onMounted(() => {
-  checkOverflow()
-  window.addEventListener('resize', checkOverflow)
-  fetchServerInfoData()
-})
-
-onBeforeUnmount(() => {
-  window.removeEventListener('resize', checkOverflow)
-  stopRunningTimer()
-  abortController.abort()
-})
 </script>
 
 <style scoped>
+.info-card {
+  height: 100%;
+  line-height: 1;
+}
+
 h3 {
   cursor: default;
 }
 
-.el-card {
-  line-height: 1;
-  margin-bottom: 20px;
-}
-
-.left-top-card {
-  height: 240px;
-  display: flex;
-  flex-direction: column;
-}
-
-.left-bottom-card {
-  height: 220px;
-  display: flex;
-  flex-direction: column;
-}
-
-.right-card {
-  height: 482px;
-  display: flex;
-  flex-direction: column;
-}
-
 .data-text {
   color: #666;
+  word-break: break-all;
 }
 
 .dark .data-text {
@@ -377,35 +140,5 @@ h3 {
 
 .dark .data-title {
   color: white;
-}
-
-.percentage-value {
-  display: block;
-  margin-top: 10px;
-  font-size: 20px;
-}
-
-.percentage-label {
-  display: block;
-  margin-top: 10px;
-  font-size: 14px;
-}
-
-.memory-dashboards {
-  display: flex;
-  justify-content: center;
-  overflow-x: auto;
-}
-
-.memory-dashboards.centerAlign {
-  justify-content: center;
-}
-
-.memory-dashboards.leftAlign {
-  justify-content: flex-start;
-}
-
-.el-progress--dashboard {
-  margin: 5px;
 }
 </style>

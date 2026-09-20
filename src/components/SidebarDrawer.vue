@@ -12,6 +12,10 @@
           <i class="mdi mdi-view-dashboard"></i>
           <span>{{ $t('sidebar.item.dashboard') }}</span>
         </el-menu-item>
+        <el-menu-item index="/analytics">
+          <i class="mdi mdi-chart-box-outline"></i>
+          <span>{{ $t('sidebar.item.analytics') }}</span>
+        </el-menu-item>
         <el-menu-item index="/config">
           <i class="mdi mdi-cog"></i>
           <span>{{ $t('sidebar.item.config') }}</span>
@@ -31,6 +35,10 @@
         <el-menu-item index="/chat">
           <i class="mdi mdi-chat"></i>
           <span>{{ $t('sidebar.item.chat') }}</span>
+        </el-menu-item>
+        <el-menu-item index="/webrender">
+          <i class="mdi mdi-web"></i>
+          <span>{{ $t('sidebar.item.webrender') }}</span>
         </el-menu-item>
         <el-menu-item v-if="isDevelopMode" index="/database">
           <i class="mdi mdi-database"></i>

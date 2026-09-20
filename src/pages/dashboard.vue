@@ -1,7 +1,42 @@
 <template>
-  <div>
-    <ServerInfoCard ref="serverInfoCard" :loading="loading" />
-    <AnalyticsCard ref="analyticsCard" :loading="loading" />
+  <div class="dashboard">
+    <StatTileGroup
+      :running-seconds="runningSeconds"
+      :command-parsed="bot.command_parsed"
+      :message-parsed="bot.message_parsed"
+      :command-rate="commandRate"
+      :message-rate="messageRate"
+      :jobqueue-backend="bot.jobqueue_backend"
+      :web-render-ready="bot.web_render_status"
+      :process-total-memory="processTotalMemory"
+      :processes-available="processes.error !== 'unavailable'"
+      :server-offline="serverOffline"
+      :loading="loading"
+    />
+
+    <el-row :gutter="20" class="dashboard-row">
+      <el-col :xs="24" :lg="10">
+        <ServerInfoCard :os="os" :bot="bot" :cpu="cpu" :loading="loading" />
+      </el-col>
+      <el-col :xs="24" :lg="14">
+        <ResourceGaugeCard
+          :cpu-percent="cpu.cpu_percent"
+          :memory="memory"
+          :disk="disk"
+          :loading="loading"
+        />
+      </el-col>
+
+      <el-col :span="24">
+        <ProcessUsageCard
+          :items="processes.items"
+          :failures="processes.failures"
+          :error="processes.error"
+          :loading="loading"
+        />
+      </el-col>
+    </el-row>
+
     <el-tooltip
       :content="$t('dashboard.update_time.title', { time: formatTime(lastUpdateTime) })"
       placement="left"
@@ -19,61 +54,34 @@
     </el-tooltip>
   </div>
 </template>
+
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from 'vue'
-import AnalyticsCard from '@/components/dashboard/AnalyticsCard.vue'
+import ProcessUsageCard from '@/components/dashboard/ProcessUsageCard.vue'
+import ResourceGaugeCard from '@/components/dashboard/ResourceGaugeCard.vue'
 import ServerInfoCard from '@/components/dashboard/ServerInfoCard.vue'
+import StatTileGroup from '@/components/dashboard/StatTileGroup.vue'
+import { useServerInfo } from '@/composables/useServerInfo.js'
 import LocalStorageJson from '@/localStorageJson.js'
 
-const loading = ref(false)
-const refreshInterval = ref(null)
-const lastUpdateTime = ref(Math.floor(Date.now() / 1000))
+const {
+  loading,
+  lastUpdateTime,
+  os,
+  bot,
+  cpu,
+  memory,
+  disk,
+  processes,
+  commandRate,
+  messageRate,
+  runningSeconds,
+  serverOffline,
+  processTotalMemory,
+  fetchServerInfo,
+} = useServerInfo()
 
-const serverInfoCard = ref(null)
-const analyticsCard = ref(null)
-
-async function refreshData() {
-  if (loading.value) return
-  loading.value = true
-  try {
-    lastUpdateTime.value = Math.floor(Date.now() / 1000)
-
-    const tasks = []
-
-    if (serverInfoCard.value) {
-      tasks.push(serverInfoCard.value.fetchServerInfoData(true))
-    }
-
-    if (analyticsCard.value) {
-      const selectedDays = analyticsCard.value.selectedDays
-      tasks.push(analyticsCard.value.fetchAnalyticsData(selectedDays, true))
-    }
-
-    await Promise.all(tasks)
-  } catch {
-    // empty
-  } finally {
-    loading.value = false
-    resetAutoRefresh()
-  }
-}
-
-function startAutoRefresh() {
-  refreshInterval.value = setInterval(() => {
-    refreshData()
-  }, 3600000)
-}
-
-function resetAutoRefresh() {
-  clearAutoRefresh()
-  startAutoRefresh()
-}
-
-function clearAutoRefresh() {
-  if (refreshInterval.value) {
-    clearInterval(refreshInterval.value)
-    refreshInterval.value = null
-  }
+const refreshData = async () => {
+  await fetchServerInfo(true)
 }
 
 function formatTime(timestamp) {
@@ -114,17 +122,14 @@ function formatTime(timestamp) {
     hour12: false,
   }).format(date)
 }
-
-onMounted(() => {
-  startAutoRefresh()
-})
-
-onBeforeUnmount(() => {
-  clearAutoRefresh()
-})
 </script>
 
 <style scoped>
+.dashboard-row {
+  row-gap: 20px;
+  margin-top: 20px;
+}
+
 .refresh-button {
   position: fixed;
   bottom: 20px;
