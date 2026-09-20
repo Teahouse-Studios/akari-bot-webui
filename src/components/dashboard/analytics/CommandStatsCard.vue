@@ -8,16 +8,14 @@
       <el-select
         :model-value="selectedDays"
         class="time-range-select"
+        :disabled="loading"
         @update:model-value="$emit('update:selectedDays', $event)"
       >
-        <el-option :label="$t('dashboard.analytics.command.select.1day')" value="1"></el-option>
-        <el-option :label="$t('dashboard.analytics.command.select.3days')" value="3"></el-option>
-        <el-option :label="$t('dashboard.analytics.command.select.7days')" value="7"></el-option>
-        <el-option :label="$t('dashboard.analytics.command.select.30days')" value="30"></el-option>
-        <el-option
-          :label="$t('dashboard.analytics.command.select.365days')"
-          value="365"
-        ></el-option>
+        <el-option :label="$t('dashboard.statistics.select.1day')" value="1"></el-option>
+        <el-option :label="$t('dashboard.statistics.select.3days')" value="3"></el-option>
+        <el-option :label="$t('dashboard.statistics.select.7days')" value="7"></el-option>
+        <el-option :label="$t('dashboard.statistics.select.30days')" value="30"></el-option>
+        <el-option :label="$t('dashboard.statistics.select.365days')" value="365"></el-option>
       </el-select>
     </div>
     <div class="statistics-content">

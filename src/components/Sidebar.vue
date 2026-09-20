@@ -5,10 +5,6 @@
         <i class="mdi mdi-view-dashboard"></i>
         <span>{{ $t('sidebar.item.dashboard') }}</span>
       </el-menu-item>
-      <el-menu-item index="/analytics">
-        <i class="mdi mdi-chart-box-outline"></i>
-        <span>{{ $t('sidebar.item.analytics') }}</span>
-      </el-menu-item>
       <el-menu-item index="/config">
         <i class="mdi mdi-cog"></i>
         <span>{{ $t('sidebar.item.config') }}</span>

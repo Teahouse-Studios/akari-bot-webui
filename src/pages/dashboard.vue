@@ -1,44 +1,64 @@
 <template>
   <div class="dashboard">
-    <StatTileGroup
+    <RealtimeOverviewCard
       :running-seconds="runningSeconds"
       :command-parsed="bot.command_parsed"
       :message-parsed="bot.message_parsed"
       :command-rate="commandRate"
       :message-rate="messageRate"
-      :jobqueue-backend="bot.jobqueue_backend"
-      :web-render-ready="bot.web_render_status"
-      :process-total-memory="processTotalMemory"
-      :processes-available="processes.error !== 'unavailable'"
+      :command-rate-history="commandRateHistory"
+      :message-rate-history="messageRateHistory"
       :server-offline="serverOffline"
-      :loading="loading"
+      :loading="initialLoading"
     />
 
     <el-row :gutter="20" class="dashboard-row">
       <el-col :xs="24" :lg="10">
-        <ServerInfoCard :os="os" :bot="bot" :cpu="cpu" :loading="loading" />
-      </el-col>
-      <el-col :xs="24" :lg="14">
         <ResourceGaugeCard
           :cpu-percent="cpu.cpu_percent"
           :memory="memory"
           :disk="disk"
-          :loading="loading"
+          :loading="initialLoading"
         />
       </el-col>
-
-      <el-col :span="24">
+      <el-col :xs="24" :lg="14">
         <ProcessUsageCard
           :items="processes.items"
           :failures="processes.failures"
           :error="processes.error"
-          :loading="loading"
+          :loading="initialLoading"
+        />
+      </el-col>
+    </el-row>
+
+    <el-row :gutter="20" class="dashboard-row">
+      <el-col :xs="24" :lg="16">
+        <CommandStatsCard
+          :trend-data="trendData"
+          :count="count"
+          :average-count="averageCount"
+          :change-rate="changeRate"
+          :selected-days="selectedDays"
+          :loading="statsInitialLoading"
+          @update:selected-days="setSelectedDays"
+        />
+      </el-col>
+      <el-col :xs="24" :lg="8">
+        <PlatformStatsCard :items="platformStats" :count="count" :loading="statsInitialLoading" />
+      </el-col>
+      <el-col :span="24">
+        <ModuleUsageChartCard
+          :modules="modules"
+          :total-modules="totalModules"
+          :limit="limit"
+          :loading="modulesInitialLoading"
+          @update:limit="setLimit"
         />
       </el-col>
     </el-row>
 
     <el-tooltip
-      :content="$t('dashboard.update_time.title', { time: formatTime(lastUpdateTime) })"
+      :content="$t('dashboard.update_time.title', { time: formatDateTime(lastUpdateTime) })"
       placement="left"
     >
       <el-button
@@ -46,7 +66,7 @@
         circle
         size="large"
         type="primary"
-        :disabled="loading"
+        :disabled="loading || analyticsLoading || modulesLoading"
         @click="refreshData"
       >
         <i class="mdi mdi-refresh"></i>
@@ -56,17 +76,21 @@
 </template>
 
 <script setup>
+import { computed } from 'vue'
+import CommandStatsCard from '@/components/dashboard/analytics/CommandStatsCard.vue'
+import ModuleUsageChartCard from '@/components/dashboard/analytics/ModuleUsageChartCard.vue'
+import PlatformStatsCard from '@/components/dashboard/analytics/PlatformStatsCard.vue'
 import ProcessUsageCard from '@/components/dashboard/ProcessUsageCard.vue'
+import RealtimeOverviewCard from '@/components/dashboard/RealtimeOverviewCard.vue'
 import ResourceGaugeCard from '@/components/dashboard/ResourceGaugeCard.vue'
-import ServerInfoCard from '@/components/dashboard/ServerInfoCard.vue'
-import StatTileGroup from '@/components/dashboard/StatTileGroup.vue'
+import { useAnalytics } from '@/composables/useAnalytics.js'
 import { useServerInfo } from '@/composables/useServerInfo.js'
-import LocalStorageJson from '@/localStorageJson.js'
+import { formatDateTime } from '@/utils/systemFormat.js'
 
 const {
   loading,
-  lastUpdateTime,
-  os,
+  initialLoading,
+  lastUpdateTime: serverUpdateTime,
   bot,
   cpu,
   memory,
@@ -74,53 +98,38 @@ const {
   processes,
   commandRate,
   messageRate,
+  commandRateHistory,
+  messageRateHistory,
   runningSeconds,
   serverOffline,
-  processTotalMemory,
   fetchServerInfo,
 } = useServerInfo()
 
+const {
+  selectedDays,
+  limit,
+  loading: analyticsLoading,
+  initialLoading: statsInitialLoading,
+  modulesLoading,
+  modulesInitialLoading,
+  lastUpdateTime: analyticsUpdateTime,
+  trendData,
+  count,
+  averageCount,
+  changeRate,
+  platformStats,
+  modules,
+  totalModules,
+  fetchAnalytics,
+  setSelectedDays,
+  setLimit,
+} = useAnalytics()
+
+/** 实时数据与统计各拉各的，页面只展示两者中较新的一次更新时间 */
+const lastUpdateTime = computed(() => Math.max(serverUpdateTime.value, analyticsUpdateTime.value))
+
 const refreshData = async () => {
-  await fetchServerInfo(true)
-}
-
-function formatTime(timestamp) {
-  const date = new Date(timestamp * 1000)
-  const language = (LocalStorageJson.getItem('language') || 'zh_cn').toLowerCase()
-
-  const langMap = {
-    zh_cn: 'zh-CN',
-    zh_tw: 'zh-TW',
-    en_us: 'en-US',
-    ja_jp: 'ja-JP',
-    ko_kr: 'ko-KR',
-  }
-
-  const locale = langMap[language] || 'zh-CN'
-
-  if (locale === 'ja-JP') {
-    return new Intl.DateTimeFormat(locale, {
-      calendar: 'japanese',
-      era: 'short',
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-      hour12: false,
-    }).format(date)
-  }
-
-  return new Intl.DateTimeFormat(locale, {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-    hour12: false,
-  }).format(date)
+  await Promise.all([fetchServerInfo(true), fetchAnalytics(true)])
 }
 </script>
 

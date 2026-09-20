@@ -1,74 +1,34 @@
 <template>
   <el-card class="resource-card" shadow="never" v-loading="loading">
-    <h3>
-      <i class="mdi mdi-gauge"></i>
-      {{ $t('dashboard.resource.title') }}
-    </h3>
-
-    <div class="memory-dashboards">
-      <el-progress
-        type="dashboard"
-        :percentage="cpuPercentage"
-        :color="getProgressColor(cpuPercentage)"
-      >
-        <template #default="{ percentage }">
-          <span class="percentage-value">{{ percentage }}%</span>
-          <span class="percentage-label">{{ $t('dashboard.resource.cpu') }}</span>
-        </template>
-      </el-progress>
-
-      <el-progress
-        type="dashboard"
-        :percentage="memoryPercentage"
-        :color="getProgressColor(memoryPercentage)"
-      >
-        <template #default="{ percentage }">
-          <span class="percentage-value">{{ percentage }}%</span>
-          <span class="percentage-label">{{ $t('dashboard.resource.memory') }}</span>
-        </template>
-      </el-progress>
-
-      <el-progress
-        type="dashboard"
-        :percentage="diskPercentage"
-        :color="getProgressColor(diskPercentage)"
-      >
-        <template #default="{ percentage }">
-          <span class="percentage-value">{{ percentage }}%</span>
-          <span class="percentage-label">{{ $t('dashboard.resource.disk') }}</span>
-        </template>
-      </el-progress>
+    <div class="card-header">
+      <h3>
+        <i class="mdi mdi-gauge"></i>
+        {{ $t('dashboard.resource.title') }}
+      </h3>
     </div>
 
-    <div class="usage-list">
-      <div class="usage-item">
-        <span class="usage-title">{{ $t('dashboard.resource.memory') }}</span>
-        <span class="usage-value">
-          {{
-            $t('dashboard.resource.used_of_total', {
-              used: `${memory.used ? memory.used.toFixed() : 0} MB`,
-              total: `${memory.total ? memory.total.toFixed() : 0} MB`,
-            })
-          }}
-        </span>
-      </div>
-      <div class="usage-item">
-        <span class="usage-title">{{ $t('dashboard.resource.disk') }}</span>
-        <span class="usage-value">
-          {{
-            $t('dashboard.resource.used_of_total', {
-              used: `${disk.used ? disk.used.toFixed(1) : 0} GB`,
-              total: `${disk.total ? disk.total.toFixed(1) : 0} GB`,
-            })
-          }}
-        </span>
-      </div>
+    <div class="gauge-row">
+      <el-tooltip v-for="gauge in gaugeItems" :key="gauge.key" :content="gauge.tip" placement="top">
+        <el-progress
+          type="dashboard"
+          :width="110"
+          :percentage="gauge.percent"
+          :color="getUsageColor(gauge.percent)"
+        >
+          <template #default="{ percentage }">
+            <span class="gauge-value">{{ percentage }}%</span>
+            <span class="gauge-label">{{ gauge.label }}</span>
+          </template>
+        </el-progress>
+      </el-tooltip>
     </div>
   </el-card>
 </template>
 
 <script setup>
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { getUsageColor } from '@/utils/systemFormat.js'
 
 const props = defineProps({
   cpuPercent: {
@@ -89,23 +49,50 @@ const props = defineProps({
   },
 })
 
-const progressColors = ['#1989fa', '#e6a23c', '#f56c6c']
+const { t } = useI18n()
 
+/** el-progress 只接受 0–100 的数值 */
 const toPercentage = (value) => {
   const number = Number(value)
   if (!Number.isFinite(number)) return 0
   return Math.min(100, Math.max(0, Number(number.toFixed(1))))
 }
 
-const cpuPercentage = computed(() => toPercentage(props.cpuPercent))
-const memoryPercentage = computed(() => toPercentage(props.memory.percent))
-const diskPercentage = computed(() => toPercentage(props.disk.percent))
-
-function getProgressColor(percentage) {
-  if (percentage >= 90) return progressColors[2]
-  if (percentage >= 60) return progressColors[1]
-  return progressColors[0]
+/** 下方的三个横向进度条已移除，用量改由悬浮提示呈现，避免与环形仪表重复 */
+const usedOfTotal = (used, total, unit) => {
+  const digits = unit === 'GB' ? 1 : 0
+  return t('dashboard.resource.used_of_total', {
+    used: `${Number(used || 0).toFixed(digits)} ${unit}`,
+    total: `${Number(total || 0).toFixed(digits)} ${unit}`,
+  })
 }
+
+const gaugeItems = computed(() => {
+  const cpu = toPercentage(props.cpuPercent)
+  const memory = toPercentage(props.memory.percent)
+  const disk = toPercentage(props.disk.percent)
+
+  return [
+    {
+      key: 'cpu',
+      label: t('dashboard.resource.cpu'),
+      percent: cpu,
+      tip: `${t('dashboard.resource.cpu')} · ${cpu}%`,
+    },
+    {
+      key: 'memory',
+      label: t('dashboard.resource.memory'),
+      percent: memory,
+      tip: usedOfTotal(props.memory.used, props.memory.total, 'MB'),
+    },
+    {
+      key: 'disk',
+      label: t('dashboard.resource.disk'),
+      percent: disk,
+      tip: usedOfTotal(props.disk.used, props.disk.total, 'GB'),
+    },
+  ]
+})
 </script>
 
 <style scoped>
@@ -118,57 +105,39 @@ h3 {
   cursor: default;
 }
 
-.memory-dashboards {
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.gauge-row {
   display: flex;
   flex-wrap: wrap;
-  justify-content: center;
-  overflow-x: auto;
+  justify-content: space-around;
+  row-gap: 8px;
+  padding-top: 16px;
 }
 
-.el-progress--dashboard {
-  margin: 5px;
-}
-
-.percentage-value {
+.gauge-value {
   display: block;
   margin-top: 10px;
   font-size: 20px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
 }
 
-.percentage-label {
+.gauge-label {
   display: block;
-  margin-top: 10px;
-  font-size: 14px;
-}
-
-.usage-list {
-  margin-top: 10px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.usage-item {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
+  margin-top: 6px;
   font-size: 13px;
-}
-
-.usage-title {
-  color: #333;
+  color: #888;
   cursor: default;
 }
 
-.dark .usage-title {
-  color: white;
-}
-
-.usage-value {
-  color: #666;
-}
-
-.dark .usage-value {
-  color: #ccc;
+.dark .gauge-label {
+  color: #aaa;
 }
 </style>
