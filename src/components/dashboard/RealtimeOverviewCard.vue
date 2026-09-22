@@ -17,7 +17,7 @@
             <span class="metric-label">{{ metric.label }}</span>
           </div>
           <div class="metric-value">{{ metric.value }}</div>
-          <div v-if="metric.caption" class="metric-caption">{{ metric.caption }}</div>
+          <div class="metric-caption">{{ metric.caption }}</div>
         </el-card>
       </el-col>
     </el-row>
@@ -147,6 +147,7 @@ const metrics = computed(() => [
 
 .metric-caption {
   margin-top: 6px;
+  min-height: 1.2em;
   font-size: 12px;
   color: var(--el-text-color-placeholder);
   cursor: default;

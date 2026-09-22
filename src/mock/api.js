@@ -164,7 +164,7 @@ export default function setupMock() {
   })
 
   mock.onGet('/api/config').reply(200, {
-    cfg_files: ['config.toml', 'bot_web.toml'],
+    cfg_files: ['config.toml', 'bot_web.toml', 'module_wiki.toml'],
   })
 
   mock.onGet('/api/config/config.toml').reply(200, {
@@ -180,6 +180,15 @@ export default function setupMock() {
       '# https://toml.io/cn/v1.0.0\n# 注意：TOML 不是 Python。请不要在此处使用 Python 语法。\n# 例如：TOML 中的布尔值必须是小写。\n\n[bot_web]\n# 平台端的配置部分，此处填写的值可在消息中以明文形式展示。请不要在此部分填写敏感信息。\nenable_https = false # 是否启用 HTTPS 协议安全措施。\nweb_host = "127.0.0.1" # Web 服务的主机地址，设为 0.0.0.0 则监听所有地址。\nweb_port = 6485 # Web 服务的端口号，设为 0 则禁用服务。\nlogin_max_attempts = 5 # 登录请求最大次数限制。\nenable = true # 是否启用此平台。\nheartbeat_interval = 30 # 心跳信息发送时间间隔。\nheartbeat_timeout = 5 # 心跳消息回应超时时间。\nheartbeat_attempt = 3 # 心跳消息发送尝试次数。\n\n[bot_web_secret]\n# 平台端的密钥配置部分，此处的值若意外出现在发送的消息中，机器人会尝试拦截。但请务必提防泄露。\nallow_origins = [] # API 服务允许 CORS 的源列表。\njwt_secret = "<Replace me with str value>" # 内置 API 的身份认证密钥，用于签名和验证有效性。\n',
   })
   mock.onPut('/api/config/bot_web.toml').reply(403, {
+    detail: 'Cannot edit data in demo mode',
+  })
+
+  // 演示用：仅有注释与表头的模块配置，用于展示「删除配置文件」入口
+  mock.onGet('/api/config/module_wiki.toml').reply(200, {
+    content:
+      '# https://toml.io/cn/v1.0.0\n# 注意：TOML 不是 Python。请不要在此处使用 Python 语法。\n\n[wiki]\n# wiki_banned_url_prefix = [] # 不进行解析的网址前缀。\n# wiki_supported_langs = [] # 启用的语言列表。\n',
+  })
+  mock.onDelete(/^\/api\/config\/.+$/).reply(403, {
     detail: 'Cannot edit data in demo mode',
   })
 

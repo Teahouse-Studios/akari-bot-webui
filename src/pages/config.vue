@@ -30,6 +30,9 @@
         <el-button type="success" :disabled="!unsavedChanges" @click="applyConfig">
           <i class="mdi mdi-content-save-outline"></i> {{ $t('button.apply') }}
         </el-button>
+        <el-button v-if="canDeleteConfig" type="danger" :disabled="loading" @click="deleteConfig">
+          <i class="mdi mdi-delete-outline"></i> {{ $t('button.delete') }}
+        </el-button>
         <div v-if="unsavedChanges" class="unsaved-warning">
           <el-alert
             :title="$t('config.alert.warning.unsaved')"
@@ -55,15 +58,17 @@
 </template>
 
 <script setup>
-import { ref, reactive, watch, onMounted, onBeforeUnmount } from 'vue'
+import { ref, reactive, computed, watch, onMounted, onBeforeUnmount } from 'vue'
 import axios from '@/axios.mjs'
 import VisibleEditor from '@/components/config/VisibleEditor.vue'
 import SourceEditor from '@/components/config/SourceEditor.vue'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 import { IS_DEMO } from '@/const'
 
 const { t } = useI18n()
+
+const PROTECTED_CONFIG_FILES = ['config.toml']
 
 const activeCard = ref('visible')
 const activeTab = ref('')
@@ -74,6 +79,22 @@ const editorContent = ref('')
 const fileContents = reactive({})
 const loading = ref(false)
 const abortController = new AbortController()
+
+const hasKeyValuePairs = (content) =>
+  String(content || '')
+    .split('\n')
+    .some((raw) => {
+      const line = raw.trim()
+      if (!line || line.startsWith('#') || line.startsWith('[')) return false
+      return line.includes('=')
+    })
+
+const canDeleteConfig = computed(
+  () =>
+    Boolean(activeTab.value) &&
+    !PROTECTED_CONFIG_FILES.includes(activeTab.value) &&
+    !hasKeyValuePairs(editorContent.value),
+)
 
 const editorView = ref(null)
 const updateEditorContent = () => {
@@ -114,17 +135,30 @@ const fetchConfig = async (fileName, force = false) => {
   }
 }
 
-const fetchConfigFiles = async () => {
+const fetchConfigFiles = async (cfgFiles = null) => {
   loading.value = true
   try {
-    const response = await axios.get('/api/config', {
-      signal: abortController.signal,
-    })
-    configFiles.value = response.data.cfg_files
-    if (configFiles.value.length > 0) {
-      activeTab.value = configFiles.value[0]
-      fetchConfig(activeTab.value)
+    let files = cfgFiles
+    if (!files) {
+      const response = await axios.get('/api/config', {
+        signal: abortController.signal,
+      })
+      files = response.data.cfg_files
     }
+    configFiles.value = files || []
+
+    if (configFiles.value.length === 0) {
+      activeTab.value = ''
+      editorContent.value = ''
+      initialContent.value = ''
+      unsavedChanges.value = false
+      return
+    }
+
+    if (!configFiles.value.includes(activeTab.value)) {
+      activeTab.value = configFiles.value[0]
+    }
+    fetchConfig(activeTab.value, true)
   } catch (error) {
     if (axios.isCancel(error)) {
       console.log('Request canceled')
@@ -158,6 +192,45 @@ const applyConfig = async () => {
     } else {
       ElMessage.error(t('message.error.fetch') + error.message)
     }
+  }
+}
+
+const deleteConfig = async () => {
+  const fileName = activeTab.value
+  if (!fileName) return
+
+  try {
+    await ElMessageBox.confirm(
+      t('config.confirm.delete', { file: fileName }),
+      t('confirm.warning'),
+      {
+        confirmButtonText: t('button.confirm'),
+        cancelButtonText: t('button.cancel'),
+        type: 'warning',
+      },
+    )
+  } catch {
+    return
+  }
+
+  loading.value = true
+  try {
+    const response = await axios.delete(`/api/config/${fileName}`)
+    delete fileContents[fileName]
+    if (response.data?.changed === false) {
+      ElMessage.info(t('config.message.delete.absent'))
+    } else {
+      ElMessage.success(t('config.message.delete.success'))
+    }
+    await fetchConfigFiles(response.data?.cfg_files)
+  } catch (error) {
+    if (error.response?.status === 403 && IS_DEMO) {
+      ElMessage.error(t('message.error.demo'))
+    } else {
+      ElMessage.error(t('message.error.fetch') + error.message)
+    }
+  } finally {
+    loading.value = false
   }
 }
 

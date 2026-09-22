@@ -56,16 +56,15 @@
             </el-tag>
           </template>
         </el-table-column>
+        <el-table-column :label="$t('modules.table.type')" min-width="120">
+          <template #default="{ row }">
+            <el-tag :type="moduleTypeTag(row)">{{ $t(moduleTypeLabel(row)) }}</el-tag>
+          </template>
+        </el-table-column>
         <el-table-column :label="$t('session.table.status')" min-width="100">
           <template #default="{ row }">
-            <el-tag :type="row.base ? 'warning' : row.loaded ? 'success' : 'danger'">
-              {{
-                row.base
-                  ? $t('modules.tag.base')
-                  : row.loaded
-                    ? $t('modules.tag.loaded')
-                    : $t('modules.tag.unloaded')
-              }}
+            <el-tag :type="row.loaded ? 'success' : 'danger'">
+              {{ row.loaded ? $t('modules.tag.loaded') : $t('modules.tag.unloaded') }}
             </el-tag>
           </template>
         </el-table-column>
@@ -224,6 +223,28 @@ const initialConfigContent = ref('')
 const unsavedConfigChanges = ref(false)
 const configNotFound = ref(false)
 
+const MODULE_TYPE_TAGS = {
+  base: 'warning',
+  extension: 'primary',
+  subscription: 'success',
+}
+
+const MODULE_TYPE_LABELS = {
+  base: 'modules.type.base',
+  extension: 'modules.type.extension',
+  subscription: 'modules.type.subscription',
+}
+
+const moduleType = (row) => {
+  if (row?.base) return 'base'
+  if (row?.rss) return 'subscription'
+  return 'extension'
+}
+
+const moduleTypeTag = (row) => MODULE_TYPE_TAGS[moduleType(row)]
+
+const moduleTypeLabel = (row) => MODULE_TYPE_LABELS[moduleType(row)]
+
 const filteredModules = computed(() => {
   let result = modules.value
   if (searchKeyword.value) {
@@ -266,15 +287,16 @@ const refreshData = async () => {
     if (response.status === 200 && response.data.modules) {
       modules.value = Object.entries(response.data.modules)
         .map(([name, info]) => {
-          const isLoaded = info?._db_load !== false
+          const base = info?.base === true
           return {
+            ...info,
             name,
             bind_prefix: info?.bind_prefix || name,
             desc: info?.desc || '',
             developers: info?.developers || [],
-            loaded: isLoaded,
-            base: info?.base === true,
-            ...info,
+            base,
+            // 基础模块不可卸载，状态恒为已加载
+            loaded: base || info?._db_load !== false,
           }
         })
         .sort((a, b) => a.name.localeCompare(b.name))

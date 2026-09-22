@@ -53,15 +53,15 @@
       @select-files="addImageFiles"
     />
 
+    <div class="chat-tip">
+      {{ $t('chat.tip') }}
+    </div>
+
     <ImagePreview
       v-model:visible="fullscreenPreviewVisible"
       :src="previewImageSrc"
       @open-new-window="openImageInNewWindow"
     />
-  </div>
-
-  <div class="chat-tip">
-    {{ $t('chat.tip') }}
   </div>
 
   <NodesDialog
@@ -262,7 +262,17 @@ onBeforeUnmount(() => {
 <style scoped>
 .chat-container {
   border-radius: 10px;
-  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 100px);
+  overflow: hidden;
+}
+
+.chat-container :deep(.chat-header),
+.chat-container :deep(.pending-images-bar),
+.chat-container :deep(.send-box),
+.chat-tip {
+  flex: 0 0 auto;
 }
 
 .chat-container.drag-over {
@@ -271,7 +281,8 @@ onBeforeUnmount(() => {
 }
 
 .chat-box {
-  height: calc(100vh - 260px);
+  flex: 1 1 auto;
+  min-height: 0;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
