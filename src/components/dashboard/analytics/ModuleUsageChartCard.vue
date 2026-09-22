@@ -1,5 +1,5 @@
 <template>
-  <el-card class="module-card" shadow="never" v-loading="loading">
+  <el-card class="module-card" shadow="never">
     <div class="card-header">
       <h3>
         <i class="mdi mdi-puzzle"></i>
@@ -71,10 +71,6 @@ const props = defineProps({
   limit: {
     type: Number,
     default: 50,
-  },
-  loading: {
-    type: Boolean,
-    default: false,
   },
 })
 

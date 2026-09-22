@@ -1,5 +1,5 @@
 <template>
-  <el-card class="fixed-card" shadow="never" v-loading="loading">
+  <el-card class="fixed-card" shadow="never">
     <div class="card-header">
       <h3>
         <i class="mdi mdi-format-list-numbered"></i>
@@ -59,10 +59,6 @@ defineProps({
   count: {
     type: Number,
     default: 0,
-  },
-  loading: {
-    type: Boolean,
-    default: false,
   },
 })
 </script>

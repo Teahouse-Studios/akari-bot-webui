@@ -1,4 +1,4 @@
-import { computed, onBeforeUnmount, ref } from 'vue'
+import { onBeforeUnmount, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 import axios from '@/axios.mjs'
@@ -12,9 +12,6 @@ export function useAnalytics() {
 
   const loading = ref(false)
   const modulesLoading = ref(false)
-  /** 首次加载完成后，切换天数/刷新之外的轮询不再触发遮罩 */
-  const loaded = ref(false)
-  const modulesLoaded = ref(false)
   const lastUpdateTime = ref(Math.floor(Date.now() / 1000))
 
   const trendData = ref([])
@@ -27,10 +24,6 @@ export function useAnalytics() {
   const totalModules = ref(0)
 
   const abortController = new AbortController()
-
-  /** 只有首屏才给卡片加 loading 遮罩 */
-  const initialLoading = computed(() => loading.value && !loaded.value)
-  const modulesInitialLoading = computed(() => modulesLoading.value && !modulesLoaded.value)
 
   const buildHeaders = (noCache) => {
     if (!noCache) return {}
@@ -63,7 +56,6 @@ export function useAnalytics() {
       averageCount.value = summary.averageCount
       changeRate.value = summary.changeRate
       platformStats.value = summary.platformStats
-      loaded.value = true
       lastUpdateTime.value = Math.floor(Date.now() / 1000)
     } catch (error) {
       if (axios.isCancel(error)) {
@@ -91,7 +83,6 @@ export function useAnalytics() {
       const data = response.data || {}
       modules.value = Array.isArray(data.modules) ? data.modules : []
       totalModules.value = data.total_modules || 0
-      modulesLoaded.value = true
       lastUpdateTime.value = Math.floor(Date.now() / 1000)
     } catch (error) {
       if (axios.isCancel(error)) {
@@ -127,9 +118,7 @@ export function useAnalytics() {
     selectedDays,
     limit,
     loading,
-    initialLoading,
     modulesLoading,
-    modulesInitialLoading,
     lastUpdateTime,
     trendData,
     count,

@@ -1,5 +1,5 @@
 <template>
-  <el-card class="overview-card" shadow="never" v-loading="loading">
+  <div class="overview">
     <el-alert
       v-if="serverOffline"
       :title="$t('dashboard.kpi.server_offline')"
@@ -8,18 +8,6 @@
       :closable="false"
       class="offline-alert"
     />
-
-    <div class="hero">
-      <span class="hero-title">
-        <i class="mdi mdi-robot-outline"></i>
-        {{ $t('dashboard.overview.title') }}
-      </span>
-
-      <div class="hero-uptime">
-        <span class="hero-label">{{ $t('dashboard.overview.uptime') }}</span>
-        <span class="hero-value">{{ uptimeText }}</span>
-      </div>
-    </div>
 
     <el-row :gutter="16" class="metric-row">
       <el-col v-for="metric in metrics" :key="metric.key" :xs="24" :sm="12" :lg="6">
@@ -30,22 +18,15 @@
           </div>
           <div class="metric-value">{{ metric.value }}</div>
           <div v-if="metric.caption" class="metric-caption">{{ metric.caption }}</div>
-          <ThroughputSparkline
-            v-if="metric.sparkline"
-            :values="metric.sparkline"
-            :height="36"
-            class="metric-sparkline"
-          />
         </div>
       </el-col>
     </el-row>
-  </el-card>
+  </div>
 </template>
 
 <script setup>
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import ThroughputSparkline from '@/components/dashboard/ThroughputSparkline.vue'
 import { formatUptime, getLocaleTag } from '@/utils/systemFormat.js'
 
 const props = defineProps({
@@ -63,29 +44,12 @@ const props = defineProps({
     type: Number,
     default: null,
   },
-  // 由两次采样差值算出的速率（次/分），不足两次采样时为 null
-  commandRate: {
+  // 已采集到指标的进程数量，服务端离线时为 null
+  processCount: {
     type: Number,
     default: null,
-  },
-  messageRate: {
-    type: Number,
-    default: null,
-  },
-  // 速率采样序列，用于迷你折线
-  commandRateHistory: {
-    type: Array,
-    default: () => [],
-  },
-  messageRateHistory: {
-    type: Array,
-    default: () => [],
   },
   serverOffline: {
-    type: Boolean,
-    default: false,
-  },
-  loading: {
     type: Boolean,
     default: false,
   },
@@ -98,10 +62,9 @@ const EMPTY = '—'
 const formatCount = (value) =>
   typeof value === 'number' ? value.toLocaleString(getLocaleTag()) : EMPTY
 
-const formatRate = (value) =>
-  typeof value === 'number' ? t('dashboard.kpi.rate_value', { value }) : EMPTY
-
-const uptimeText = computed(() => formatUptime(props.runningSeconds, t))
+const uptimeText = computed(() =>
+  props.serverOffline ? EMPTY : formatUptime(props.runningSeconds, t),
+)
 
 const metrics = computed(() => [
   {
@@ -119,24 +82,22 @@ const metrics = computed(() => [
     caption: t('dashboard.overview.since_start'),
   },
   {
-    key: 'command_rate',
-    icon: 'mdi-speedometer',
-    label: t('dashboard.kpi.command_rate'),
-    value: formatRate(props.commandRate),
-    sparkline: props.commandRateHistory,
+    key: 'running_time',
+    icon: 'mdi-clock-outline',
+    label: t('dashboard.overview.uptime'),
+    value: uptimeText.value,
   },
   {
-    key: 'message_rate',
-    icon: 'mdi-chart-timeline-variant',
-    label: t('dashboard.kpi.message_rate'),
-    value: formatRate(props.messageRate),
-    sparkline: props.messageRateHistory,
+    key: 'process_count',
+    icon: 'mdi-server-outline',
+    label: t('dashboard.kpi.process_count'),
+    value: formatCount(props.processCount),
   },
 ])
 </script>
 
 <style scoped>
-.overview-card {
+.overview {
   line-height: 1;
 }
 
@@ -146,17 +107,8 @@ const metrics = computed(() => [
 
 .hero {
   display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
   align-items: center;
-  gap: 12px 24px;
-  padding-bottom: 16px;
-  margin-bottom: 16px;
-  border-bottom: 1px solid var(--el-border-color-lighter);
-}
-
-.dark .hero {
-  border-bottom-color: var(--el-border-color-darker);
+  margin-bottom: 12px;
 }
 
 .hero-title {
@@ -175,30 +127,6 @@ const metrics = computed(() => [
 
 .hero-title i {
   font-size: 18px;
-  color: var(--el-color-primary);
-}
-
-.hero-uptime {
-  display: flex;
-  align-items: baseline;
-  gap: 10px;
-}
-
-.hero-label {
-  font-size: 13px;
-  color: #888;
-  cursor: default;
-}
-
-.dark .hero-label {
-  color: #aaa;
-}
-
-.hero-value {
-  font-size: 26px;
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: 0.5px;
   color: var(--el-color-primary);
 }
 
@@ -264,16 +192,7 @@ const metrics = computed(() => [
   color: #888;
 }
 
-.metric-sparkline {
-  margin-top: auto;
-  padding-top: 10px;
-}
-
 @media (max-width: 768px) {
-  .hero-value {
-    font-size: 22px;
-  }
-
   .metric-value {
     font-size: 20px;
   }
