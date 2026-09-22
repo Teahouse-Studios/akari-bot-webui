@@ -5,9 +5,7 @@
         <i class="mdi mdi-gauge"></i>
         {{ $t('dashboard.resource.title') }}
       </h3>
-      <span v-if="items.length" class="card-hint">
-        {{ $t('dashboard.kpi.process_memory') }} · {{ formatBytes(totalMemory) }}
-      </span>
+      <span v-if="items.length" class="card-hint">{{ totalMemoryText }}</span>
     </div>
 
     <el-alert
@@ -27,8 +25,23 @@
       class="process-alert"
     />
 
+    <div class="gauge-row">
+      <el-tooltip v-for="gauge in gaugeItems" :key="gauge.key" :content="gauge.tip" placement="top">
+        <el-progress
+          type="dashboard"
+          :percentage="gauge.percent"
+          :color="getUsageColor(gauge.percent)"
+        >
+          <template #default="{ percentage }">
+            <span class="gauge-value">{{ percentage }}%</span>
+            <span class="gauge-label">{{ gauge.label }}</span>
+          </template>
+        </el-progress>
+      </el-tooltip>
+    </div>
+
     <div class="process-area">
-      <el-scrollbar v-if="items.length" class="process-scroll">
+      <el-scrollbar v-if="items.length" max-height="260px">
         <div class="process-list">
           <div
             v-for="(item, index) in rankedItems"
@@ -51,24 +64,6 @@
           </div>
         </div>
       </el-scrollbar>
-
-      <el-empty v-else :description="$t('dashboard.process.empty')" :image-size="60" />
-    </div>
-
-    <div class="gauge-row">
-      <el-tooltip v-for="gauge in gaugeItems" :key="gauge.key" :content="gauge.tip" placement="top">
-        <el-progress
-          type="dashboard"
-          :width="96"
-          :percentage="gauge.percent"
-          :color="getUsageColor(gauge.percent)"
-        >
-          <template #default="{ percentage }">
-            <span class="gauge-value">{{ percentage }}%</span>
-            <span class="gauge-label">{{ gauge.label }}</span>
-          </template>
-        </el-progress>
-      </el-tooltip>
     </div>
   </el-card>
 </template>
@@ -136,10 +131,14 @@ const totalMemory = computed(() =>
   props.items.reduce((sum, item) => sum + (Number(item.memory) || 0), 0),
 )
 
+const totalMemoryText = computed(() =>
+  t('dashboard.resource.process.label.total_memory', { memory: formatBytes(totalMemory.value) }),
+)
+
 const describe = (item) =>
-  `${t('dashboard.process.table.pid')}: ${item.pid ?? '-'} · ${t('dashboard.process.table.threads')}: ${
-    item.threads ?? '-'
-  }`
+  `${t('dashboard.process.process.label.pid')}: ${item.pid ?? '-'} · ${t(
+    'dashboard.process.process.label.threads',
+  )}: ${item.threads ?? '-'}`
 
 /** el-progress 只接受 0–100 的数值 */
 const toPercentage = (value) => {
@@ -151,7 +150,7 @@ const toPercentage = (value) => {
 /** 用量改由悬浮提示呈现，避免与环形仪表重复 */
 const usedOfTotal = (used, total, unit) => {
   const digits = unit === 'GB' ? 1 : 0
-  return t('dashboard.resource.used_of_total', {
+  return t('dashboard.resource.process.used_of_total', {
     used: `${Number(used || 0).toFixed(digits)} ${unit}`,
     total: `${Number(total || 0).toFixed(digits)} ${unit}`,
   })
@@ -224,14 +223,10 @@ h3 {
 }
 
 .process-area {
-  flex: 1;
+  flex: 1 1 auto;
   min-height: 0;
-  max-height: 260px;
+  margin-top: 16px;
   overflow: hidden;
-}
-
-.process-scroll {
-  height: 100%;
 }
 
 .process-list {
@@ -266,35 +261,31 @@ h3 {
   display: flex;
   flex-wrap: wrap;
   flex-shrink: 0;
-  justify-content: space-around;
+  justify-content: center;
+  overflow-x: auto;
   row-gap: 8px;
-  padding-top: 16px;
-  margin-top: auto;
+}
+
+.gauge-row :deep(.el-progress--dashboard) {
+  margin: 5px;
 }
 
 .gauge-value {
   display: block;
   margin-top: 10px;
   font-size: 20px;
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
 }
 
 .gauge-label {
   display: block;
-  margin-top: 6px;
-  font-size: 13px;
+  margin-top: 10px;
+  font-size: 14px;
   color: var(--el-text-color-secondary);
-  cursor: default;
 }
 
 @media (max-width: 1199px) {
   .resource-card {
     height: auto;
-  }
-
-  .process-area {
-    max-height: 320px;
   }
 }
 </style>

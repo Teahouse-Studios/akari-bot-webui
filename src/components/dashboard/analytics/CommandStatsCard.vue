@@ -145,7 +145,7 @@ const renderChart = async () => {
 
 const resizeChart = async () => {
   await nextTick()
-  if (chartInstance.value) chartInstance.value.resize()
+  chartInstance.value.resize()
 }
 
 watch(
@@ -159,7 +159,7 @@ onMounted(() => {
   renderChart()
 
   resizeObserver = new ResizeObserver(resizeChart)
-  if (chartContainer.value) resizeObserver.observe(chartContainer.value)
+  resizeObserver.observe(chartContainer.value)
 })
 
 onBeforeUnmount(() => {

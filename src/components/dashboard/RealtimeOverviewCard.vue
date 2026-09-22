@@ -2,23 +2,23 @@
   <div class="overview">
     <el-alert
       v-if="serverOffline"
-      :title="$t('dashboard.kpi.server_offline')"
+      :title="$t('dashboard.overview.alert.server_offline')"
       type="warning"
       show-icon
       :closable="false"
       class="offline-alert"
     />
 
-    <el-row :gutter="16" class="metric-row">
+    <el-row :gutter="20" class="metric-row">
       <el-col v-for="metric in metrics" :key="metric.key" :xs="24" :sm="12" :lg="6">
-        <div class="metric-tile">
+        <el-card class="metric-tile" shadow="never">
           <div class="metric-head">
             <i :class="['mdi', metric.icon]"></i>
             <span class="metric-label">{{ metric.label }}</span>
           </div>
           <div class="metric-value">{{ metric.value }}</div>
           <div v-if="metric.caption" class="metric-caption">{{ metric.caption }}</div>
-        </div>
+        </el-card>
       </el-col>
     </el-row>
   </div>
@@ -70,27 +70,27 @@ const metrics = computed(() => [
   {
     key: 'command_parsed',
     icon: 'mdi-console-line',
-    label: t('dashboard.kpi.command_parsed'),
+    label: t('dashboard.overview.title.command_parsed'),
     value: formatCount(props.commandParsed),
     caption: t('dashboard.overview.since_start'),
   },
   {
     key: 'message_parsed',
     icon: 'mdi-message-text-outline',
-    label: t('dashboard.kpi.message_parsed'),
+    label: t('dashboard.overview.title.message_parsed'),
     value: formatCount(props.messageParsed),
     caption: t('dashboard.overview.since_start'),
   },
   {
     key: 'running_time',
     icon: 'mdi-clock-outline',
-    label: t('dashboard.overview.uptime'),
+    label: t('dashboard.overview.title.uptime'),
     value: uptimeText.value,
   },
   {
     key: 'process_count',
     icon: 'mdi-server-outline',
-    label: t('dashboard.kpi.process_count'),
+    label: t('dashboard.overview.title.process_count'),
     value: formatCount(props.processCount),
   },
 ])
@@ -99,52 +99,24 @@ const metrics = computed(() => [
 <style scoped>
 .overview {
   line-height: 1;
+  /* 指标区自身不是卡片，需额外留白与下方卡片拉开距离 */
+  margin-bottom: 20px;
 }
 
 .offline-alert {
   margin-bottom: 16px;
 }
 
-.hero {
-  display: flex;
-  align-items: center;
-  margin-bottom: 12px;
-}
-
-.hero-title {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--el-text-color-primary);
-  cursor: default;
-}
-
-.hero-title i {
-  font-size: 18px;
-  color: var(--el-color-primary);
-}
-
 .metric-row {
-  row-gap: 16px;
+  row-gap: 20px;
 }
 
 .metric-tile {
-  display: flex;
-  flex-direction: column;
   height: 100%;
-  padding: 12px 14px;
-  border-radius: 8px;
-  background-color: var(--el-fill-color-lighter);
-  transition:
-    background-color 0.2s ease,
-    transform 0.2s ease;
 }
 
-.metric-tile:hover {
-  background-color: var(--el-fill-color-light);
-  transform: translateY(-2px);
+.metric-tile :deep(.el-card__body) {
+  padding: 12px 14px;
 }
 
 .metric-head {

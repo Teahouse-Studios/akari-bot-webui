@@ -10,8 +10,7 @@ const REFRESH_INTERVAL = 30000
  * 服务器状态：`/api/server-info` 的取数与降级处理。
  *
  * 动态数据（运行时长、命令/消息累计量、CPU / 内存 / 磁盘、进程占用）与静态数据
- * （版本号、Python 版本、CPU 型号、系统信息）都对外暴露；
- * `bot.jobqueue_backend` 仅用于离线判定，不外传。
+ * （版本号、Python 版本、JobQueue 后端、WebRender 状态、CPU 型号、系统信息）都对外暴露。
  *
  * 服务端离线时 `bot.command_parsed` / `bot.message_parsed` 为 null，
  * `processes` 退化为 `{ items: [], failures: [], error: 'unavailable' }`，

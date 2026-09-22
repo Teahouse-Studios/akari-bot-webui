@@ -19,9 +19,7 @@
       </el-select>
     </div>
 
-    <div v-show="modules.length" ref="chartContainer" class="chart-container"></div>
-    <el-empty v-if="!modules.length" :description="$t('analytics.empty')" :image-size="60" />
-
+    <div ref="chartContainer" class="chart-container"></div>
     <div v-if="truncated" class="truncated-hint">
       {{ $t('analytics.module.truncated', { total: totalModules, limit: modules.length }) }}
     </div>
@@ -101,7 +99,7 @@ const renderChart = async () => {
   await nextTick()
   if (chartInstance.value) chartInstance.value.dispose()
   const chartDom = chartContainer.value
-  if (!chartDom || chartDom.offsetWidth === 0 || !chartData.value.length) return
+  if (!chartDom || chartDom.offsetWidth === 0) return
 
   const needZoom = chartData.value.length > 12
   const chart = init(chartDom)
