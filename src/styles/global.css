@@ -1,0 +1,8 @@
+html,
+body {
+  background-color: var(--el-bg-color-page);
+}
+
+body {
+  color: var(--el-text-color-primary);
+}

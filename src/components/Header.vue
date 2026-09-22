@@ -242,19 +242,14 @@ onBeforeUnmount(() => {
   justify-content: space-between;
   align-items: center;
   padding: 0 20px;
-  background-color: #f4f4f4;
+  background-color: var(--el-bg-color);
   height: 60px;
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   z-index: 100;
-  border-bottom: 1px solid #e0e0e0;
-}
-
-.dark .header {
-  background-color: #333;
-  border-bottom: 1px solid #1f1f1f;
+  border-bottom: 1px solid var(--el-border-color-light);
 }
 
 .menu-button {
@@ -268,26 +263,16 @@ onBeforeUnmount(() => {
 }
 
 .menu-button:hover {
-  background-color: #f4f4f4;
-  color: #888;
-}
-
-.dark .menu-button:hover {
-  background-color: #333;
-  color: #aaa;
+  background-color: var(--el-fill-color-light);
+  color: var(--el-text-color-secondary);
 }
 
 .theme-toggle-button {
   font-size: 22px;
   padding: 6px;
-  background-color: #2e2e2e;
-  color: white;
+  background-color: var(--el-text-color-primary);
+  color: var(--el-bg-color);
   border: none;
-}
-
-.dark .theme-toggle {
-  background: white;
-  color: #333;
 }
 
 .header-left {
@@ -318,7 +303,7 @@ onBeforeUnmount(() => {
   display: flex;
   align-items: center;
   font-size: 16px;
-  color: #666;
+  color: var(--el-text-color-regular);
   cursor: default;
   font-family:
     'Roboto',
@@ -328,23 +313,9 @@ onBeforeUnmount(() => {
     sans-serif;
 }
 
-.dark .web-ui-text {
-  color: #aaa;
-}
-
 .theme-toggle-button:hover {
-  background-color: #666;
-  color: white;
-}
-
-.dark .theme-toggle-button {
-  background-color: #eee;
-  color: #333;
-}
-
-.dark .theme-toggle-button:hover {
-  background-color: #c0c0c0;
-  color: #333;
+  background-color: var(--el-text-color-regular);
+  color: var(--el-bg-color);
 }
 
 .lang-select {
@@ -352,10 +323,10 @@ onBeforeUnmount(() => {
 }
 .help-iframe-wrapper {
   position: fixed;
-  border: 1px solid #ccc;
-  background-color: white;
+  border: 1px solid var(--el-border-color);
+  background-color: var(--el-bg-color-overlay);
   z-index: 9999;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  box-shadow: var(--el-box-shadow-light);
   display: flex;
   flex-direction: column;
   border-radius: 12px;
@@ -364,8 +335,9 @@ onBeforeUnmount(() => {
 
 .help-iframe-header {
   height: 36px;
-  background: #323437;
-  color: white;
+  background: var(--el-fill-color);
+  color: var(--el-text-color-primary);
+  border-bottom: 1px solid var(--el-border-color-lighter);
   cursor: move;
   display: flex;
   justify-content: space-between;
@@ -378,7 +350,7 @@ onBeforeUnmount(() => {
   margin-left: 4px;
   background: transparent;
   border: none;
-  color: white;
+  color: inherit;
   font-size: 16px;
   cursor: pointer;
 }
@@ -396,9 +368,9 @@ onBeforeUnmount(() => {
   cursor: pointer;
   background: transparent;
   border: none;
-  color: white;
+  color: inherit;
 }
 .close-btn:hover {
-  color: #666;
+  color: var(--el-color-primary);
 }
 </style>

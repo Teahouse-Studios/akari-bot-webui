@@ -540,12 +540,12 @@ async function resetBackupCodes() {
 <style scoped>
 .status-text {
   font-size: 14px;
-  color: #909399;
+  color: var(--el-text-color-secondary);
   margin-bottom: 12px;
 }
 
 .enabled-text {
-  color: #67c23a;
+  color: var(--el-color-success);
 }
 
 .enabled-text i {
@@ -568,10 +568,11 @@ async function resetBackupCodes() {
 .qr-image {
   width: 200px;
   height: 200px;
-  border: 1px solid #dcdfe6;
+  border: 1px solid var(--el-border-color);
   border-radius: 8px;
   padding: 8px;
-  background: #fff;
+  /* 二维码需要固定浅底才能被扫描 */
+  background: var(--el-color-white);
 }
 
 .secret-section {
@@ -581,7 +582,7 @@ async function resetBackupCodes() {
 
 .secret-label {
   font-size: 13px;
-  color: #909399;
+  color: var(--el-text-color-secondary);
   margin-bottom: 6px;
 }
 
@@ -594,16 +595,11 @@ async function resetBackupCodes() {
 .secret-code {
   font-size: 14px;
   font-family: 'Noto Sans Mono', 'Courier New', Courier, monospace;
-  background: #f5f7fa;
+  background: var(--el-fill-color-light);
   padding: 4px 10px;
   border-radius: 4px;
   word-break: break-all;
   flex: 1;
-}
-
-.dark .secret-code {
-  background: #4a4a4a;
-  color: #e0e0e0;
 }
 
 .verify-section {
@@ -630,13 +626,9 @@ async function resetBackupCodes() {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 8px 16px;
-  background: #f5f7fa;
+  background: var(--el-fill-color-light);
   border-radius: 6px;
   padding: 16px;
-}
-
-.dark .codes-grid {
-  background: #4a4a4a;
 }
 
 .code-item {
@@ -647,18 +639,14 @@ async function resetBackupCodes() {
 
 .code-index {
   font-size: 13px;
-  color: #909399;
+  color: var(--el-text-color-secondary);
   min-width: 20px;
 }
 
 .code-value {
   font-size: 14px;
   font-family: 'Noto Sans Mono', 'Courier New', Courier, monospace;
-  color: #303133;
-}
-
-.dark .code-value {
-  color: #e0e0e0;
+  color: var(--el-text-color-primary);
 }
 
 .code-input-wrapper {
@@ -668,7 +656,7 @@ async function resetBackupCodes() {
 }
 
 .backup-link {
-  color: #666;
+  color: var(--el-text-color-regular);
   cursor: pointer;
   font-size: 13px;
   text-decoration: underline;
@@ -677,19 +665,12 @@ async function resetBackupCodes() {
 }
 
 .backup-link:hover {
-  color: #333;
-}
-
-.dark .backup-link {
-  color: #ccc;
-}
-.dark .backup-link:hover {
-  color: white;
+  color: var(--el-text-color-primary);
 }
 
 .totp-desc {
   font-size: 13px;
-  color: #909399;
+  color: var(--el-text-color-secondary);
   margin: 0 0 8px 0;
 }
 </style>

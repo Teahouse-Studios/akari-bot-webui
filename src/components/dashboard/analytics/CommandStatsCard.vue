@@ -224,30 +224,22 @@ h3 {
 .data-title {
   flex: 1 1 100%;
   margin-bottom: 4px;
-  color: #333;
+  color: var(--el-text-color-primary);
   cursor: default;
-}
-
-.dark .data-title {
-  color: white;
 }
 
 .data-text {
   flex: 1 1 100%;
-  color: #666;
+  color: var(--el-text-color-regular);
   text-overflow: ellipsis;
 }
 
-.dark .data-text {
-  color: #ccc;
-}
-
 .positive {
-  color: forestgreen;
+  color: var(--el-color-success);
 }
 
 .negative {
-  color: red;
+  color: var(--el-color-danger);
 }
 
 .chart-container {

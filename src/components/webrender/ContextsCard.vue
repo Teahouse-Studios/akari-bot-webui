@@ -75,11 +75,7 @@ h3 {
 
 .contexts-total {
   font-size: 13px;
-  color: #666;
-}
-
-.dark .contexts-total {
-  color: #ccc;
+  color: var(--el-text-color-regular);
 }
 
 .context-alert {
@@ -116,12 +112,8 @@ h3 {
   align-items: center;
   gap: 6px;
   font-size: 12px;
-  color: #555;
+  color: var(--el-text-color-regular);
   min-width: 0;
-}
-
-.dark .context-page {
-  color: #bbb;
 }
 
 .context-page-url {
@@ -132,6 +124,6 @@ h3 {
 
 .context-empty {
   font-size: 12px;
-  color: #999;
+  color: var(--el-text-color-placeholder);
 }
 </style>

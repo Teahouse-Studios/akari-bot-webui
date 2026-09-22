@@ -224,7 +224,9 @@
         >
           {{ member.target_id }}
           <el-tooltip :content="$t('session.group.tooltip.channel')" placement="top">
-            <span style="margin-left: 4px; color: #909399">#{{ member.channel_id }}</span>
+            <span style="margin-left: 4px; color: var(--el-text-color-secondary)"
+              >#{{ member.channel_id }}</span
+            >
           </el-tooltip>
         </el-tag>
         <el-empty

@@ -56,32 +56,20 @@ defineProps({
   align-items: center;
   text-align: center;
   padding: 40px;
-  color: #999;
+  color: var(--el-text-color-placeholder);
   font-size: 28px;
 }
 
 .placeholder-title {
   font-size: 24px;
   font-weight: bold;
-  color: #333;
+  color: var(--el-text-color-primary);
   margin-bottom: 20px;
 }
 
 .placeholder-sub {
-  color: #777;
+  color: var(--el-text-color-secondary);
   font-size: 14px;
   margin-top: 4px;
-}
-
-.dark .chat-placeholder {
-  color: #aaa;
-}
-
-.dark .placeholder-title {
-  color: #eee;
-}
-
-.dark .placeholder-sub {
-  color: #888;
 }
 </style>

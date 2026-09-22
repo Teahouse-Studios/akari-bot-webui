@@ -110,10 +110,6 @@ h3 {
 .control-hint {
   margin-top: 12px;
   font-size: 12px;
-  color: #888;
-}
-
-.dark .control-hint {
-  color: #aaa;
+  color: var(--el-text-color-secondary);
 }
 </style>

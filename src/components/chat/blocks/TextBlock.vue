@@ -31,15 +31,15 @@ defineEmits(['markdown-click'])
 }
 
 .chat-blockquote {
-  border-left: 4px solid gray;
+  border-left: 4px solid var(--el-border-color-dark);
   padding-left: 10px;
   margin: 10px 0;
 }
 
 .chat-pre {
-  color: black;
-  background-color: #f7f7f7;
-  border: 1px solid #dcdcdc;
+  color: var(--el-text-color-primary);
+  background-color: var(--el-fill-color-light);
+  border: 1px solid var(--el-border-color-lighter);
   padding: 15px;
   border-radius: 8px;
   font-family: 'Consolas', 'Noto Sans Mono', 'Courier New', Courier, monospace;
@@ -48,24 +48,12 @@ defineEmits(['markdown-click'])
 }
 
 .chat-code {
-  color: black;
-  background-color: #f0f0f0;
-  border: 1px solid #ccc;
+  color: var(--el-text-color-primary);
+  background-color: var(--el-fill-color);
+  border: 1px solid var(--el-border-color-light);
   padding: 2px 6px;
   border-radius: 4px;
   font-family: 'Consolas', 'Noto Sans Mono', 'Courier New', Courier, monospace;
-}
-
-.dark .chat-pre {
-  color: white;
-  background-color: #2a2a2a;
-  border: 1px solid #444;
-}
-
-.dark .chat-code {
-  color: white;
-  background-color: #3a3a3a;
-  border: 1px solid #555;
 }
 
 .chat-message-content {

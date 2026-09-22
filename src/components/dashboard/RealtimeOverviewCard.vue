@@ -117,12 +117,8 @@ const metrics = computed(() => [
   gap: 8px;
   font-size: 15px;
   font-weight: 600;
-  color: #333;
+  color: var(--el-text-color-primary);
   cursor: default;
-}
-
-.dark .hero-title {
-  color: #fff;
 }
 
 .hero-title i {
@@ -165,12 +161,8 @@ const metrics = computed(() => [
 
 .metric-label {
   font-size: 13px;
-  color: #666;
+  color: var(--el-text-color-regular);
   cursor: default;
-}
-
-.dark .metric-label {
-  color: #ccc;
 }
 
 .metric-value {
@@ -184,12 +176,8 @@ const metrics = computed(() => [
 .metric-caption {
   margin-top: 6px;
   font-size: 12px;
-  color: #999;
+  color: var(--el-text-color-placeholder);
   cursor: default;
-}
-
-.dark .metric-caption {
-  color: #888;
 }
 
 @media (max-width: 768px) {

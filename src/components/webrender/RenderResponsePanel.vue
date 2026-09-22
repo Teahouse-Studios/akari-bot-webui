@@ -176,11 +176,7 @@ h3 {
   align-items: center;
   gap: 10px;
   font-size: 12px;
-  color: #666;
-}
-
-.dark .response-meta {
-  color: #ccc;
+  color: var(--el-text-color-regular);
 }
 
 .response-alert {
@@ -203,12 +199,8 @@ h3 {
 
 .images-meta {
   font-size: 12px;
-  color: #666;
+  color: var(--el-text-color-regular);
   margin-bottom: 8px;
-}
-
-.dark .images-meta {
-  color: #ccc;
 }
 
 .image-list {

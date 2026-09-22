@@ -529,7 +529,7 @@ parsedSections.value = parseTomlWithComments(tomlInput.value)
 
 .help-icon {
   font-size: 18px;
-  color: #999;
+  color: var(--el-text-color-secondary);
   cursor: pointer;
 }
 

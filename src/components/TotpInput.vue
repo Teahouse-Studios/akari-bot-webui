@@ -117,12 +117,12 @@ defineExpose({ reset })
 
 .totp-desc {
   font-size: 13px;
-  color: #909399;
+  color: var(--el-text-color-secondary);
   margin: 0;
 }
 
 .backup-link {
-  color: #666;
+  color: var(--el-text-color-regular);
   cursor: pointer;
   font-size: 14px;
   text-decoration: underline;
@@ -130,14 +130,7 @@ defineExpose({ reset })
 }
 
 .backup-link:hover {
-  color: #333;
-}
-
-.dark .backup-link {
-  color: #ccc;
-}
-.dark .backup-link:hover {
-  color: white;
+  color: var(--el-text-color-primary);
 }
 
 .code-input {

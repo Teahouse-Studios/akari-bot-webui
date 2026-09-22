@@ -42,8 +42,8 @@ defineEmits(['preview-image', 'remove-image'])
 
 .pending-images-bar {
   padding: 10px 20px;
-  background: #f3f3f3;
-  border-top: 1px solid #e0e0e0;
+  background: var(--el-bg-color-overlay);
+  border-top: 1px solid var(--el-border-color-light);
 }
 
 .pending-images-bar .pending-images {
@@ -74,10 +74,5 @@ defineEmits(['preview-image', 'remove-image'])
   height: 20px;
   min-height: 20px;
   padding: 0;
-}
-
-.dark .pending-images-bar {
-  border-top: 1px solid #1f1f1f;
-  background: #333;
 }
 </style>

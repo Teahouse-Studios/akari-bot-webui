@@ -94,8 +94,8 @@ defineExpose({ focus })
   flex-direction: column;
   align-items: stretch;
   padding: 10px 20px;
-  background: #f3f3f3;
-  border-top: 1px solid #e0e0e0;
+  background: var(--el-bg-color-overlay);
+  border-top: 1px solid var(--el-border-color-light);
 }
 
 .chat-image-input {
@@ -116,16 +116,6 @@ defineExpose({ focus })
 .chat-send-input {
   min-width: 0;
   flex: 1;
-}
-
-.dark .send-box {
-  border-top: 1px solid #1f1f1f;
-  background: #333;
-}
-
-.dark .chat-send-input {
-  background-color: #181818;
-  border-radius: 5px;
 }
 
 .el-button:disabled {

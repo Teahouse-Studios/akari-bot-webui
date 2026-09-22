@@ -11,6 +11,7 @@ import ja_jp from './i18n/ja_jp.json'
 import ko_kr from './i18n/ko_kr.json'
 import './styles/theme-akari/var.scss'
 import './styles/theme-akari/dark/var.css'
+import './styles/global.css'
 
 // @TODO locale
 const config_locale = 'zh_cn'

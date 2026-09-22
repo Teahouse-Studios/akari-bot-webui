@@ -43,21 +43,13 @@ h3 {
 }
 
 .data-text {
-  color: #666;
+  color: var(--el-text-color-regular);
   word-break: break-all;
-}
-
-.dark .data-text {
-  color: #ccc;
 }
 
 .data-title {
   margin-right: 3ex;
-  color: #333;
+  color: var(--el-text-color-primary);
   cursor: default;
-}
-
-.dark .data-title {
-  color: white;
 }
 </style>

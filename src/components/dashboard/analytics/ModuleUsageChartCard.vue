@@ -190,10 +190,6 @@ h3 {
 .truncated-hint {
   margin-top: 10px;
   font-size: 12px;
-  color: #888;
-}
-
-.dark .truncated-hint {
-  color: #aaa;
+  color: var(--el-text-color-secondary);
 }
 </style>

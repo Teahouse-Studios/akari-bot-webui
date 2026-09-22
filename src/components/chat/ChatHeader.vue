@@ -49,13 +49,8 @@ const indicatorTitle = computed(() => {
   align-items: center;
   justify-content: flex-end;
   padding: 0 20px;
-  background: #f3f3f3;
-  border-bottom: 1px solid #e0e0e0;
-}
-
-.dark .chat-header {
-  background: #333;
-  border-bottom: 1px solid #1f1f1f;
+  background: var(--el-bg-color-overlay);
+  border-bottom: 1px solid var(--el-border-color-light);
 }
 
 .connection-indicator {
@@ -71,8 +66,8 @@ const indicatorTitle = computed(() => {
   position: absolute;
   top: 20px;
   left: 0;
-  background-color: #000;
-  color: #fff;
+  background-color: var(--el-text-color-primary);
+  color: var(--el-bg-color-overlay);
   padding: 5px;
   border-radius: 4px;
   font-size: 12px;
@@ -97,10 +92,6 @@ const indicatorTitle = computed(() => {
 
 .reset-button:hover {
   background-color: transparent;
-  color: #888;
-}
-
-.dark .reset-button:hover {
-  color: #aaa;
+  color: var(--el-text-color-secondary);
 }
 </style>

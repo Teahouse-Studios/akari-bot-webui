@@ -146,21 +146,16 @@ const userReacted = (emoji) => props.msg.userReactions?.includes(emoji)
 
 .chat-message.user {
   background-color: var(--el-color-primary);
-  color: white;
+  color: var(--el-color-white);
   align-self: flex-end;
   border-top-right-radius: 0;
 }
 
 .chat-message.bot {
-  background-color: white;
-  color: black;
+  background-color: var(--el-bg-color-overlay);
+  color: var(--el-text-color-primary);
   align-self: flex-start;
   border-top-left-radius: 0;
-}
-
-.dark .chat-message.bot {
-  background-color: #333;
-  color: white;
 }
 
 .chat-message.user,
@@ -177,7 +172,7 @@ const userReacted = (emoji) => props.msg.userReactions?.includes(emoji)
 .debug-uuid {
   margin-top: 4px;
   font-size: 10px;
-  color: #666;
+  color: var(--el-text-color-regular);
 }
 
 .chat-message-wrapper {
@@ -210,7 +205,7 @@ const userReacted = (emoji) => props.msg.userReactions?.includes(emoji)
 }
 
 .reaction-button {
-  background: white;
+  background: var(--el-bg-color-overlay);
   border-radius: 16px;
   padding: 0 8px;
   font-size: 14px;
@@ -224,17 +219,7 @@ const userReacted = (emoji) => props.msg.userReactions?.includes(emoji)
 
 .reaction-button.active {
   background-color: var(--el-color-primary);
-  color: white;
-}
-
-.dark .reaction-button {
-  background: #444;
-  color: #fff;
-}
-
-.dark .reaction-button.active {
-  background-color: var(--el-color-primary);
-  color: white;
+  color: var(--el-color-white);
 }
 
 .typing-status-icon {
@@ -253,11 +238,7 @@ const userReacted = (emoji) => props.msg.userReactions?.includes(emoji)
 }
 
 .copy-button:hover {
-  color: #888;
+  color: var(--el-text-color-secondary);
   background-color: transparent;
-}
-
-.dark .copy-button:hover {
-  color: #aaa;
 }
 </style>

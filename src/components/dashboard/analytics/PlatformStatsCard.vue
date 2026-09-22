@@ -28,7 +28,7 @@
           <span
             :style="{
               backgroundColor: getColorByIndex(item.prefix),
-              color: '#fff',
+              color: 'var(--el-color-white)',
               borderRadius: '100%',
               padding: '6px 10px',
               display: 'inline-block',

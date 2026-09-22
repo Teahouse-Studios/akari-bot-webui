@@ -459,7 +459,7 @@ h3 {
 }
 
 .unloaded {
-  color: gray;
+  color: var(--el-text-color-secondary);
   font-style: oblique;
 }
 

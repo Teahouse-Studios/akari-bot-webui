@@ -732,8 +732,8 @@ watch(fullscreenPreviewVisible, (val) => {
   -webkit-overflow-scrolling: touch;
   white-space: nowrap;
   border-radius: 8px;
-  background: #f4f4f4;
-  border: 1px solid #e0e0e0;
+  background: var(--el-fill-color-light);
+  border: 1px solid var(--el-border-color-lighter);
   padding: 8px 12px;
 }
 
@@ -747,11 +747,6 @@ watch(fullscreenPreviewVisible, (val) => {
     margin-left: 0;
     order: -1;
   }
-}
-
-.dark .breadcrumb-wrapper {
-  background: #1f1f1f;
-  border: 1px solid #4d4d4d;
 }
 
 .breadcrumb-link {
@@ -790,13 +785,8 @@ watch(fullscreenPreviewVisible, (val) => {
   margin-bottom: 15px;
   padding: 20px;
   border-radius: 4px;
-  background: #f4f4f4;
-  border: 1px dashed #e0e0e0;
-}
-
-.dark .upload-area {
-  background: #1f1f1f;
-  border: 1px dashed #4d4d4d;
+  background: var(--el-fill-color-light);
+  border: 1px dashed var(--el-border-color-lighter);
 }
 
 .files-card {

@@ -94,19 +94,14 @@ watch(
 
 <style scoped>
 .sidebar {
-  background-color: #f4f4f4 !important;
+  background-color: var(--el-bg-color);
   position: fixed;
   top: 0;
   left: 0;
   bottom: 0;
   z-index: 100;
   overflow-y: auto;
-  border-right: 1px solid #e0e0e0;
-}
-
-.dark .sidebar {
-  background-color: #333 !important;
-  border-right: 1px solid #1f1f1f;
+  border-right: 1px solid var(--el-border-color-light);
 }
 
 .header-drawer {
@@ -114,18 +109,13 @@ watch(
   justify-content: space-between;
   align-items: center;
   padding: 0 20px;
-  background-color: #f4f4f4;
+  background-color: var(--el-bg-color);
   height: 60px;
   top: 0;
   left: 0;
   right: 0;
   z-index: 100;
-  border-bottom: 1px solid #e0e0e0;
-}
-
-.dark .header-drawer {
-  background-color: #333;
-  border-bottom: 1px solid #1f1f1f;
+  border-bottom: 1px solid var(--el-border-color-light);
 }
 
 .logo {
@@ -146,7 +136,7 @@ watch(
   display: flex;
   align-items: center;
   font-size: 16px;
-  color: #666;
+  color: var(--el-text-color-regular);
   cursor: default;
   font-family:
     'Roboto',
@@ -156,17 +146,9 @@ watch(
     sans-serif;
 }
 
-.dark .web-ui-text {
-  color: #aaa;
-}
-
 .sidebar-menu {
   border-right: none;
-  background-color: #f4f4f4;
-}
-
-.dark .sidebar-menu {
-  background-color: #333;
+  background-color: var(--el-bg-color);
 }
 
 .el-menu-item {

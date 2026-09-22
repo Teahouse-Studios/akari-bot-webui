@@ -214,13 +214,9 @@ h3 {
 
 .card-hint {
   font-size: 13px;
-  color: #888;
+  color: var(--el-text-color-secondary);
   font-variant-numeric: tabular-nums;
   cursor: default;
-}
-
-.dark .card-hint {
-  color: #aaa;
 }
 
 .process-alert {
@@ -255,23 +251,15 @@ h3 {
 
 .process-name {
   font-weight: 500;
-  color: #333;
+  color: var(--el-text-color-primary);
   cursor: default;
   word-break: break-all;
 }
 
-.dark .process-name {
-  color: #eee;
-}
-
 .process-memory {
   margin-left: auto;
-  color: #666;
+  color: var(--el-text-color-regular);
   font-variant-numeric: tabular-nums;
-}
-
-.dark .process-memory {
-  color: #ccc;
 }
 
 .gauge-row {
@@ -296,12 +284,8 @@ h3 {
   display: block;
   margin-top: 6px;
   font-size: 13px;
-  color: #888;
+  color: var(--el-text-color-secondary);
   cursor: default;
-}
-
-.dark .gauge-label {
-  color: #aaa;
 }
 
 @media (max-width: 1199px) {

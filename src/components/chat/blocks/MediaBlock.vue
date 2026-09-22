@@ -47,6 +47,6 @@ defineEmits(['image-click'])
   max-width: 100%;
   max-height: 400px;
   margin: 8px 0;
-  background-color: #000;
+  background-color: var(--el-color-black);
 }
 </style>

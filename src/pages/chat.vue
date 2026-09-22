@@ -275,21 +275,13 @@ onBeforeUnmount(() => {
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  background-color: #e8e8e8;
-}
-
-.dark .chat-box {
-  background-color: #242424;
+  background-color: var(--el-fill-color-light);
 }
 
 .chat-tip {
   font-size: 12px;
-  color: #888;
+  color: var(--el-text-color-secondary);
   text-align: center;
   margin: 10px 0 0 0;
-}
-
-.dark .chat-tip {
-  color: #aaa;
 }
 </style>

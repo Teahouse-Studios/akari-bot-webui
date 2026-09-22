@@ -94,14 +94,10 @@ h3 {
 
 .history-path {
   font-size: 12px;
-  color: #666;
+  color: var(--el-text-color-regular);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.dark .history-path {
-  color: #bbb;
 }
 
 .history-actions {
