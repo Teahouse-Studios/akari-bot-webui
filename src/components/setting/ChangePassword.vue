@@ -2,7 +2,6 @@
   <div v-loading="loading">
     <h3><i class="mdi mdi-lock"></i> {{ $t('setting.change_password.title') }}</h3>
 
-    <!-- 密码表单 -->
     <el-form :model="form" :rules="rules" ref="formRef" label-width="auto">
       <el-form-item
         v-if="!noPassword"
@@ -121,7 +120,6 @@ const rules = reactive({
   ],
 })
 
-// TOTP verification for 2FA-enabled accounts
 const showTotpVerify = ref(false)
 const totpVerifyLoading = ref(false)
 
@@ -133,7 +131,6 @@ onMounted(async () => {
     ElMessage.error(t('message.error.fetch') + error.message)
   }
 
-  // Fetch 2FA status
   try {
     const res = await axios.get('/api/totp')
     twoFactorEnabled.value = res.data.enabled === true
@@ -167,7 +164,7 @@ const handleUpdatePassword = async () => {
 
     await proceedWithPasswordUpdate()
   } catch {
-    // validation error, do nothing
+    // 校验失败的错误提示由 el-form 自行渲染，这里无需处理
   }
 }
 
@@ -211,7 +208,6 @@ function handlePasswordError(error) {
   // 后端返回 400 且要求 2FA 验证码时，弹出 TOTP 弹窗
   if (error.response?.status === 400 && isTwoFactorRequired(error.response?.data?.detail)) {
     if (!showTotpVerify.value) {
-      // 尚未尝试 TOTP 验证，显示弹窗
       showTotpVerify.value = true
       return
     }
@@ -276,10 +272,10 @@ const handleClearPassword = async () => {
         await confirmClearPassword()
       })
       .catch(() => {
-        // empty
+        // 用户取消确认，无需处理
       })
   } catch {
-    // empty
+    // 校验失败的错误提示由 el-form 自行渲染，这里无需处理
   }
 }
 </script>

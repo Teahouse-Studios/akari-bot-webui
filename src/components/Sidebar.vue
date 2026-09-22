@@ -69,12 +69,6 @@ const isDevelopMode = ref(false)
 
 function getActiveMenuFromRoute() {
   return route.name
-  // const validPaths = ['dashboard', 'config', 'data', 'logs', 'chat', 'setting', 'about']
-  // const path = route.name
-  // if (validPaths.includes(path)) {
-  //   return path
-  // }
-  // return ''
 }
 
 function handleSelect(index) {

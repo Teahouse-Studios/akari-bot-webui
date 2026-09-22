@@ -592,7 +592,7 @@ const confirmDelete = (row) => {
       deleteTarget(row)
     })
     .catch(() => {
-      // empty
+      // 用户取消删除，无需处理
     })
 }
 

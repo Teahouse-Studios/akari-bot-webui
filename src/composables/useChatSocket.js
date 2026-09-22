@@ -322,7 +322,7 @@ export function useChatSocket() {
         }
       },
       close: () => {
-        // empty
+        // demo socket 没有真实连接，关闭时无需清理
       },
     }
   }
@@ -350,7 +350,7 @@ export function useChatSocket() {
         commandPrefix.value = config.command_prefix || '~'
       }
     } catch {
-      // empty
+      // /api/init 不可用时沿用同源默认配置
     }
 
     const enableHTTPS = config.enable_https ?? window.location.protocol === 'https:'

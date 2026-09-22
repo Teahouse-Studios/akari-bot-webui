@@ -1,6 +1,5 @@
 <template>
   <div class="overlay">
-    <!-- 密码输入界面 -->
     <div v-if="!requireTwoFactor" class="password-modal">
       <span>{{ $t('login.title') }}</span>
       <el-input
@@ -48,8 +47,6 @@ const loading = ref(false)
 
 const requireTwoFactor = ref(false)
 const twoFactorLoading = ref(false)
-
-// Backup code
 
 const checkPassword = async () => {
   if (!password.value || !password.value.trim()) {

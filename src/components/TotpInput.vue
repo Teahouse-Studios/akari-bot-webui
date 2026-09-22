@@ -67,7 +67,6 @@ const code = ref('')
 const showBackupInput = ref(false)
 const backupCode = ref('')
 
-// 仅允许输入 0-9 数字，最多 6 位
 const filteredCode = computed({
   get: () => code.value,
   set: (value) => {

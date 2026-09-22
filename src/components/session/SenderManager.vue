@@ -441,7 +441,7 @@ const confirmDelete = (row) => {
       deleteSender(row)
     })
     .catch(() => {
-      // empty
+      // 用户取消删除，无需处理
     })
 }
 

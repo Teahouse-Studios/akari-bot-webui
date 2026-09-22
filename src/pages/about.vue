@@ -9,7 +9,6 @@
       <a href="https://teahouse.team">Teahouse Studios</a>
     </span>
 
-    <!-- GitHub Repos -->
     <div class="repo-buttons">
       <div class="github-link">
         <el-button class="repo-button" @click="goToRepo">

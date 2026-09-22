@@ -2,7 +2,6 @@
   <div v-if="hasPassword" v-loading="loading">
     <h3><i class="mdi mdi-shield-key"></i> {{ $t('setting.two_factor_auth.title') }}</h3>
 
-    <!-- 未启用状态 -->
     <div v-if="!enabled">
       <p class="status-text">{{ $t('setting.two_factor_auth.status.disabled') }}</p>
       <el-button type="primary" @click="startSetup">
@@ -10,7 +9,6 @@
       </el-button>
     </div>
 
-    <!-- 已启用状态 -->
     <div v-if="enabled">
       <p class="status-text enabled-text">
         <i class="mdi mdi-check-circle"></i>
@@ -26,7 +24,6 @@
       </div>
     </div>
 
-    <!-- 设置两步验证的向导弹窗 -->
     <el-dialog
       :title="$t('setting.two_factor_auth.setup.title')"
       v-model="setupDialogVisible"
@@ -88,7 +85,6 @@
       </div>
     </el-dialog>
 
-    <!-- 备用码展示弹窗 -->
     <el-dialog
       :title="$t('backup_codes.title')"
       v-model="showBackupCodes"
@@ -116,7 +112,6 @@
       </div>
     </el-dialog>
 
-    <!-- 禁用2FA的对话框 -->
     <el-dialog
       :title="$t('setting.two_factor_auth.disable.title')"
       v-model="disableDialogVisible"
@@ -134,7 +129,6 @@
           />
         </el-form-item>
 
-        <!-- TOTP 码输入 -->
         <el-form-item v-if="!disableUseBackup" :label="$t('setting.two_factor_auth.input.code')">
           <div class="code-input-wrapper">
             <el-input
@@ -152,7 +146,6 @@
           </div>
         </el-form-item>
 
-        <!-- 备用码输入 -->
         <template v-if="disableUseBackup">
           <p class="totp-desc">{{ $t('login.two_factor.backup_description') }}</p>
           <el-form-item :label="$t('login.two_factor.backup_code')">
@@ -183,7 +176,6 @@
       </template>
     </el-dialog>
 
-    <!-- 重置备用码的对话框 -->
     <el-dialog
       :title="$t('setting.two_factor_auth.reset_backup.title')"
       v-model="resetBackupDialogVisible"
@@ -201,7 +193,6 @@
           />
         </el-form-item>
 
-        <!-- TOTP 码输入 -->
         <el-form-item v-if="!resetUseBackup" :label="$t('setting.two_factor_auth.input.code')">
           <div class="code-input-wrapper">
             <el-input
@@ -219,7 +210,6 @@
           </div>
         </el-form-item>
 
-        <!-- 备用码输入 -->
         <template v-if="resetUseBackup">
           <p class="totp-desc">{{ $t('login.two_factor.backup_description') }}</p>
           <el-form-item :label="$t('login.two_factor.backup_code')">
@@ -278,7 +268,6 @@ const secret = ref('')
 const qrUri = ref('')
 const setupCode = ref('')
 
-// 仅允许输入 0-9 数字，最多 6 位
 const filteredSetupCode = computed({
   get: () => setupCode.value,
   set: (value) => {
@@ -292,7 +281,6 @@ const disableForm = ref({
   code: '',
 })
 
-// 仅允许输入 0-9 数字，最多 6 位
 const filteredDisableCode = computed({
   get: () => disableForm.value.code,
   set: (value) => {
@@ -300,11 +288,9 @@ const filteredDisableCode = computed({
   },
 })
 
-// Backup codes
 const showBackupCodes = ref(false)
 const backupCodes = ref([])
 
-// Reset backup codes
 const resetBackupDialogVisible = ref(false)
 const resetBackupForm = ref({
   password: '',
@@ -312,7 +298,6 @@ const resetBackupForm = ref({
 })
 const resettingBackup = ref(false)
 
-// 仅允许输入 0-9 数字，最多 6 位
 const filteredResetBackupCode = computed({
   get: () => resetBackupForm.value.code,
   set: (value) => {
@@ -320,11 +305,9 @@ const filteredResetBackupCode = computed({
   },
 })
 
-// Backup mode toggles
 const disableUseBackup = ref(false)
 const resetUseBackup = ref(false)
 
-// Computed: whether the submit button should be enabled
 const canSubmitDisable = computed(() => {
   if (!disableForm.value.password) return false
   if (disableUseBackup.value) {
@@ -396,7 +379,7 @@ async function enableTwoFactor() {
       secret: secret.value,
       code: setupCode.value,
     })
-    // Show backup codes if returned
+    // 后端启用成功时会返回一份新的备用码，此时优先展示
     if (response.data.backup_codes && response.data.backup_codes.length > 0) {
       backupCodes.value = response.data.backup_codes
       setupDialogVisible.value = false

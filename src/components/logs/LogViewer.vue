@@ -13,7 +13,7 @@
 
     <div v-if="lines.length === 0" class="log-viewer-placeholder">
       There are currently no matching logs here...<br />Use the filters above to adjust the options.
-      <!--写死的，不能国际化-->
+      <!-- 该占位文案写死，不参与国际化 -->
     </div>
   </div>
 </template>

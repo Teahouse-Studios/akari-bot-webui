@@ -45,7 +45,7 @@ export function useLogStream() {
       const response = await fetch('/api/init')
       if (response.ok) config = await response.json()
     } catch {
-      // empty
+      // /api/init 不可用时沿用同源默认配置
     }
 
     const enableHTTPS = config.enable_https ?? window.location.protocol === 'https:'
