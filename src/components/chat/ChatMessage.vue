@@ -146,7 +146,7 @@ const userReacted = (emoji) => props.msg.userReactions?.includes(emoji)
 
 .chat-message.user {
   background-color: var(--el-color-primary);
-  color: var(--el-color-white);
+  color: white !important;
   align-self: flex-end;
   border-top-right-radius: 0;
 }

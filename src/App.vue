@@ -165,8 +165,8 @@ function applyThemeColor(color) {
 }
 
 function observeThemeChange() {
-  const savedColor = LocalStorageJson.getItem('themeColor')
-  if (savedColor) applyThemeColor(savedColor)
+  // 始终同步一次主题色，确保对比文字色与当前主题色一致
+  applyThemeColor(LocalStorageJson.getItem('themeColor') || '#edaab3')
 
   const handleStorage = (event) => {
     if (event.key === 'themeColor') {

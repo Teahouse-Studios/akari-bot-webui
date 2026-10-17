@@ -1,7 +1,7 @@
 <template>
   <el-card class="fixed-card" shadow="never">
     <div class="card-header">
-      <h3>
+      <h3 class="dashboard-card-title">
         <i class="mdi mdi-chart-line"></i>
         {{ $t('dashboard.analytics.command.title') }}
       </h3>
@@ -186,16 +186,12 @@ onBeforeUnmount(() => {
   flex: 1;
 }
 
-h3 {
-  cursor: default;
-}
-
 .card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 12px;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
 }
 
 .time-range-select {

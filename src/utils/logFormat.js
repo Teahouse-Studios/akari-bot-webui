@@ -54,6 +54,8 @@ export function formatLogLine(line) {
         color: LOG_LEVEL_COLORS[logLevel] || '#ffffff',
         backgroundColor: isCritical ? '#cd3131' : 'transparent',
       },
+      // 供级别过滤使用，避免按文本包含关系误判
+      level: logLevel,
     },
   ]
 }
@@ -106,6 +108,9 @@ export function splitTextIntoSegments(text) {
  * 只保留最后 `MAX_VISIBLE_LOGS` 条，避免长会话下 DOM 过大。
  */
 export function parseLogData(rawText, { searchText = '', activeLogLevels = [] } = {}) {
+  // 未勾选任何级别时不展示任何日志
+  if (!activeLogLevels.length) return []
+
   const rawLines = rawText.split('\n')
   const formattedLines = []
   let buffer = ''
@@ -130,12 +135,9 @@ export function parseLogData(rawText, { searchText = '', activeLogLevels = [] } 
     )
   }
 
-  // 未选择任何级别时不额外过滤（显示全部），避免出现「什么都没有」的空视图
-  if (activeLogLevels.length) {
-    visibleLogs = visibleLogs.filter((logLine) =>
-      activeLogLevels.some((level) => logLine.some((part) => part.text.includes(level))),
-    )
-  }
+  visibleLogs = visibleLogs.filter((logLine) =>
+    logLine.some((part) => part.level && activeLogLevels.includes(part.level)),
+  )
 
   if (visibleLogs.length > MAX_VISIBLE_LOGS) {
     visibleLogs = visibleLogs.slice(-MAX_VISIBLE_LOGS)

@@ -85,7 +85,7 @@
     "dashboard.analytics.platform.title": "平台指令統計",
     "dashboard.overview.alert.server_offline": "伺服器離線",
     "dashboard.overview.days": "天",
-    "dashboard.overview.since_start": "自啟動以來累計",
+    "dashboard.overview.since_start": "自啟動以來",
     "dashboard.overview.title.command_parsed": "已處理命令",
     "dashboard.overview.title.message_parsed": "已處理訊息",
     "dashboard.overview.title.process_count": "程式數量",

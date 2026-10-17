@@ -1,7 +1,7 @@
 <template>
   <el-card class="module-card" shadow="never">
     <div class="card-header">
-      <h3>
+      <h3 class="dashboard-card-title">
         <i class="mdi mdi-puzzle"></i>
         {{ $t('analytics.module.title') }}
       </h3>
@@ -135,16 +135,12 @@ onBeforeUnmount(() => {
   line-height: 1;
 }
 
-h3 {
-  cursor: default;
-}
-
 .card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 12px;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
 }
 
 .chart-container {

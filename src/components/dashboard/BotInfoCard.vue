@@ -1,6 +1,6 @@
 <template>
   <el-card class="info-card" shadow="never">
-    <h3>
+    <h3 class="dashboard-card-title">
       <i class="mdi mdi-robot-outline"></i>
       {{ $t('dashboard.server_info.bot.title') }}
     </h3>
@@ -55,8 +55,8 @@ const webRenderText = computed(() => (props.bot.web_render_status ? t('true') : 
   line-height: 1;
 }
 
-h3 {
-  cursor: default;
+.info-card .dashboard-card-title {
+  margin-bottom: 12px;
 }
 
 .data-text {

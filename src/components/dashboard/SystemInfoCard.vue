@@ -1,6 +1,6 @@
 <template>
   <el-card class="info-card" shadow="never">
-    <h3>
+    <h3 class="dashboard-card-title">
       <i class="mdi mdi-laptop"></i>
       {{ $t('dashboard.server_info.system.title') }}
     </h3>
@@ -51,8 +51,8 @@ const bootTimeText = computed(() => (props.os.boot_time ? formatDateTime(props.o
   line-height: 1;
 }
 
-h3 {
-  cursor: default;
+.info-card .dashboard-card-title {
+  margin-bottom: 12px;
 }
 
 .data-text {

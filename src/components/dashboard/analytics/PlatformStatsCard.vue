@@ -1,7 +1,7 @@
 <template>
   <el-card class="fixed-card" shadow="never">
     <div class="card-header">
-      <h3>
+      <h3 class="dashboard-card-title">
         <i class="mdi mdi-format-list-numbered"></i>
         {{ $t('dashboard.analytics.platform.title') }}
       </h3>
@@ -78,15 +78,11 @@ defineProps({
   flex: 1;
 }
 
-h3 {
-  cursor: default;
-}
-
 .card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
 }
 
 .ranking-item {

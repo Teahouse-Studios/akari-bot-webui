@@ -1,7 +1,7 @@
 <template>
   <el-card class="resource-card" shadow="never">
     <div class="card-header">
-      <h3>
+      <h3 class="dashboard-card-title">
         <i class="mdi mdi-gauge"></i>
         {{ $t('dashboard.resource.title') }}
       </h3>
@@ -199,21 +199,17 @@ const gaugeItems = computed(() => {
   flex-direction: column;
 }
 
-h3 {
-  cursor: default;
-}
-
 .card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 12px;
-  margin-bottom: 8px;
+  margin-bottom: 12px;
 }
 
 .card-hint {
   font-size: 13px;
-  color: var(--el-text-color-secondary);
+  color: var(--el-text-color-primary);
   font-variant-numeric: tabular-nums;
   cursor: default;
 }
@@ -259,11 +255,18 @@ h3 {
 
 .gauge-row {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   flex-shrink: 0;
   justify-content: center;
+  /* 空间不足时改为从起始位置排列，保证溢出的仪表可以直接滚动看到 */
+  justify-content: safe center;
   overflow-x: auto;
-  row-gap: 8px;
+  overflow-y: hidden;
+  padding-bottom: 4px;
+}
+
+.gauge-row > * {
+  flex: 0 0 auto;
 }
 
 .gauge-row :deep(.el-progress--dashboard) {

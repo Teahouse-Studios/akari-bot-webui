@@ -88,7 +88,7 @@
   "dashboard.analytics.platform.title": "平台命令统计",
   "dashboard.overview.alert.server_offline": "服务端离线",
   "dashboard.overview.days": "天",
-  "dashboard.overview.since_start": "自启动以来累计",
+  "dashboard.overview.since_start": "自启动以来",
   "dashboard.overview.title.command_parsed": "已处理命令",
   "dashboard.overview.title.message_parsed": "已处理消息",
   "dashboard.overview.title.process_count": "进程数量",

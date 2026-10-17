@@ -128,12 +128,12 @@ const metrics = computed(() => [
 
 .metric-head i {
   font-size: 18px;
-  color: var(--el-color-primary);
+  color: var(--el-text-color-primary);
 }
 
 .metric-label {
   font-size: 13px;
-  color: var(--el-text-color-regular);
+  color: var(--el-text-color-primary);
   cursor: default;
 }
 
@@ -149,7 +149,7 @@ const metrics = computed(() => [
   margin-top: 6px;
   min-height: 1.2em;
   font-size: 12px;
-  color: var(--el-text-color-placeholder);
+  color: var(--el-text-color-regular);
   cursor: default;
 }
 
