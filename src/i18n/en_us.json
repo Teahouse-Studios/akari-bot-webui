@@ -235,7 +235,6 @@
     "modules.table.desc": "Description",
     "modules.table.developers": "Author",
     "modules.table.name": "Name",
-    "modules.tag.base": "Base",
     "modules.tag.loaded": "Loaded",
     "modules.tag.unloaded": "Unloaded",
     "modules.title": "Module Management",
