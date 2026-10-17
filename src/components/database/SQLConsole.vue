@@ -248,12 +248,12 @@ h3 {
 
 .affected-rows {
   margin-bottom: 10px;
-  color: #606266;
+  color: var(--el-text-color-regular);
 }
 
 .error {
   margin-bottom: 10px;
-  color: red;
+  color: var(--el-color-danger);
 }
 
 .result-card {

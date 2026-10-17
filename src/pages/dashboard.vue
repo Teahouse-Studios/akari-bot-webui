@@ -1,9 +1,54 @@
 <template>
-  <div>
-    <ServerInfoCard ref="serverInfoCard" :loading="loading" />
-    <AnalyticsCard ref="analyticsCard" :loading="loading" />
+  <div class="dashboard">
+    <RealtimeOverviewCard
+      :running-seconds="runningSeconds"
+      :command-parsed="bot.command_parsed"
+      :message-parsed="bot.message_parsed"
+      :process-count="processCount"
+      :server-offline="serverOffline"
+    />
+
+    <el-row :gutter="20" class="dashboard-row">
+      <el-col :xs="24" :lg="10">
+        <div class="info-column">
+          <BotInfoCard :bot="bot" />
+          <SystemInfoCard :cpu="cpu" :os="os" />
+        </div>
+      </el-col>
+      <el-col :xs="24" :lg="14">
+        <ResourceUsageCard
+          :cpu-percent="cpu.cpu_percent"
+          :memory="memory"
+          :disk="disk"
+          :items="processes.items"
+          :failures="processes.failures"
+          :error="processes.error"
+        />
+      </el-col>
+    </el-row>
+
+    <el-row :gutter="20" class="dashboard-row">
+      <el-col :xs="24" :lg="16">
+        <CommandStatsCard
+          :trend-data="trendData"
+          :count="count"
+          :average-count="averageCount"
+          :change-rate="changeRate"
+          :selected-days="selectedDays"
+          :loading="analyticsLoading"
+          @update:selected-days="setSelectedDays"
+        />
+      </el-col>
+      <el-col :xs="24" :lg="8">
+        <PlatformStatsCard :items="platformStats" :count="count" />
+      </el-col>
+      <el-col :span="24">
+        <ModuleUsageChartCard :modules="modules" />
+      </el-col>
+    </el-row>
+
     <el-tooltip
-      :content="$t('dashboard.update_time.title', { time: formatTime(lastUpdateTime) })"
+      :content="$t('dashboard.update_time.title', { time: formatDateTime(lastUpdateTime) })"
       placement="left"
     >
       <el-button
@@ -11,7 +56,7 @@
         circle
         size="large"
         type="primary"
-        :disabled="loading"
+        :disabled="loading || analyticsLoading || modulesLoading"
         @click="refreshData"
       >
         <i class="mdi mdi-refresh"></i>
@@ -19,112 +64,74 @@
     </el-tooltip>
   </div>
 </template>
+
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from 'vue'
-import AnalyticsCard from '@/components/dashboard/AnalyticsCard.vue'
-import ServerInfoCard from '@/components/dashboard/ServerInfoCard.vue'
-import LocalStorageJson from '@/localStorageJson.js'
+import { computed } from 'vue'
+import CommandStatsCard from '@/components/dashboard/analytics/CommandStatsCard.vue'
+import ModuleUsageChartCard from '@/components/dashboard/analytics/ModuleUsageChartCard.vue'
+import PlatformStatsCard from '@/components/dashboard/analytics/PlatformStatsCard.vue'
+import BotInfoCard from '@/components/dashboard/BotInfoCard.vue'
+import RealtimeOverviewCard from '@/components/dashboard/RealtimeOverviewCard.vue'
+import ResourceUsageCard from '@/components/dashboard/ResourceUsageCard.vue'
+import SystemInfoCard from '@/components/dashboard/SystemInfoCard.vue'
+import { useAnalytics } from '@/composables/useAnalytics.js'
+import { useServerInfo } from '@/composables/useServerInfo.js'
+import { formatDateTime } from '@/utils/systemFormat.js'
 
-const loading = ref(false)
-const refreshInterval = ref(null)
-const lastUpdateTime = ref(Math.floor(Date.now() / 1000))
+const {
+  loading,
+  lastUpdateTime: serverUpdateTime,
+  bot,
+  cpu,
+  os,
+  memory,
+  disk,
+  processes,
+  runningSeconds,
+  serverOffline,
+  fetchServerInfo,
+} = useServerInfo()
 
-const serverInfoCard = ref(null)
-const analyticsCard = ref(null)
+const {
+  selectedDays,
+  limit,
+  loading: analyticsLoading,
+  modulesLoading,
+  lastUpdateTime: analyticsUpdateTime,
+  trendData,
+  count,
+  averageCount,
+  changeRate,
+  platformStats,
+  modules,
+  fetchAnalytics,
+  setSelectedDays,
+} = useAnalytics()
 
-async function refreshData() {
-  if (loading.value) return
-  loading.value = true
-  try {
-    lastUpdateTime.value = Math.floor(Date.now() / 1000)
+/** 采集失败时没有可信的进程列表，展示为未知 */
+const processCount = computed(() => (serverOffline.value ? null : processes.items.length))
 
-    const tasks = []
+/** 实时数据与统计各拉各的，页面只展示两者中较新的一次更新时间 */
+const lastUpdateTime = computed(() => Math.max(serverUpdateTime.value, analyticsUpdateTime.value))
 
-    if (serverInfoCard.value) {
-      tasks.push(serverInfoCard.value.fetchServerInfoData(true))
-    }
-
-    if (analyticsCard.value) {
-      const selectedDays = analyticsCard.value.selectedDays
-      tasks.push(analyticsCard.value.fetchAnalyticsData(selectedDays, true))
-    }
-
-    await Promise.all(tasks)
-  } catch {
-    // empty
-  } finally {
-    loading.value = false
-    resetAutoRefresh()
-  }
+const refreshData = async () => {
+  await Promise.all([fetchServerInfo(true), fetchAnalytics(true)])
 }
-
-function startAutoRefresh() {
-  refreshInterval.value = setInterval(() => {
-    refreshData()
-  }, 3600000)
-}
-
-function resetAutoRefresh() {
-  clearAutoRefresh()
-  startAutoRefresh()
-}
-
-function clearAutoRefresh() {
-  if (refreshInterval.value) {
-    clearInterval(refreshInterval.value)
-    refreshInterval.value = null
-  }
-}
-
-function formatTime(timestamp) {
-  const date = new Date(timestamp * 1000)
-  const language = (LocalStorageJson.getItem('language') || 'zh_cn').toLowerCase()
-
-  const langMap = {
-    zh_cn: 'zh-CN',
-    zh_tw: 'zh-TW',
-    en_us: 'en-US',
-    ja_jp: 'ja-JP',
-    ko_kr: 'ko-KR',
-  }
-
-  const locale = langMap[language] || 'zh-CN'
-
-  if (locale === 'ja-JP') {
-    return new Intl.DateTimeFormat(locale, {
-      calendar: 'japanese',
-      era: 'short',
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-      hour12: false,
-    }).format(date)
-  }
-
-  return new Intl.DateTimeFormat(locale, {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-    hour12: false,
-  }).format(date)
-}
-
-onMounted(() => {
-  startAutoRefresh()
-})
-
-onBeforeUnmount(() => {
-  clearAutoRefresh()
-})
 </script>
 
 <style scoped>
+.dashboard-row {
+  row-gap: 20px;
+  margin-top: 20px;
+}
+
+.info-column {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  height: 100%;
+}
+
 .refresh-button {
   position: fixed;
   bottom: 20px;

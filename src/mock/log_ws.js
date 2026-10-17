@@ -109,7 +109,7 @@ export default function mockLogWebSocket(onMessage) {
 
   return {
     close() {
-      // empty
+      // mock socket 是纯定时器实现，没有需要清理的连接
     },
   }
 }

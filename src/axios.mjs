@@ -3,22 +3,10 @@ import { IS_DEMO } from './const'
 import setupMock from '@/mock/api'
 import LocalStorageJson from '@/localStorageJson.js'
 
-// const initAxios = async () => {
 const initAxios = () => {
+  // 固定使用同源地址：WebUI 与服务端同域部署，无需跨域；
+  // 若将来需要独立 API 域名，可改为读取 /config.json 的 api_url
   const apiUrl = window.location.origin
-
-  // TODO api base
-  // let apiUrl = window.location.origin;
-  // try {
-  //   const response = await fetch("/config.json");
-  //   if (response.ok) {
-  //     const config = await response.json();
-  //     apiUrl = config.api_url || apiUrl;
-  //   }
-  // } catch (err) {
-  //   console.error("Failed to initialize Axios:", err);
-  //   throw err;
-  // }
 
   axios.defaults.baseURL = apiUrl
   axios.defaults.timeout = 50000
@@ -46,6 +34,5 @@ const initAxios = () => {
   return axios
 }
 
-// const axiosInstance = await initAxios();
 const axiosInstance = initAxios()
 export default axiosInstance

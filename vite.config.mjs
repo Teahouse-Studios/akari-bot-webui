@@ -6,12 +6,9 @@ import path from 'path'
 import VueRouter from 'unplugin-vue-router/vite'
 import AutoImport from 'unplugin-auto-import/vite'
 
-// https://vite.dev/config/
 export default defineConfig({
   plugins: [
-    VueRouter({
-      /* options */
-    }),
+    VueRouter({}),
     vue(),
     AutoImport({
       resolvers: [ElementPlusResolver()],
@@ -27,6 +24,7 @@ export default defineConfig({
         }),
       ],
     }),
+    // 需要分析打包体积时取消注释（依赖已在 devDependencies 中的 vite-bundle-analyzer）
     // analyzer()
   ],
   base: './',

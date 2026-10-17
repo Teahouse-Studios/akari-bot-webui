@@ -9,7 +9,6 @@
       <a href="https://teahouse.team">Teahouse Studios</a>
     </span>
 
-    <!-- GitHub Repos -->
     <div class="repo-buttons">
       <div class="github-link">
         <el-button class="repo-button" @click="goToRepo">
@@ -74,7 +73,7 @@ const goToSponsor = () => window.open('https://afdian.com/a/teahouse', '_blank')
 
 .quote {
   font-style: oblique;
-  color: gray;
+  color: var(--el-text-color-secondary);
   display: block;
   margin: 16px;
 }
@@ -85,7 +84,7 @@ const goToSponsor = () => window.open('https://afdian.com/a/teahouse', '_blank')
 }
 
 .footer-text {
-  color: gray;
+  color: var(--el-text-color-secondary);
   display: block;
   margin-top: 60px;
   font-size: 14px;

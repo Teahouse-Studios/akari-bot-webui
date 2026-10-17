@@ -1,6 +1,5 @@
 <template>
   <div class="overlay">
-    <!-- 密码输入界面 -->
     <div v-if="!requireTwoFactor" class="password-modal">
       <span>{{ $t('login.title') }}</span>
       <el-input
@@ -48,8 +47,6 @@ const loading = ref(false)
 
 const requireTwoFactor = ref(false)
 const twoFactorLoading = ref(false)
-
-// Backup code
 
 const checkPassword = async () => {
   if (!password.value || !password.value.trim()) {
@@ -157,7 +154,7 @@ async function verifyWithBackup(backupCode) {
   left: 0;
   width: 100%;
   height: calc(100% - 60px);
-  background: rgba(0, 0, 0, 0.5);
+  background: var(--el-overlay-color-lighter);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -166,17 +163,13 @@ async function verifyWithBackup(backupCode) {
 }
 
 .password-modal {
-  background: white;
+  background: var(--el-bg-color-overlay);
   padding: 30px;
   border-radius: 8px;
   display: flex;
   flex-direction: column;
   gap: 14px;
   width: 300px;
-}
-.dark .password-modal {
-  background: #333;
-  color: white;
 }
 
 .tooltip-container {
@@ -187,26 +180,19 @@ async function verifyWithBackup(backupCode) {
 }
 
 .forgot-password {
-  color: #666;
+  color: var(--el-text-color-regular);
   cursor: pointer;
   font-size: 14px;
   text-decoration: underline;
   transition: color 0.2s;
 }
 .forgot-password:hover {
-  color: #333;
-}
-
-.dark .forgot-password {
-  color: #ccc;
-}
-.dark .forgot-password:hover {
-  color: white;
+  color: var(--el-text-color-primary);
 }
 
 /* 2FA modal styles */
 .two-factor-modal {
-  background: white;
+  background: var(--el-bg-color-overlay);
   padding: 30px;
   border-radius: 8px;
   display: flex;
@@ -214,18 +200,11 @@ async function verifyWithBackup(backupCode) {
   gap: 14px;
   width: 300px;
 }
-.dark .two-factor-modal {
-  background: #333;
-  color: white;
-}
 
 .two-factor-desc {
   font-size: 13px;
-  color: #909399;
+  color: var(--el-text-color-secondary);
   margin: 0;
-}
-.dark .two-factor-desc {
-  color: #aaa;
 }
 
 .two-factor-actions {

@@ -65,12 +65,6 @@ const isDevelopMode = ref(false)
 
 function getActiveMenuFromRoute() {
   return route.name
-  // const validPaths = ['dashboard', 'config', 'data', 'logs', 'chat', 'setting', 'about']
-  // const path = route.name
-  // if (validPaths.includes(path)) {
-  //   return path
-  // }
-  // return ''
 }
 
 function handleSelect(index) {
@@ -92,14 +86,14 @@ watch(
 
 <style scoped>
 .sidebar {
-  background-color: #f4f4f4 !important;
+  background-color: var(--el-bg-color);
   position: fixed;
   top: 60px;
   left: 0;
   bottom: 0;
   z-index: 100;
   overflow-y: auto;
-  border-right: 1px solid #e0e0e0;
+  border-right: 1px solid var(--el-border-color-light);
   transition: transform 0.3s ease;
 }
 
@@ -107,18 +101,9 @@ watch(
   transform: translateX(-100%);
 }
 
-.dark .sidebar {
-  background-color: #333 !important;
-  border-right: 1px solid #1f1f1f;
-}
-
 .sidebar-menu {
   border-right: none;
-  background-color: #f4f4f4;
-}
-
-.dark .sidebar-menu {
-  background-color: #333;
+  background-color: var(--el-bg-color);
 }
 
 .el-menu-item {

@@ -333,7 +333,7 @@ const confirmAddConfig = async () => {
     resetAddDialog()
     updateTomlFromParsed()
   } catch {
-    // empty
+    // 校验失败（如 TOML 配置非法）时保持弹窗打开，便于用户修正输入
   }
 }
 
@@ -529,7 +529,7 @@ parsedSections.value = parseTomlWithComments(tomlInput.value)
 
 .help-icon {
   font-size: 18px;
-  color: #999;
+  color: var(--el-text-color-secondary);
   cursor: pointer;
 }
 
