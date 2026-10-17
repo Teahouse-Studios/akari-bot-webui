@@ -163,8 +163,8 @@ const userReacted = (emoji) => props.msg.userReactions?.includes(emoji)
   color: inherit;
 }
 
-.chat-message.user a,
-.chat-message.user .chat-message-content a {
+.chat-message.user :deep(a),
+.chat-message.user .chat-message-content :deep(a) {
   color: currentColor !important;
   text-decoration: underline;
 }

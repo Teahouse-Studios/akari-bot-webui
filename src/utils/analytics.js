@@ -5,8 +5,6 @@
  * 并按 `target_id` 的平台前缀聚合「平台命令统计」。
  */
 
-export const ANALYTICS_LIMIT_OPTIONS = [20, 50, 100, 200]
-
 const INTERVAL_MINUTES = 30
 
 const CHART_COLORS = [

@@ -135,7 +135,6 @@ export default function setupMock() {
 
   mock.onGet('/api/analytics/modules').reply((config) => {
     const days = Math.max(1, Number(config.params?.days) || 1)
-    const limit = Math.min(200, Math.max(1, Number(config.params?.limit) || 50))
     const records = buildAnalyticsRecords(days)
 
     const countByModule = new Map()
@@ -158,7 +157,7 @@ export default function setupMock() {
         count: records.length,
         change_rate: 0.25,
         total_modules: modules.length,
-        modules: modules.slice(0, limit),
+        modules,
       },
     ]
   })

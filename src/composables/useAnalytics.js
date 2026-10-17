@@ -8,7 +8,6 @@ export function useAnalytics() {
   const { t } = useI18n()
 
   const selectedDays = ref('1')
-  const limit = ref(50)
 
   const loading = ref(false)
   const modulesLoading = ref(false)
@@ -21,7 +20,6 @@ export function useAnalytics() {
   const platformStats = ref([])
 
   const modules = ref([])
-  const totalModules = ref(0)
 
   const abortController = new AbortController()
 
@@ -77,12 +75,10 @@ export function useAnalytics() {
       const response = await axios.get('/api/analytics/modules', {
         headers: buildHeaders(noCache),
         signal: abortController.signal,
-        params: { days: Number(selectedDays.value) || 1, limit: limit.value },
+        params: { days: Number(selectedDays.value) || 1 },
       })
-
       const data = response.data || {}
       modules.value = Array.isArray(data.modules) ? data.modules : []
-      totalModules.value = data.total_modules || 0
       lastUpdateTime.value = Math.floor(Date.now() / 1000)
     } catch (error) {
       if (axios.isCancel(error)) {
@@ -105,18 +101,12 @@ export function useAnalytics() {
     return fetchAnalytics()
   }
 
-  function setLimit(value) {
-    limit.value = value
-    return fetchModules()
-  }
-
   onBeforeUnmount(() => {
     abortController.abort()
   })
 
   return {
     selectedDays,
-    limit,
     loading,
     modulesLoading,
     lastUpdateTime,
@@ -126,10 +116,8 @@ export function useAnalytics() {
     changeRate,
     platformStats,
     modules,
-    totalModules,
     fetchAnalytics,
     fetchModules,
     setSelectedDays,
-    setLimit,
   }
 }

@@ -5,24 +5,9 @@
         <i class="mdi mdi-puzzle"></i>
         {{ $t('analytics.module.title') }}
       </h3>
-      <el-select
-        :model-value="limit"
-        class="limit-select"
-        @update:model-value="$emit('update:limit', $event)"
-      >
-        <el-option
-          v-for="option in limitOptions"
-          :key="option"
-          :label="String(option)"
-          :value="option"
-        />
-      </el-select>
     </div>
 
     <div ref="chartContainer" class="chart-container"></div>
-    <div v-if="truncated" class="truncated-hint">
-      {{ $t('analytics.module.truncated', { total: totalModules, limit: modules.length }) }}
-    </div>
   </el-card>
 </template>
 
@@ -41,7 +26,6 @@ import {
 import { init, use } from 'echarts/core'
 import { LabelLayout, UniversalTransition } from 'echarts/features'
 import { CanvasRenderer } from 'echarts/renderers'
-import { ANALYTICS_LIMIT_OPTIONS } from '@/utils/analytics.js'
 
 use([
   BarChart,
@@ -62,21 +46,10 @@ const props = defineProps({
     type: Array,
     default: () => [],
   },
-  totalModules: {
-    type: Number,
-    default: 0,
-  },
-  limit: {
-    type: Number,
-    default: 50,
-  },
 })
-
-defineEmits(['update:limit'])
 
 const { t } = useI18n()
 
-const limitOptions = ANALYTICS_LIMIT_OPTIONS
 const chartContainer = ref(null)
 const chartInstance = ref(null)
 let resizeObserver = null
@@ -89,8 +62,6 @@ const chartData = computed(() =>
     percent: item.percent,
   })),
 )
-
-const truncated = computed(() => props.totalModules > props.modules.length)
 
 const getPrimaryColor = () =>
   getComputedStyle(document.documentElement).getPropertyValue('--el-color-primary').trim()
@@ -176,18 +147,8 @@ h3 {
   margin-bottom: 10px;
 }
 
-.limit-select {
-  width: 110px;
-}
-
 .chart-container {
   height: 320px;
   width: 100%;
-}
-
-.truncated-hint {
-  margin-top: 10px;
-  font-size: 12px;
-  color: var(--el-text-color-secondary);
 }
 </style>

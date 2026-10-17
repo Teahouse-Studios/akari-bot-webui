@@ -75,8 +75,9 @@
 
 <script setup>
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { useI18n } from 'vue-i18n'
+import { onBeforeRouteLeave } from 'vue-router'
 import ChatHeader from '@/components/chat/ChatHeader.vue'
 import ChatInput from '@/components/chat/ChatInput.vue'
 import ChatMessage from '@/components/chat/ChatMessage.vue'
@@ -128,6 +129,20 @@ const isDarkMode = ref(LocalStorageJson.getItem('isDarkMode') === 'true')
 const observer = ref(null)
 
 const emojiTheme = computed(() => (isDarkMode.value ? 'dark' : 'light'))
+
+const hasChatContent = computed(
+  () =>
+    messages.value.length > 0 || inputText.value.trim() !== '' || pendingImages.value.length > 0,
+)
+
+const handleBeforeUnload = (event) => {
+  if (!hasChatContent.value) return
+
+  // 瀏覽器只會顯示固定的原生提示文字，無法自訂內容
+  event.preventDefault()
+  event.returnValue = ''
+  return ''
+}
 
 const groupNames = computed(() => ({
   smileys_people: t('emojipicker.group.smileys_people'),
@@ -238,8 +253,24 @@ watch(
   },
 )
 
+onBeforeRouteLeave(async () => {
+  if (!hasChatContent.value) return true
+
+  try {
+    await ElMessageBox.confirm(t('chat.confirm.leave.message'), t('chat.confirm.leave.title'), {
+      confirmButtonText: t('chat.confirm.leave.confirm'),
+      cancelButtonText: t('chat.confirm.leave.cancel'),
+      type: 'warning',
+    })
+    return true
+  } catch {
+    return false
+  }
+})
+
 onMounted(() => {
   window.addEventListener('resize', handleResize)
+  window.addEventListener('beforeunload', handleBeforeUnload)
 
   const html = document.documentElement
   isDarkMode.value = html.classList.contains('dark')
@@ -253,6 +284,7 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   window.removeEventListener('resize', handleResize)
+  window.removeEventListener('beforeunload', handleBeforeUnload)
   if (observer.value) {
     observer.value.disconnect()
   }

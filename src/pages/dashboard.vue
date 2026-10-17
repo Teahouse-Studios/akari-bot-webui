@@ -43,12 +43,7 @@
         <PlatformStatsCard :items="platformStats" :count="count" />
       </el-col>
       <el-col :span="24">
-        <ModuleUsageChartCard
-          :modules="modules"
-          :total-modules="totalModules"
-          :limit="limit"
-          @update:limit="setLimit"
-        />
+        <ModuleUsageChartCard :modules="modules" />
       </el-col>
     </el-row>
 
@@ -109,10 +104,8 @@ const {
   changeRate,
   platformStats,
   modules,
-  totalModules,
   fetchAnalytics,
   setSelectedDays,
-  setLimit,
 } = useAnalytics()
 
 /** 采集失败时没有可信的进程列表，展示为未知 */
