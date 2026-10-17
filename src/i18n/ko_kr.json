@@ -235,7 +235,6 @@
     "modules.table.desc": "설명",
     "modules.table.developers": "개발자",
     "modules.table.name": "이름",
-    "modules.tag.base": "기본",
     "modules.tag.loaded": "로드됨",
     "modules.tag.unloaded": "로드되지 않음",
     "modules.title": "모듈 관리",
