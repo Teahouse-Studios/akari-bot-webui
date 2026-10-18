@@ -21,13 +21,12 @@
             :placeholder="$t('session.select.prefix')"
             @change="debouncedRefresh"
           >
-            <el-option label="QQ" value="QQ" />
-            <el-option label="QQBot" value="QQBot" />
-            <el-option label="Discord" value="Discord" />
-            <el-option label="Telegram" value="Telegram" />
-            <el-option label="KOOK" value="KOOK" />
-            <el-option label="Matrix" value="Matrix" />
-            <el-option label="Web" value="Web" />
+            <el-option
+              v-for="prefix in platformPrefixes"
+              :key="prefix"
+              :label="prefix"
+              :value="prefix"
+            />
           </el-select>
         </div>
 
@@ -81,12 +80,7 @@
             <span v-else>-</span>
           </template>
         </el-table-column>
-        <el-table-column
-          prop="locale"
-          :label="$t('session.target.table.locale')"
-          sortable
-          min-width="100"
-        />
+        <el-table-column prop="locale" :label="$t('session.target.table.locale')" min-width="100" />
         <el-table-column prop="modules" :label="$t('session.target.table.modules')" min-width="160">
           <template #default="{ row }">
             {{ row.modules.length }}
@@ -351,7 +345,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, onBeforeUnmount } from 'vue'
+import { ref, reactive, computed, onMounted, onBeforeUnmount } from 'vue'
 import axios from '@/axios.mjs'
 import { IS_DEMO } from '@/const'
 import { ElMessage, ElMessageBox } from 'element-plus'
@@ -397,6 +391,20 @@ const pageSize = ref(20)
 const totalItems = ref(0)
 const loading = ref(false)
 const abortController = new AbortController()
+
+/** 平台前缀候选项来自当前已存在的绑定 ID，不再写死平台列表 */
+const platformPrefixes = computed(() => {
+  const prefixes = new Set()
+  for (const item of targetList.value) {
+    const ids = item.bound_ids?.length ? item.bound_ids : [item.target_id]
+    for (const id of ids) {
+      const prefix = String(id).split('|')[0]
+      if (prefix) prefixes.add(prefix)
+    }
+  }
+  if (selectedPrefix.value) prefixes.add(selectedPrefix.value)
+  return Array.from(prefixes).sort((a, b) => a.localeCompare(b))
+})
 
 const fetchData = async () => {
   loading.value = true

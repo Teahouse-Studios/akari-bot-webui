@@ -86,6 +86,7 @@ const scroll = computed({
   gap: 10px;
   padding: 10px;
   background-color: #ddd;
+  border: 1px solid var(--el-border-color-darker);
   border-radius: 8px;
   margin-bottom: 10px;
 }

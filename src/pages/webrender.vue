@@ -41,25 +41,13 @@
             @submit="handleSubmit"
           />
 
-          <TestHistoryList :history="history" @replay="replayHistory" @clear="clearHistory" />
-        </div>
-      </el-tab-pane>
-
-      <el-tab-pane :label="$t('webrender.response.title')" name="response">
-        <div class="tab-content">
-          <el-alert
-            v-if="serverOffline"
-            :title="$t('webrender.error.server_offline')"
-            type="warning"
-            show-icon
-            :closable="false"
-          />
-
           <RenderResponsePanel
             :result="result"
             :loading="testLoading"
             :error-text="responseErrorText"
           />
+
+          <TestHistoryList :history="history" @replay="replayHistory" @clear="clearHistory" />
         </div>
       </el-tab-pane>
     </el-tabs>
@@ -121,10 +109,7 @@ const responseErrorText = computed(() =>
 )
 
 const handleSubmit = async (form) => {
-  const previousResult = result.value
   await runTest(form)
-  // 只有這次請求真的產生了新結果時才切換，避免驗證失敗也跳頁
-  if (result.value !== previousResult) activeTab.value = 'response'
 }
 
 const replayHistory = (entry) => {

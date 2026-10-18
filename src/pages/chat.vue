@@ -1,67 +1,69 @@
 <template>
-  <div
-    class="chat-container"
-    :class="{ 'drag-over': isDraggingOver }"
-    @dragover.prevent="handleDragOver"
-    @dragleave="handleDragLeave"
-    @drop.prevent="handleImageDrop"
-  >
-    <ChatHeader :connection-status="connectionStatus" @reset="resetChat" />
+  <div class="chat-page">
+    <div
+      class="chat-container"
+      :class="{ 'drag-over': isDraggingOver }"
+      @dragover.prevent="handleDragOver"
+      @dragleave="handleDragLeave"
+      @drop.prevent="handleImageDrop"
+    >
+      <ChatHeader :connection-status="connectionStatus" @reset="resetChat" />
 
-    <div ref="chatBox" class="chat-box">
-      <ChatPlaceholder
-        v-if="messages.length === 0"
-        :command-prefix="commandPrefix"
-        :is-mobile-view="isMobileView"
+      <div ref="chatBox" class="chat-box">
+        <ChatPlaceholder
+          v-if="messages.length === 0"
+          :command-prefix="commandPrefix"
+          :is-mobile-view="isMobileView"
+        />
+
+        <ChatMessage
+          v-for="(msg, idx) in messages"
+          :key="msg.id || idx"
+          :msg="msg"
+          :debug="debug"
+          :copied="copiedId === msg.id"
+          :emoji-theme="emojiTheme"
+          :group-names="groupNames"
+          @copy="copyMessage"
+          @reaction-toggle="(emoji) => toggleReaction(msg, emoji)"
+          @reaction-select="(emoji) => selectEmoji(msg, emoji)"
+          @emoji-picker-open="openEmojiPicker(msg)"
+          @emoji-picker-visible="msg.showEmojiPicker = $event"
+          @markdown-click="handleMarkdownClick"
+          @image-click="showImagePreview"
+          @action-text-click="handleActionTextClick"
+          @button-click="handleButtonClick"
+          @external-button-click="handleExternalButtonClick"
+          @nodes-click="openNodesDialog"
+        />
+      </div>
+
+      <PendingImagesBar
+        :images="pendingImages"
+        @preview-image="showImagePreview"
+        @remove-image="removePendingImage"
       />
 
-      <ChatMessage
-        v-for="(msg, idx) in messages"
-        :key="msg.id || idx"
-        :msg="msg"
-        :debug="debug"
-        :copied="copiedId === msg.id"
-        :emoji-theme="emojiTheme"
-        :group-names="groupNames"
-        @copy="copyMessage"
-        @reaction-toggle="(emoji) => toggleReaction(msg, emoji)"
-        @reaction-select="(emoji) => selectEmoji(msg, emoji)"
-        @emoji-picker-open="openEmojiPicker(msg)"
-        @emoji-picker-visible="msg.showEmojiPicker = $event"
-        @markdown-click="handleMarkdownClick"
-        @image-click="showImagePreview"
-        @action-text-click="handleActionTextClick"
-        @button-click="handleButtonClick"
-        @external-button-click="handleExternalButtonClick"
-        @nodes-click="openNodesDialog"
+      <ChatInput
+        ref="chatInput"
+        v-model:text="inputText"
+        :images="pendingImages"
+        :connection-status="connectionStatus"
+        @send="sendMessage"
+        @enter="handleEnterKey"
+        @select-files="addImageFiles"
+      />
+
+      <ImagePreview
+        v-model:visible="fullscreenPreviewVisible"
+        :src="previewImageSrc"
+        @open-new-window="openImageInNewWindow"
       />
     </div>
-
-    <PendingImagesBar
-      :images="pendingImages"
-      @preview-image="showImagePreview"
-      @remove-image="removePendingImage"
-    />
-
-    <ChatInput
-      ref="chatInput"
-      v-model:text="inputText"
-      :images="pendingImages"
-      :connection-status="connectionStatus"
-      @send="sendMessage"
-      @enter="handleEnterKey"
-      @select-files="addImageFiles"
-    />
 
     <div class="chat-tip">
       {{ $t('chat.tip') }}
     </div>
-
-    <ImagePreview
-      v-model:visible="fullscreenPreviewVisible"
-      :src="previewImageSrc"
-      @open-new-window="openImageInNewWindow"
-    />
   </div>
 
   <NodesDialog
@@ -292,18 +294,27 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
-.chat-container {
-  border-radius: 10px;
+.chat-page {
   display: flex;
   flex-direction: column;
   height: calc(100vh - 100px);
+}
+
+.chat-container {
+  flex: 1 1 auto;
+  min-height: 0;
+  border: 1px solid var(--el-border-color);
+  border-radius: 10px;
+  background-color: var(--el-bg-color-overlay);
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
   overflow: hidden;
 }
 
 .chat-container :deep(.chat-header),
 .chat-container :deep(.pending-images-bar),
-.chat-container :deep(.send-box),
-.chat-tip {
+.chat-container :deep(.send-box) {
   flex: 0 0 auto;
 }
 
@@ -322,6 +333,7 @@ onBeforeUnmount(() => {
 }
 
 .chat-tip {
+  flex: 0 0 auto;
   font-size: 12px;
   color: var(--el-text-color-secondary);
   text-align: center;

@@ -74,8 +74,8 @@ const confirmAction = async (action) => {
   display: flex;
   flex-wrap: wrap;
   justify-content: flex-start;
-  gap: 10px;
-  padding-top: 16px;
+  gap: 8px;
+  padding-top: 8px;
   border-top: 1px solid var(--el-border-color-lighter);
 }
 </style>

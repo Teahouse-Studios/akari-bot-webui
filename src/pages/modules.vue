@@ -4,7 +4,7 @@
       <div class="header-container">
         <h3><i class="mdi mdi-puzzle"></i> {{ $t('modules.title') }}</h3>
         <el-button
-          @click="refreshData"
+          @click="refreshAll"
           type="primary"
           size="small"
           :disabled="loading"
@@ -76,11 +76,21 @@
               <i class="mdi mdi-help-circle-outline"></i> {{ $t('modules.button.helpdoc') }}
             </el-button>
 
-            <el-button v-if="!row.base" size="small" type="primary" @click="openConfigEditor(row)">
+            <el-button
+              v-if="hasModuleConfig(row)"
+              size="small"
+              type="primary"
+              @click="openConfigEditor(row)"
+            >
               <i class="mdi mdi-cog"></i> {{ $t('modules.button.config') }}
             </el-button>
 
-            <el-button size="small" type="primary" @click="openFilesDialog(row)">
+            <el-button
+              v-if="hasModuleFiles(row)"
+              size="small"
+              type="primary"
+              @click="openFilesDialog(row)"
+            >
               <i class="mdi mdi-folder-outline"></i> {{ $t('modules.button.files') }}
             </el-button>
 
@@ -181,7 +191,7 @@
 
     <el-dialog
       v-model="configDialogVisible"
-      :title="$t('modules.config.title', { module: configModuleName })"
+      :title="$t('modules.config.title')"
       :width="moduleConfigDialogWidth"
       :close-on-press-escape="false"
       :close-on-click-modal="false"
@@ -201,7 +211,7 @@
 
     <el-dialog
       v-model="filesDialogVisible"
-      :title="$t('modules.files.title', { module: filesModuleName })"
+      :title="$t('modules.files.title')"
       :width="moduleConfigDialogWidth"
       align-center
       :close-on-press-escape="false"
@@ -249,6 +259,10 @@ const configNotFound = ref(false)
 const filesDialogVisible = ref(false)
 const filesModuleName = ref('')
 
+/** 配置文件名与模块存储根目录，用于判断「配置」「文件」入口是否可用 */
+const configFileNames = ref([])
+const moduleStorageRoots = ref([])
+
 const MODULE_TYPE_LABELS = {
   base: 'modules.type.base',
   extension: 'modules.type.extension',
@@ -262,6 +276,25 @@ const moduleType = (row) => {
 }
 
 const moduleTypeLabel = (row) => MODULE_TYPE_LABELS[moduleType(row)]
+
+const configFileSet = computed(() => new Set(configFileNames.value))
+
+const moduleFileRootSet = computed(
+  () =>
+    new Set(
+      moduleStorageRoots.value
+        .filter((root) => root.scope === 'module' && root.module)
+        .map((root) => root.module),
+    ),
+)
+
+/** 配置文件名、模块存储目录均以 Python 模块名为准 */
+const modulePythonName = (row) => row._py_module_name || row.name
+
+const hasModuleConfig = (row) =>
+  !row.base && configFileSet.value.has(`module_${modulePythonName(row)}.toml`)
+
+const hasModuleFiles = (row) => moduleFileRootSet.value.has(modulePythonName(row))
 
 const filteredModules = computed(() => {
   let result = modules.value
@@ -330,6 +363,25 @@ const debouncedRefresh = () => {
   clearTimeout(debounceTimer.value)
   debounceTimer.value = setTimeout(() => refreshData(), 300)
 }
+
+/** 读取已有配置文件与模块存储根目录；失败时保留上次结果，不阻塞模块列表 */
+const loadModuleResources = async () => {
+  const [configResponse, rootsResponse] = await Promise.allSettled([
+    axios.get('/api/config'),
+    axios.get('/api/files/roots'),
+  ])
+
+  if (configResponse.status === 'fulfilled') {
+    const files = configResponse.value.data?.cfg_files
+    configFileNames.value = Array.isArray(files) ? files : []
+  }
+  if (rootsResponse.status === 'fulfilled') {
+    const roots = rootsResponse.value.data?.roots
+    moduleStorageRoots.value = Array.isArray(roots) ? roots : []
+  }
+}
+
+const refreshAll = () => Promise.all([refreshData(), loadModuleResources()])
 
 const getRelatedModules = async (moduleName) => {
   try {
@@ -487,7 +539,7 @@ const resetConfigDialog = () => {
 }
 
 onMounted(() => {
-  refreshData()
+  refreshAll()
   window.addEventListener('resize', updateModuleConfigDialogWidth)
   updateModuleConfigDialogWidth()
 })

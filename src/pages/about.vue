@@ -1,7 +1,7 @@
 <template>
   <div class="container">
     <!-- TODO: 压缩 -->
-    <img width="400" src="@/assets/akaribot_logo.png" alt="Akaribot" />
+    <img class="logo" src="@/assets/akaribot_logo.png" alt="Akaribot" />
     <h1 class="title">小可 · AkariBot</h1>
     <span class="quote">{{ $t('about.slogan') }}</span>
     <span class="text">
@@ -63,6 +63,23 @@ const goToSponsor = () => window.open('https://afdian.com/a/teahouse', '_blank')
 
 .container {
   text-align: center;
+}
+
+.logo {
+  display: inline-block;
+  width: min(400px, 72vw);
+  max-width: 100%;
+  height: auto;
+}
+
+.container a {
+  color: var(--el-color-primary);
+}
+
+@media (max-width: 640px) {
+  .logo {
+    width: min(260px, 70vw);
+  }
 }
 
 .title {

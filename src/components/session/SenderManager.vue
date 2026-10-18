@@ -21,13 +21,12 @@
             :placeholder="$t('session.select.prefix')"
             @change="debouncedRefresh"
           >
-            <el-option label="QQ" value="QQ" />
-            <el-option label="QQBot" value="QQBot" />
-            <el-option label="Discord" value="Discord" />
-            <el-option label="Telegram" value="Telegram" />
-            <el-option label="KOOK" value="KOOK" />
-            <el-option label="Matrix" value="Matrix" />
-            <el-option label="Web" value="Web" />
+            <el-option
+              v-for="prefix in platformPrefixes"
+              :key="prefix"
+              :label="prefix"
+              :value="prefix"
+            />
           </el-select>
         </div>
 
@@ -82,18 +81,8 @@
             <span v-else>-</span>
           </template>
         </el-table-column>
-        <el-table-column
-          prop="warns"
-          :label="$t('session.sender.table.warns')"
-          sortable
-          min-width="140"
-        />
-        <el-table-column
-          prop="petal"
-          :label="$t('session.sender.table.petal')"
-          sortable
-          min-width="140"
-        />
+        <el-table-column prop="warns" :label="$t('session.sender.table.warns')" min-width="140" />
+        <el-table-column prop="petal" :label="$t('session.sender.table.petal')" min-width="140" />
         <el-table-column :label="$t('session.table.status')" min-width="180">
           <template #default="{ row }">
             <el-tag type="primary" v-if="row.superuser">{{
@@ -230,7 +219,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, onBeforeUnmount } from 'vue'
+import { ref, reactive, computed, onMounted, onBeforeUnmount } from 'vue'
 import axios from '@/axios.mjs'
 import { IS_DEMO } from '@/const'
 import { ElMessage, ElMessageBox } from 'element-plus'
@@ -268,6 +257,20 @@ const loading = ref(false)
 const debounceTimer = ref(null)
 
 const abortController = new AbortController()
+
+/** 平台前缀候选项来自当前已存在的绑定 ID，不再写死平台列表 */
+const platformPrefixes = computed(() => {
+  const prefixes = new Set()
+  for (const item of senderList.value) {
+    const ids = item.bound_ids?.length ? item.bound_ids : [item.sender_id]
+    for (const id of ids) {
+      const prefix = String(id).split('|')[0]
+      if (prefix) prefixes.add(prefix)
+    }
+  }
+  if (selectedPrefix.value) prefixes.add(selectedPrefix.value)
+  return Array.from(prefixes).sort((a, b) => a.localeCompare(b))
+})
 
 const fetchData = async () => {
   loading.value = true

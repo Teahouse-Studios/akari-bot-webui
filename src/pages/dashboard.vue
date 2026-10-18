@@ -66,7 +66,7 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, onMounted } from 'vue'
 import CommandStatsCard from '@/components/dashboard/analytics/CommandStatsCard.vue'
 import ModuleUsageChartCard from '@/components/dashboard/analytics/ModuleUsageChartCard.vue'
 import PlatformStatsCard from '@/components/dashboard/analytics/PlatformStatsCard.vue'
@@ -94,7 +94,6 @@ const {
 
 const {
   selectedDays,
-  limit,
   loading: analyticsLoading,
   modulesLoading,
   lastUpdateTime: analyticsUpdateTime,
@@ -117,6 +116,10 @@ const lastUpdateTime = computed(() => Math.max(serverUpdateTime.value, analytics
 const refreshData = async () => {
   await Promise.all([fetchServerInfo(true), fetchAnalytics(true)])
 }
+
+onMounted(() => {
+  fetchAnalytics()
+})
 </script>
 
 <style scoped>

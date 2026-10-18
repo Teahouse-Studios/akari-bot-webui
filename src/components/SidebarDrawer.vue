@@ -7,7 +7,12 @@
           <span class="web-ui-text">WebUI</span>
         </div>
       </div>
-      <el-menu :default-active="activeMenu" class="sidebar-menu" @select="handleSelect">
+      <el-menu
+        ref="menuRef"
+        :default-active="activeMenu"
+        class="sidebar-menu"
+        @select="handleSelect"
+      >
         <el-menu-item index="/dashboard">
           <i class="mdi mdi-view-dashboard"></i>
           <span>{{ $t('sidebar.item.dashboard') }}</span>
@@ -58,7 +63,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue'
+import { ref, nextTick, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { getIsDevelopMode } from '@/dev'
 
@@ -68,15 +73,24 @@ const route = useRoute()
 const router = useRouter()
 
 const activeMenu = ref(route.name)
+const menuRef = ref(null)
 const isDevelopMode = ref(false)
 
 function getActiveMenuFromRoute() {
   return route.name
 }
 
-function handleSelect(index) {
-  router.push({ name: index })
-  emit('update:modelValue', false)
+async function handleSelect(index) {
+  try {
+    await router.push({ name: index })
+  } finally {
+    // 路由守衛取消導航時 Element Plus 仍會先選中點擊項，需還原為目前路由
+    if (route.name !== index) {
+      await nextTick()
+      menuRef.value?.updateActiveIndex(route.name)
+    }
+    emit('update:modelValue', false)
+  }
 }
 
 onMounted(async () => {

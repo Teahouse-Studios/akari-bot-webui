@@ -2,7 +2,7 @@
   <div>
     <h3><i class="mdi mdi-robot"></i> {{ $t('setting.bot_options.title') }}</h3>
     <el-button type="danger" @click="handleRestart">
-      <i class="mdi mdi-restart"></i> {{ $t('setting.bot_options.button.restart') }}
+      <i class="mdi mdi-restart"></i> {{ $t('setting.bot_options.button.restart_bot') }}
     </el-button>
   </div>
 </template>
