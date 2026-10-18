@@ -32,6 +32,10 @@
           <i class="mdi mdi-chat"></i>
           <span>{{ $t('sidebar.item.chat') }}</span>
         </el-menu-item>
+        <el-menu-item index="/webrender">
+          <i class="mdi mdi-web"></i>
+          <span>{{ $t('sidebar.item.webrender') }}</span>
+        </el-menu-item>
         <el-menu-item v-if="isDevelopMode" index="/database">
           <i class="mdi mdi-database"></i>
           <span>{{ $t('sidebar.item.database') }}</span>

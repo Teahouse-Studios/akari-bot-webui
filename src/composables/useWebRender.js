@@ -2,7 +2,7 @@ import { ElMessage } from 'element-plus'
 import { computed, onBeforeUnmount, onMounted, reactive, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import axios from '@/axios.mjs'
-import { buildTestPayload, validateForm } from '@/utils/webrender.js'
+import { WEBRENDER_ERROR_KEYS, buildTestPayload, validateForm } from '@/utils/webrender.js'
 
 /** 控制接口 6/分钟、测试接口 10/分钟（.yoyaku.md 第 7 章） */
 const CONTROL_LIMIT = 6
@@ -41,7 +41,9 @@ export function useWebRender() {
   const testLimited = computed(() => withinWindow(testTimestamps.value) >= TEST_LIMIT)
 
   const localizeError = (code) => {
-    const key = code ? `webrender.error.${code}` : ''
+    // 优先使用集中维护的错误码映射（部分错误码对应表单校验文案），
+    // 再退回通用 `webrender.error.<code>` 约定。
+    const key = WEBRENDER_ERROR_KEYS[code] || (code ? `webrender.error.${code}` : '')
     const translated = key ? t(key) : ''
     return translated && translated !== key ? translated : code || t('unknown')
   }
