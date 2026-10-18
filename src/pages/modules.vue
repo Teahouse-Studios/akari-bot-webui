@@ -56,9 +56,11 @@
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column :label="$t('modules.table.type')" min-width="120">
+        <el-table-column :label="$t('modules.table.type')" min-width="160">
           <template #default="{ row }">
-            <el-tag :type="moduleTypeTag(row)">{{ $t(moduleTypeLabel(row)) }}</el-tag>
+            <el-tag class="module-type-tag" :class="`module-type-tag--${moduleType(row)}`">
+              {{ $t(moduleTypeLabel(row)) }}
+            </el-tag>
           </template>
         </el-table-column>
         <el-table-column :label="$t('session.table.status')" min-width="100">
@@ -247,12 +249,6 @@ const configNotFound = ref(false)
 const filesDialogVisible = ref(false)
 const filesModuleName = ref('')
 
-const MODULE_TYPE_TAGS = {
-  base: 'warning',
-  extension: 'primary',
-  subscription: 'success',
-}
-
 const MODULE_TYPE_LABELS = {
   base: 'modules.type.base',
   extension: 'modules.type.extension',
@@ -264,8 +260,6 @@ const moduleType = (row) => {
   if (row?.rss) return 'subscription'
   return 'extension'
 }
-
-const moduleTypeTag = (row) => MODULE_TYPE_TAGS[moduleType(row)]
 
 const moduleTypeLabel = (row) => MODULE_TYPE_LABELS[moduleType(row)]
 
@@ -517,6 +511,46 @@ h3 {
 .unloaded {
   color: var(--el-text-color-secondary);
   font-style: oblique;
+}
+
+.el-tag.module-type-tag {
+  font-weight: 500;
+}
+
+.el-tag.module-type-tag--base {
+  --el-tag-bg-color: #f5d9c5;
+  --el-tag-border-color: #e9af8b;
+  --el-tag-text-color: #9f430b;
+}
+
+.el-tag.module-type-tag--extension {
+  --el-tag-bg-color: #d1dfe9;
+  --el-tag-border-color: #a2bfd1;
+  --el-tag-text-color: #305e7a;
+}
+
+.el-tag.module-type-tag--subscription {
+  --el-tag-bg-color: #cddfc9;
+  --el-tag-border-color: #96be92;
+  --el-tag-text-color: #2d5a27;
+}
+
+html.dark .el-tag.module-type-tag--base {
+  --el-tag-bg-color: rgba(214, 128, 74, 0.16);
+  --el-tag-border-color: rgba(214, 128, 74, 0.55);
+  --el-tag-text-color: #e9af8b;
+}
+
+html.dark .el-tag.module-type-tag--extension {
+  --el-tag-bg-color: rgba(109, 152, 179, 0.16);
+  --el-tag-border-color: rgba(109, 152, 179, 0.55);
+  --el-tag-text-color: #a2bfd1;
+}
+
+html.dark .el-tag.module-type-tag--subscription {
+  --el-tag-bg-color: rgba(90, 143, 85, 0.16);
+  --el-tag-border-color: rgba(90, 143, 85, 0.55);
+  --el-tag-text-color: #96be92;
 }
 
 .el-button i {
