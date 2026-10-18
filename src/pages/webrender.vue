@@ -18,6 +18,7 @@
             :loading="controlLoading"
             :limited="controlLimited"
             :server-offline="serverOffline"
+            :status="status"
             @control="control"
           />
         </div>

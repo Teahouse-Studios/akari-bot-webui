@@ -5,13 +5,19 @@
         <div v-for="(section, sectionKey) in parsedSections" :key="sectionKey">
           <div style="display: flex; align-items: center; gap: 8px">
             <h2>{{ sectionKey }}</h2>
-            <el-button
-              type="primary"
-              size="small"
-              @click="openAddDialog(sectionKey)"
-              style="margin-bottom: 4px"
-              ><i class="mdi mdi-plus-box-outline"></i> {{ $t('button.add') }}</el-button
-            >
+            <el-tooltip :content="$t('button.add')" placement="top">
+              <el-button
+                link
+                size="small"
+                type="primary"
+                class="icon-action-button"
+                :aria-label="$t('button.add')"
+                style="margin-bottom: 4px"
+                @click="openAddDialog(sectionKey)"
+              >
+                <i class="mdi mdi-plus-box-outline"></i>
+              </el-button>
+            </el-tooltip>
           </div>
           <div v-for="(item, key) in section.items" :key="key">
             <el-form-item :label="key">
@@ -55,13 +61,19 @@
                     <el-option value="num" label="num" />
                     <el-option value="array" label="array" />
                   </el-select>
-                  <el-button
-                    type="danger"
-                    size="small"
-                    style="margin-left: 8px"
-                    @click="deleteConfig(sectionKey, key)"
-                    ><i class="mdi mdi-delete-outline"></i> {{ $t('button.delete') }}</el-button
-                  >
+                  <el-tooltip :content="$t('button.delete')" placement="top">
+                    <el-button
+                      link
+                      size="small"
+                      type="danger"
+                      class="icon-action-button"
+                      :aria-label="$t('button.delete')"
+                      style="margin-left: 8px"
+                      @click="deleteConfig(sectionKey, key)"
+                    >
+                      <i class="mdi mdi-delete-outline"></i>
+                    </el-button>
+                  </el-tooltip>
                 </div>
               </div>
             </el-form-item>
@@ -535,5 +547,14 @@ parsedSections.value = parseTomlWithComments(tomlInput.value)
 
 .el-button i {
   margin-right: 6px;
+}
+
+.icon-action-button {
+  padding: 4px;
+  font-size: 16px;
+}
+
+.icon-action-button i {
+  margin-right: 0 !important;
 }
 </style>

@@ -127,19 +127,46 @@
           sortable
           :formatter="formatDate"
         />
-        <el-table-column :label="t('files.table.action')" min-width="360">
+        <el-table-column :label="t('files.table.action')" min-width="160">
           <template #default="{ row }">
-            <template v-if="!row.virtual">
-              <el-button size="small" type="info" @click="rename(row)">
-                <i class="mdi mdi-rename"></i>{{ t('files.button.rename') }}
-              </el-button>
-              <el-button size="small" type="primary" @click="download(row)">
-                <i class="mdi mdi-download"></i>{{ t('files.button.download') }}
-              </el-button>
-              <el-button size="small" type="danger" @click="remove(row)">
-                <i class="mdi mdi-delete"></i> {{ t('button.delete') }}
-              </el-button>
-            </template>
+            <div v-if="!row.virtual" class="row-actions">
+              <el-tooltip :content="t('files.button.rename')" placement="top">
+                <el-button
+                  link
+                  size="small"
+                  type="info"
+                  class="row-action-button"
+                  :aria-label="t('files.button.rename')"
+                  @click="rename(row)"
+                >
+                  <i class="mdi mdi-rename"></i>
+                </el-button>
+              </el-tooltip>
+              <el-tooltip :content="t('files.button.download')" placement="top">
+                <el-button
+                  link
+                  size="small"
+                  type="primary"
+                  class="row-action-button"
+                  :aria-label="t('files.button.download')"
+                  @click="download(row)"
+                >
+                  <i class="mdi mdi-download"></i>
+                </el-button>
+              </el-tooltip>
+              <el-tooltip :content="t('button.delete')" placement="top">
+                <el-button
+                  link
+                  size="small"
+                  type="danger"
+                  class="row-action-button"
+                  :aria-label="t('button.delete')"
+                  @click="remove(row)"
+                >
+                  <i class="mdi mdi-delete"></i>
+                </el-button>
+              </el-tooltip>
+            </div>
           </template>
         </el-table-column>
       </el-table>
@@ -1207,6 +1234,26 @@ watch(fullscreenPreviewVisible, (val) => {
 
 .el-button i {
   margin-right: 8px;
+}
+
+.row-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+.row-actions .el-button {
+  margin-left: 0;
+}
+
+.row-action-button {
+  padding: 4px;
+  font-size: 16px;
+}
+
+.row-action-button i {
+  margin-right: 0 !important;
 }
 
 .upload-area {

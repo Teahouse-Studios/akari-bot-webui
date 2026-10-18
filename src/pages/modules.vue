@@ -3,14 +3,18 @@
     <el-card class="module-card" shadow="never">
       <div class="header-container">
         <h3><i class="mdi mdi-puzzle"></i> {{ $t('modules.title') }}</h3>
-        <el-button
-          @click="refreshAll"
-          type="primary"
-          size="small"
-          :disabled="loading"
-          style="float: right; margin-left: 10px"
-          ><i class="mdi mdi-refresh"></i> {{ $t('button.refresh') }}</el-button
-        >
+        <el-tooltip :content="$t('button.refresh')" placement="top">
+          <el-button
+            link
+            class="plain-icon-button"
+            :disabled="loading"
+            :aria-label="$t('button.refresh')"
+            style="float: right; margin-left: 10px"
+            @click="refreshAll"
+          >
+            <i class="mdi mdi-refresh"></i>
+          </el-button>
+        </el-tooltip>
       </div>
 
       <div class="filter-container">
@@ -70,51 +74,103 @@
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column :label="$t('table.operation')" min-width="560">
+        <el-table-column :label="$t('table.operation')" min-width="220">
           <template #default="{ row }">
-            <el-button size="small" type="info" @click="handleHelp(row)">
-              <i class="mdi mdi-help-circle-outline"></i> {{ $t('modules.button.helpdoc') }}
-            </el-button>
+            <div class="row-actions">
+              <el-tooltip :content="$t('modules.button.helpdoc')" placement="top">
+                <el-button
+                  link
+                  size="small"
+                  type="info"
+                  class="row-action-button"
+                  :aria-label="$t('modules.button.helpdoc')"
+                  @click="handleHelp(row)"
+                >
+                  <i class="mdi mdi-help-circle-outline"></i>
+                </el-button>
+              </el-tooltip>
 
-            <el-button
-              v-if="hasModuleConfig(row)"
-              size="small"
-              type="primary"
-              @click="openConfigEditor(row)"
-            >
-              <i class="mdi mdi-cog"></i> {{ $t('modules.button.config') }}
-            </el-button>
+              <el-tooltip
+                v-if="hasModuleConfig(row)"
+                :content="$t('modules.button.config')"
+                placement="top"
+              >
+                <el-button
+                  link
+                  size="small"
+                  type="primary"
+                  class="row-action-button"
+                  :aria-label="$t('modules.button.config')"
+                  @click="openConfigEditor(row)"
+                >
+                  <i class="mdi mdi-cog"></i>
+                </el-button>
+              </el-tooltip>
 
-            <el-button
-              v-if="hasModuleFiles(row)"
-              size="small"
-              type="primary"
-              @click="openFilesDialog(row)"
-            >
-              <i class="mdi mdi-folder-outline"></i> {{ $t('modules.button.files') }}
-            </el-button>
+              <el-tooltip
+                v-if="hasModuleFiles(row)"
+                :content="$t('modules.button.files')"
+                placement="top"
+              >
+                <el-button
+                  link
+                  size="small"
+                  type="primary"
+                  class="row-action-button"
+                  :aria-label="$t('modules.button.files')"
+                  @click="openFilesDialog(row)"
+                >
+                  <i class="mdi mdi-folder-outline"></i>
+                </el-button>
+              </el-tooltip>
 
-            <el-button
-              v-if="!row.base && row.loaded"
-              size="small"
-              type="warning"
-              @click="handleUnload(row)"
-            >
-              <i class="mdi mdi-puzzle-remove"></i> {{ $t('modules.button.unload') }}
-            </el-button>
+              <el-tooltip
+                v-if="!row.base && row.loaded"
+                :content="$t('modules.button.unload')"
+                placement="top"
+              >
+                <el-button
+                  link
+                  size="small"
+                  type="warning"
+                  class="row-action-button"
+                  :aria-label="$t('modules.button.unload')"
+                  @click="handleUnload(row)"
+                >
+                  <i class="mdi mdi-puzzle-remove"></i>
+                </el-button>
+              </el-tooltip>
 
-            <el-button
-              v-if="!row.base && !row.loaded"
-              size="small"
-              type="success"
-              @click="handleLoad(row)"
-            >
-              <i class="mdi mdi-puzzle-plus"></i> {{ $t('modules.button.load') }}
-            </el-button>
+              <el-tooltip
+                v-if="!row.base && !row.loaded"
+                :content="$t('modules.button.load')"
+                placement="top"
+              >
+                <el-button
+                  link
+                  size="small"
+                  type="success"
+                  class="row-action-button"
+                  :aria-label="$t('modules.button.load')"
+                  @click="handleLoad(row)"
+                >
+                  <i class="mdi mdi-puzzle-plus"></i>
+                </el-button>
+              </el-tooltip>
 
-            <el-button size="small" type="danger" @click="handleReload(row)">
-              <i class="mdi mdi-reload"></i> {{ $t('modules.button.reload') }}
-            </el-button>
+              <el-tooltip :content="$t('modules.button.reload')" placement="top">
+                <el-button
+                  link
+                  size="small"
+                  type="danger"
+                  class="row-action-button"
+                  :aria-label="$t('modules.button.reload')"
+                  @click="handleReload(row)"
+                >
+                  <i class="mdi mdi-reload"></i>
+                </el-button>
+              </el-tooltip>
+            </div>
           </template>
         </el-table-column>
       </el-table>
@@ -607,6 +663,35 @@ html.dark .el-tag.module-type-tag--subscription {
 
 .el-button i {
   margin-right: 8px;
+}
+
+.row-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+.row-actions .el-button {
+  margin-left: 0;
+}
+
+.row-action-button {
+  padding: 4px;
+  font-size: 16px;
+}
+
+.row-action-button i {
+  margin-right: 0 !important;
+}
+
+.plain-icon-button {
+  padding: 4px;
+  font-size: 20px;
+}
+
+.plain-icon-button i {
+  margin-right: 0 !important;
 }
 
 .header-container {

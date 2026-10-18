@@ -1,29 +1,37 @@
 <template>
-  <div class="control-actions">
+  <div v-if="controlsVisible" class="control-actions">
     <el-button
+      v-if="!running"
       type="success"
       :loading="loading"
       :disabled="disabled"
       @click="confirmAction('start')"
     >
-      <i class="mdi mdi-play"></i>
+      <i v-if="!loading" class="mdi mdi-play"></i>
       {{ $t('webrender.control.start') }}
     </el-button>
 
-    <el-button type="danger" :loading="loading" :disabled="disabled" @click="confirmAction('stop')">
-      <i class="mdi mdi-stop"></i>
-      {{ $t('webrender.control.stop') }}
-    </el-button>
+    <template v-else>
+      <el-button
+        type="danger"
+        :loading="loading"
+        :disabled="disabled"
+        @click="confirmAction('stop')"
+      >
+        <i v-if="!loading" class="mdi mdi-stop"></i>
+        {{ $t('webrender.control.stop') }}
+      </el-button>
 
-    <el-button
-      type="warning"
-      :loading="loading"
-      :disabled="disabled"
-      @click="confirmAction('restart')"
-    >
-      <i class="mdi mdi-restart"></i>
-      {{ $t('webrender.control.restart') }}
-    </el-button>
+      <el-button
+        type="warning"
+        :loading="loading"
+        :disabled="disabled"
+        @click="confirmAction('restart')"
+      >
+        <i v-if="!loading" class="mdi mdi-restart"></i>
+        {{ $t('webrender.control.restart') }}
+      </el-button>
+    </template>
   </div>
 </template>
 
@@ -45,10 +53,22 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  // null 表示状态不可读（服务端可能离线），此时不显示任何控制按钮
+  status: {
+    type: Object,
+    default: null,
+  },
 })
 
 const emit = defineEmits(['control'])
 const { t } = useI18n()
+
+const running = computed(() => props.status?.available === true)
+
+/** 只有取得明确的运行状态时才显示控制按钮 */
+const controlsVisible = computed(
+  () => !props.serverOffline && typeof props.status?.available === 'boolean',
+)
 
 const disabled = computed(() => props.loading || props.limited || props.serverOffline)
 

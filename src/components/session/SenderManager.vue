@@ -3,14 +3,18 @@
     <el-card class="sender-card" shadow="never">
       <div class="header-container">
         <h3><i class="mdi mdi-account"></i> {{ $t('session.sender.title') }}</h3>
-        <el-button
-          @click="refreshData"
-          type="primary"
-          size="small"
-          :disabled="loading"
-          style="float: right; margin-left: 10px"
-          ><i class="mdi mdi-refresh"></i> {{ $t('button.refresh') }}</el-button
-        >
+        <el-tooltip :content="$t('button.refresh')" placement="top">
+          <el-button
+            link
+            class="plain-icon-button"
+            :disabled="loading"
+            :aria-label="$t('button.refresh')"
+            style="float: right; margin-left: 10px"
+            @click="refreshData"
+          >
+            <i class="mdi mdi-refresh"></i>
+          </el-button>
+        </el-tooltip>
       </div>
 
       <div class="filter-container">
@@ -74,9 +78,19 @@
           <template #default="{ row }">
             <template v-if="isGroup(row)">
               <span>{{ row.bound_ids.length }}</span>
-              <el-button size="mini" type="text" style="margin-left: 5px" @click="viewGroup(row)">
-                {{ $t('button.view') }}
-              </el-button>
+              <el-tooltip :content="$t('button.view')" placement="top">
+                <el-button
+                  link
+                  size="small"
+                  type="primary"
+                  class="row-action-button"
+                  :aria-label="$t('button.view')"
+                  style="margin-left: 5px"
+                  @click="viewGroup(row)"
+                >
+                  <i class="mdi mdi-account-group"></i>
+                </el-button>
+              </el-tooltip>
             </template>
             <span v-else>-</span>
           </template>
@@ -106,14 +120,34 @@
             </el-popover>
           </template>
         </el-table-column>
-        <el-table-column :label="$t('table.operation')" min-width="240">
+        <el-table-column :label="$t('table.operation')" min-width="120">
           <template #default="{ row }">
-            <el-button size="small" type="warning" @click="editSender(row)"
-              ><i class="mdi mdi-pencil"></i> {{ $t('button.edit') }}</el-button
-            >
-            <el-button size="small" type="danger" @click="confirmDelete(row)"
-              ><i class="mdi mdi-delete"></i> {{ $t('button.delete') }}</el-button
-            >
+            <div class="row-actions">
+              <el-tooltip :content="$t('button.edit')" placement="top">
+                <el-button
+                  link
+                  size="small"
+                  type="warning"
+                  class="row-action-button"
+                  :aria-label="$t('button.edit')"
+                  @click="editSender(row)"
+                >
+                  <i class="mdi mdi-pencil"></i>
+                </el-button>
+              </el-tooltip>
+              <el-tooltip :content="$t('button.delete')" placement="top">
+                <el-button
+                  link
+                  size="small"
+                  type="danger"
+                  class="row-action-button"
+                  :aria-label="$t('button.delete')"
+                  @click="confirmDelete(row)"
+                >
+                  <i class="mdi mdi-delete"></i>
+                </el-button>
+              </el-tooltip>
+            </div>
           </template>
         </el-table-column>
       </el-table>
@@ -476,6 +510,35 @@ h3 {
 
 .el-button i {
   margin-right: 8px;
+}
+
+.row-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+.row-actions .el-button {
+  margin-left: 0;
+}
+
+.row-action-button {
+  padding: 4px;
+  font-size: 16px;
+}
+
+.row-action-button i {
+  margin-right: 0 !important;
+}
+
+.plain-icon-button {
+  padding: 4px;
+  font-size: 20px;
+}
+
+.plain-icon-button i {
+  margin-right: 0 !important;
 }
 
 .header-container {

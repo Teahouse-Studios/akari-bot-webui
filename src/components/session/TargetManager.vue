@@ -3,14 +3,18 @@
     <el-card class="target-card" shadow="never">
       <div class="header-container">
         <h3><i class="mdi mdi-forum"></i> {{ $t('session.target.title') }}</h3>
-        <el-button
-          @click="refreshData"
-          type="primary"
-          size="small"
-          :disabled="loading"
-          style="float: right; margin-left: 10px"
-          ><i class="mdi mdi-refresh"></i> {{ $t('button.refresh') }}</el-button
-        >
+        <el-tooltip :content="$t('button.refresh')" placement="top">
+          <el-button
+            link
+            class="plain-icon-button"
+            :disabled="loading"
+            :aria-label="$t('button.refresh')"
+            style="float: right; margin-left: 10px"
+            @click="refreshData"
+          >
+            <i class="mdi mdi-refresh"></i>
+          </el-button>
+        </el-tooltip>
       </div>
 
       <div class="filter-container">
@@ -73,9 +77,19 @@
           <template #default="{ row }">
             <template v-if="isGroup(row)">
               <span>{{ row.bound_ids.length }}</span>
-              <el-button size="mini" type="text" style="margin-left: 5px" @click="viewGroup(row)">
-                <i class="mdi mdi-message-group"></i> {{ $t('button.view') }}
-              </el-button>
+              <el-tooltip :content="$t('button.view')" placement="top">
+                <el-button
+                  link
+                  size="small"
+                  type="primary"
+                  class="row-action-button"
+                  :aria-label="$t('button.view')"
+                  style="margin-left: 5px"
+                  @click="viewGroup(row)"
+                >
+                  <i class="mdi mdi-message-group"></i>
+                </el-button>
+              </el-tooltip>
             </template>
             <span v-else>-</span>
           </template>
@@ -84,40 +98,63 @@
         <el-table-column prop="modules" :label="$t('session.target.table.modules')" min-width="160">
           <template #default="{ row }">
             {{ row.modules.length }}
-            <el-button
-              v-if="row.modules.length > 0"
-              size="small"
-              type="primary"
-              style="margin-left: 5px"
-              @click="viewModules(row)"
-              ><i class="mdi mdi-eye"></i> {{ $t('button.view') }}</el-button
-            >
+            <el-tooltip v-if="row.modules.length > 0" :content="$t('button.view')" placement="top">
+              <el-button
+                link
+                size="small"
+                type="primary"
+                class="row-action-button"
+                :aria-label="$t('button.view')"
+                style="margin-left: 5px"
+                @click="viewModules(row)"
+              >
+                <i class="mdi mdi-eye"></i>
+              </el-button>
+            </el-tooltip>
           </template>
         </el-table-column>
         <el-table-column :label="$t('session.target.table.custom_admins')" min-width="160">
           <template #default="{ row }">
             {{ row.custom_admins.length }}
-            <el-button
+            <el-tooltip
               v-if="row.custom_admins.length > 0"
-              size="small"
-              type="primary"
-              style="margin-left: 5px"
-              @click="viewAdmins(row)"
-              ><i class="mdi mdi-eye"></i> {{ $t('button.view') }}</el-button
+              :content="$t('button.view')"
+              placement="top"
             >
+              <el-button
+                link
+                size="small"
+                type="primary"
+                class="row-action-button"
+                :aria-label="$t('button.view')"
+                style="margin-left: 5px"
+                @click="viewAdmins(row)"
+              >
+                <i class="mdi mdi-eye"></i>
+              </el-button>
+            </el-tooltip>
           </template>
         </el-table-column>
         <el-table-column :label="$t('session.target.table.banned_users')" min-width="160">
           <template #default="{ row }">
             {{ row.banned_users.length }}
-            <el-button
+            <el-tooltip
               v-if="row.banned_users.length > 0"
-              size="small"
-              type="primary"
-              style="margin-left: 5px"
-              @click="viewBanned(row)"
-              ><i class="mdi mdi-eye"></i> {{ $t('button.view') }}</el-button
+              :content="$t('button.view')"
+              placement="top"
             >
+              <el-button
+                link
+                size="small"
+                type="primary"
+                class="row-action-button"
+                :aria-label="$t('button.view')"
+                style="margin-left: 5px"
+                @click="viewBanned(row)"
+              >
+                <i class="mdi mdi-eye"></i>
+              </el-button>
+            </el-tooltip>
           </template>
         </el-table-column>
         <el-table-column :label="$t('session.table.status')" min-width="220">
@@ -138,14 +175,34 @@
             </el-popover>
           </template>
         </el-table-column>
-        <el-table-column :label="$t('table.operation')" min-width="240">
+        <el-table-column :label="$t('table.operation')" min-width="120">
           <template #default="{ row }">
-            <el-button size="small" type="warning" @click="editTarget(row)"
-              ><i class="mdi mdi-pencil"></i> {{ $t('button.edit') }}</el-button
-            >
-            <el-button size="small" type="danger" @click="confirmDelete(row)"
-              ><i class="mdi mdi-delete"></i> {{ $t('button.delete') }}</el-button
-            >
+            <div class="row-actions">
+              <el-tooltip :content="$t('button.edit')" placement="top">
+                <el-button
+                  link
+                  size="small"
+                  type="warning"
+                  class="row-action-button"
+                  :aria-label="$t('button.edit')"
+                  @click="editTarget(row)"
+                >
+                  <i class="mdi mdi-pencil"></i>
+                </el-button>
+              </el-tooltip>
+              <el-tooltip :content="$t('button.delete')" placement="top">
+                <el-button
+                  link
+                  size="small"
+                  type="danger"
+                  class="row-action-button"
+                  :aria-label="$t('button.delete')"
+                  @click="confirmDelete(row)"
+                >
+                  <i class="mdi mdi-delete"></i>
+                </el-button>
+              </el-tooltip>
+            </div>
           </template>
         </el-table-column>
       </el-table>
@@ -634,6 +691,35 @@ h3 {
 
 .el-button i {
   margin-right: 8px;
+}
+
+.row-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+.row-actions .el-button {
+  margin-left: 0;
+}
+
+.row-action-button {
+  padding: 4px;
+  font-size: 16px;
+}
+
+.row-action-button i {
+  margin-right: 0 !important;
+}
+
+.plain-icon-button {
+  padding: 4px;
+  font-size: 20px;
+}
+
+.plain-icon-button i {
+  margin-right: 0 !important;
 }
 
 .header-container {
