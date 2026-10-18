@@ -36,7 +36,9 @@
       >
         <template #title>
           <div class="context-title-row">
-            <span class="context-title">{{ $t('webrender.contexts.index', { index: context.index }) }}</span>
+            <span class="context-title">{{
+              $t('webrender.contexts.index', { index: context.index })
+            }}</span>
             <el-tag size="small" type="info">{{ context.pages?.length || 0 }}</el-tag>
           </div>
         </template>

@@ -457,6 +457,39 @@ export default function setupMock() {
     ]
   })
 
+  // 演示模式下受限文件接口只读
+  mock.onGet('/api/files/roots').reply(200, {
+    roots: [
+      {
+        id: 'core:data',
+        scope: 'core',
+        module: null,
+        target: 'data',
+        path: './data',
+        exists: true,
+      },
+      {
+        id: 'core:assets',
+        scope: 'core',
+        module: null,
+        target: 'assets',
+        path: './assets',
+        exists: true,
+      },
+    ],
+  })
+  mock.onGet('/api/files/list').reply((config) => {
+    const root = config.params?.root || 'core:data'
+    const path = config.params?.path || ''
+    return [200, { root, path, exists: true, files: [] }]
+  })
+  mock.onGet('/api/files/content').reply(404, { detail: 'not_found' })
+  mock.onGet('/api/files/download').reply(404, { detail: 'not_found' })
+  mock.onPost('/api/files/upload').reply(403, { detail: 'forbidden_path' })
+  mock.onPost('/api/files/create').reply(403, { detail: 'forbidden_path' })
+  mock.onPost('/api/files/rename').reply(403, { detail: 'forbidden_path' })
+  mock.onDelete('/api/files/entry').reply(403, { detail: 'forbidden_path' })
+
   mock.onPost('/api/webrender/test').reply((config) => {
     let body = {}
     try {

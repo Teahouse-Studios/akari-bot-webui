@@ -33,7 +33,7 @@
         <i class="mdi mdi-database"></i>
         <span>{{ $t('sidebar.item.database') }}</span>
       </el-menu-item>
-      <el-menu-item v-if="isDevelopMode" index="/files">
+      <el-menu-item index="/files">
         <i class="mdi mdi-folder"></i>
         <span>{{ $t('sidebar.item.files') }}</span>
       </el-menu-item>

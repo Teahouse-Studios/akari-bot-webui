@@ -31,9 +31,7 @@
           </el-radio-group>
         </el-form-item>
 
-        <el-form-item
-          v-if="form.mode === 'source' || form.target === 'url'"
-        >
+        <el-form-item v-if="form.mode === 'source' || form.target === 'url'">
           <el-input v-model="form.url" placeholder="https://example.test/" clearable />
         </el-form-item>
 

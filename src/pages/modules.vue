@@ -68,7 +68,7 @@
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column :label="$t('table.operation')" min-width="420">
+        <el-table-column :label="$t('table.operation')" min-width="560">
           <template #default="{ row }">
             <el-button size="small" type="info" @click="handleHelp(row)">
               <i class="mdi mdi-help-circle-outline"></i> {{ $t('modules.button.helpdoc') }}
@@ -76,6 +76,10 @@
 
             <el-button v-if="!row.base" size="small" type="primary" @click="openConfigEditor(row)">
               <i class="mdi mdi-cog"></i> {{ $t('modules.button.config') }}
+            </el-button>
+
+            <el-button size="small" type="primary" @click="openFilesDialog(row)">
+              <i class="mdi mdi-folder-outline"></i> {{ $t('modules.button.files') }}
             </el-button>
 
             <el-button
@@ -192,6 +196,23 @@
         }}</el-button>
       </template>
     </el-dialog>
+
+    <el-dialog
+      v-model="filesDialogVisible"
+      :title="$t('modules.files.title', { module: filesModuleName })"
+      :width="moduleConfigDialogWidth"
+      align-center
+      :close-on-press-escape="false"
+      :close-on-click-modal="false"
+      @close="resetFilesDialog"
+    >
+      <div class="module-files-dialog-body">
+        <FileManager v-if="filesDialogVisible" :module-name="filesModuleName" embedded />
+      </div>
+      <template #footer>
+        <el-button @click="filesDialogVisible = false">{{ $t('button.close') }}</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -201,6 +222,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 import axios from '@/axios.mjs'
 import VisibleEditor from '@/components/config/VisibleEditor.vue'
+import FileManager from '@/components/files/FileManager.vue'
 import LocalStorageJson from '@/localStorageJson.js'
 
 const { t } = useI18n()
@@ -222,6 +244,8 @@ const configContent = ref('')
 const initialConfigContent = ref('')
 const unsavedConfigChanges = ref(false)
 const configNotFound = ref(false)
+const filesDialogVisible = ref(false)
+const filesModuleName = ref('')
 
 const MODULE_TYPE_TAGS = {
   base: 'warning',
@@ -416,6 +440,16 @@ const updateModuleConfigDialogWidth = () => {
   }
 }
 
+const openFilesDialog = (row) => {
+  filesModuleName.value = row._py_module_name || row.name
+  filesDialogVisible.value = true
+}
+
+const resetFilesDialog = () => {
+  filesDialogVisible.value = false
+  filesModuleName.value = ''
+}
+
 const openConfigEditor = async (row) => {
   configModuleName.value = row._py_module_name
   configDialogVisible.value = true
@@ -516,5 +550,10 @@ h3 {
 
 .help-code {
   font-family: 'Consolas', 'Noto Sans Mono', 'Courier New', Courier, monospace;
+}
+
+.module-files-dialog-body {
+  max-height: 70vh;
+  overflow-y: auto;
 }
 </style>

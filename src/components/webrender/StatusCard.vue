@@ -47,7 +47,11 @@
             <span class="collapse-title">{{ $t('webrender.status.title') }}</span>
           </template>
           <el-descriptions :column="1" border size="small">
-            <el-descriptions-item v-for="field in statusFields" :key="field.key" :label="$t(field.label)">
+            <el-descriptions-item
+              v-for="field in statusFields"
+              :key="field.key"
+              :label="$t(field.label)"
+            >
               {{ formatValue(status[field.key]) }}
             </el-descriptions-item>
           </el-descriptions>
@@ -58,7 +62,11 @@
             <span class="collapse-title">{{ $t('webrender.status.config.title') }}</span>
           </template>
           <el-descriptions :column="1" border size="small">
-            <el-descriptions-item v-for="field in configFields" :key="field.key" :label="$t(field.label)">
+            <el-descriptions-item
+              v-for="field in configFields"
+              :key="field.key"
+              :label="$t(field.label)"
+            >
               {{ formatValue(config[field.key]) }}
             </el-descriptions-item>
           </el-descriptions>
