@@ -1,15 +1,66 @@
 <template>
   <div>
     <h3><i class="mdi mdi-robot"></i> {{ $t('setting.bot_options.title') }}</h3>
-    <el-button type="danger" @click="handleRestart">
-      <i class="mdi mdi-restart"></i> {{ $t('setting.bot_options.button.restart_bot') }}
-    </el-button>
+    <div class="bot-option-actions">
+      <el-button type="primary" :loading="updating" @click="handleUpdate">
+        <i v-if="!updating" class="mdi mdi-update"></i>
+        {{ $t('setting.bot_options.button.update_bot') }}
+      </el-button>
+      <el-button type="danger" @click="handleRestart">
+        <i class="mdi mdi-restart"></i> {{ $t('setting.bot_options.button.restart_bot') }}
+      </el-button>
+    </div>
+
+    <el-dialog
+      v-model="updateDialogVisible"
+      :title="$t('setting.bot_options.update.title')"
+      width="min(860px, 92vw)"
+      class="update-dialog"
+      align-center
+      append-to-body
+      :close-on-click-modal="false"
+      :close-on-press-escape="!updating"
+      :show-close="!updating"
+      @closed="resetUpdateState"
+    >
+      <div ref="terminalRef" class="update-terminal">
+        <div
+          v-for="(line, index) in updateLines"
+          :key="index"
+          class="terminal-line"
+          :class="line.type"
+        >
+          <span v-if="line.type === 'command'" class="terminal-prompt">$</span>
+          <span class="terminal-text">{{ line.text }}</span>
+        </div>
+        <div v-if="updating" class="terminal-line">
+          <span class="terminal-cursor">█</span>
+        </div>
+      </div>
+
+      <template #footer>
+        <div class="update-footer">
+          <span class="update-status" :class="updateStatus">
+            <i :class="statusIcon"></i> {{ statusText }}
+          </span>
+          <el-button
+            v-if="updateStatus === 'error' && !updating"
+            type="primary"
+            @click="updateDialogVisible = false"
+          >
+            {{ $t('button.close') }}
+          </el-button>
+        </div>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { computed, nextTick, onBeforeUnmount, ref } from 'vue'
 import axios from '@/axios.mjs'
+import { IS_DEMO } from '@/const'
+import LocalStorageJson from '@/localStorageJson.js'
 import { ElMessage, ElMessageBox, ElLoading } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 
@@ -75,4 +126,359 @@ const handleRestart = async () => {
     return
   }
 }
+
+const MAX_TERMINAL_LINES = 2000
+const ANSI_PATTERN = new RegExp(`${String.fromCharCode(27)}\\[[0-?]*[ -/]*[@-~]`, 'g')
+
+const updateDialogVisible = ref(false)
+const updateLines = ref([])
+const updateStatus = ref('idle')
+const updating = ref(false)
+const terminalRef = ref(null)
+let autoCloseTimer = null
+
+const statusIcon = computed(() => {
+  if (updateStatus.value === 'running') return 'mdi mdi-loading mdi-spin'
+  if (updateStatus.value === 'success') return 'mdi mdi-check-circle'
+  if (updateStatus.value === 'error') return 'mdi mdi-alert-circle'
+  return ''
+})
+
+const statusText = computed(() => {
+  if (updateStatus.value === 'running') return t('setting.bot_options.update.status.running')
+  if (updateStatus.value === 'success') return t('setting.bot_options.update.status.success')
+  if (updateStatus.value === 'error') return t('setting.bot_options.update.status.failed')
+  return ''
+})
+
+const stripAnsi = (text) => String(text).replace(ANSI_PATTERN, '')
+
+const scrollTerminalToBottom = () => {
+  if (terminalRef.value) terminalRef.value.scrollTop = terminalRef.value.scrollHeight
+}
+
+const appendLine = (text, type = 'output') => {
+  for (const line of stripAnsi(text).split(/\r?\n/)) {
+    updateLines.value.push({ text: line, type })
+  }
+  if (updateLines.value.length > MAX_TERMINAL_LINES) {
+    updateLines.value.splice(0, updateLines.value.length - MAX_TERMINAL_LINES)
+  }
+  nextTick(scrollTerminalToBottom)
+}
+
+const resetUpdateState = () => {
+  clearTimeout(autoCloseTimer)
+  autoCloseTimer = null
+  updateLines.value = []
+  updateStatus.value = 'idle'
+  updating.value = false
+}
+
+const scheduleAutoClose = () => {
+  clearTimeout(autoCloseTimer)
+  autoCloseTimer = setTimeout(() => {
+    updateDialogVisible.value = false
+  }, 1500)
+}
+
+const formatUpdateError = (data) => {
+  const code = typeof data?.code === 'string' ? data.code : ''
+  if (code === 'binary_mode') {
+    return 'The bot is running in binary mode and cannot be updated from this interface.'
+  }
+  if (code === 'internal_error') {
+    return 'An unexpected error occurred during the update.'
+  }
+  return data?.message ? String(data.message) : 'Update failed.'
+}
+
+const finishUpdate = (success) => {
+  if (success) {
+    if (updateStatus.value !== 'success') {
+      updateStatus.value = 'success'
+      appendLine('Update completed.', 'success')
+    }
+    return
+  }
+  updateStatus.value = 'error'
+  appendLine('Update failed.', 'error')
+}
+
+const appendStage = (data) => {
+  if (!data || typeof data !== 'object') return
+
+  if (data.skipped) {
+    appendLine('Skipped Git update: the current directory is not a Git repository.', 'warning')
+    return
+  }
+
+  const hasReturnCode = typeof data.returncode === 'number'
+  if (data.action && !hasReturnCode) {
+    appendLine(`$ ${data.action === 'reset' ? 'git reset --hard' : 'git pull'}`, 'command')
+  }
+  if (data.tool && !hasReturnCode) {
+    appendLine(
+      `$ ${data.tool === 'pip' ? 'pip install -r requirements.txt' : 'uv sync'}`,
+      'command',
+    )
+  }
+  if (hasReturnCode) {
+    const stage = data.stage === 'dependencies' ? 'Dependencies' : 'Git'
+    appendLine(
+      `${stage} exited with code ${data.returncode}`,
+      data.returncode === 0 ? 'info' : 'error',
+    )
+  }
+}
+
+const processUpdateEvent = (event, data) => {
+  switch (event) {
+    case 'start':
+      appendLine('Starting bot update...', 'info')
+      break
+    case 'stage':
+      appendStage(data)
+      break
+    case 'output':
+      if (data?.line) appendLine(String(data.line), 'output')
+      break
+    case 'error':
+      appendLine(formatUpdateError(data), 'error')
+      break
+    case 'done':
+      finishUpdate(Boolean(data?.success))
+      break
+  }
+}
+
+/** 解析 SSE 事件块，返回是否收到 done 事件 */
+const dispatchSseBlock = (raw) => {
+  let event = 'message'
+  const dataLines = []
+  for (const line of raw.split('\n')) {
+    if (line.startsWith('event:')) {
+      event = line.slice(6).trim()
+    } else if (line.startsWith('data:')) {
+      dataLines.push(line.slice(5).replace(/^ /, ''))
+    }
+  }
+  if (!dataLines.length) return false
+
+  let data
+  try {
+    data = JSON.parse(dataLines.join('\n'))
+  } catch {
+    return false
+  }
+  processUpdateEvent(event, data)
+  return event === 'done'
+}
+
+const consumeUpdateStream = async (response) => {
+  if (!response.body) throw new Error('Response body is empty')
+
+  const reader = response.body.getReader()
+  const decoder = new TextDecoder()
+  let buffer = ''
+  let doneReceived = false
+
+  while (true) {
+    const { value, done } = await reader.read()
+    if (done) break
+    buffer += decoder.decode(value, { stream: true })
+    buffer = buffer.replace(/\r\n/g, '\n')
+
+    let boundary = buffer.indexOf('\n\n')
+    while (boundary !== -1) {
+      const raw = buffer.slice(0, boundary)
+      buffer = buffer.slice(boundary + 2)
+      if (dispatchSseBlock(raw)) doneReceived = true
+      boundary = buffer.indexOf('\n\n')
+    }
+  }
+
+  buffer += decoder.decode().replace(/\r\n/g, '\n')
+  if (buffer.trim() && dispatchSseBlock(buffer)) doneReceived = true
+  return doneReceived
+}
+
+const readErrorDetail = async (response) => {
+  try {
+    const data = await response.json()
+    if (typeof data?.detail === 'string') return ` (${data.detail})`
+  } catch {
+    // 回應不是 JSON 時只顯示 HTTP 狀態碼
+  }
+  return ''
+}
+
+const runDemoUpdate = async () => {
+  const demoEvents = [
+    ['start', { force: false }],
+    ['stage', { stage: 'git', action: 'pull' }],
+    ['output', { stage: 'git', line: 'Already up to date.' }],
+    ['stage', { stage: 'git', action: 'pull', returncode: 0 }],
+    ['stage', { stage: 'dependencies', tool: 'uv' }],
+    ['output', { stage: 'dependencies', line: 'Resolved 128 packages in 0.42s' }],
+    ['output', { stage: 'dependencies', line: 'Audited 128 packages in 0.08s' }],
+    ['stage', { stage: 'dependencies', tool: 'uv', returncode: 0 }],
+    ['done', { success: true }],
+  ]
+  for (const [event, data] of demoEvents) {
+    if (!updateDialogVisible.value) return
+    processUpdateEvent(event, data)
+    await new Promise((resolve) => setTimeout(resolve, 260))
+  }
+}
+
+const startUpdate = async () => {
+  resetUpdateState()
+  updateDialogVisible.value = true
+  updating.value = true
+  updateStatus.value = 'running'
+
+  try {
+    if (IS_DEMO) {
+      await runDemoUpdate()
+      return
+    }
+
+    const response = await fetch('/api/update', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${LocalStorageJson.getItem('token') || ''}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ force: false }),
+    })
+
+    if (!response.ok) {
+      const detail = await readErrorDetail(response)
+      updateStatus.value = 'error'
+      appendLine(`Update request failed (HTTP ${response.status})${detail}`, 'error')
+      return
+    }
+
+    const doneReceived = await consumeUpdateStream(response)
+    if (!doneReceived && updateStatus.value === 'running') {
+      updateStatus.value = 'error'
+      appendLine('Update failed.', 'error')
+    }
+  } catch (error) {
+    if (updateStatus.value !== 'success') {
+      updateStatus.value = 'error'
+      appendLine(`Unable to reach the update endpoint: ${error?.message || ''}`, 'error')
+    }
+  } finally {
+    updating.value = false
+    if (updateStatus.value === 'success') scheduleAutoClose()
+  }
+}
+
+const handleUpdate = () => {
+  if (!updating.value) startUpdate()
+}
+
+onBeforeUnmount(() => {
+  clearTimeout(autoCloseTimer)
+  autoCloseTimer = null
+})
 </script>
+
+<style scoped>
+.bot-option-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+/* 主題設定的按鈕間距約 10px；覆蓋 Element Plus 相鄰按鈕的預設 margin */
+.bot-option-actions :deep(.el-button + .el-button) {
+  margin-left: 0;
+}
+
+.update-terminal {
+  height: min(50vh, 420px);
+  min-height: 200px;
+  overflow-y: auto;
+  padding: 14px;
+  border-radius: 8px;
+  background-color: #0c0c0c;
+  color: #d4d4d4;
+  font-family: 'Consolas', 'Noto Sans Mono', 'Courier New', Courier, monospace;
+  font-size: 13px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.terminal-line {
+  display: flex;
+  gap: 8px;
+}
+
+.terminal-prompt {
+  flex: 0 0 auto;
+  color: #4ec9b0;
+}
+
+.terminal-text {
+  min-width: 0;
+}
+
+.terminal-line.command .terminal-text {
+  color: #dcdcaa;
+}
+
+.terminal-line.info .terminal-text {
+  color: #4fc1ff;
+}
+
+.terminal-line.success .terminal-text {
+  color: #6a9955;
+}
+
+.terminal-line.warning .terminal-text {
+  color: #d7ba7d;
+}
+
+.terminal-line.error .terminal-text {
+  color: #f48771;
+}
+
+.terminal-cursor {
+  color: #d4d4d4;
+  animation: terminal-blink 1s step-end infinite;
+}
+
+@keyframes terminal-blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+.update-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.update-status {
+  color: var(--el-text-color-secondary);
+  font-size: 13px;
+}
+
+.update-status.running {
+  color: var(--el-color-primary);
+}
+
+.update-status.success {
+  color: var(--el-color-success);
+}
+
+.update-status.error {
+  color: var(--el-color-danger);
+}
+</style>
