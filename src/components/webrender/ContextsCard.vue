@@ -5,9 +5,7 @@
         <i class="mdi mdi-layers-outline"></i>
         {{ $t('webrender.contexts.title') }}
       </h3>
-      <span class="contexts-total">
-        {{ $t('webrender.contexts.total') }}: {{ contextsTotal }}
-      </span>
+      <el-tag size="small" type="info">{{ contextsTotal }}</el-tag>
     </div>
 
     <el-alert
@@ -19,12 +17,30 @@
       class="context-alert"
     />
 
-    <div v-if="contexts.length" class="contexts-list">
-      <div v-for="context in contexts" :key="context.index" class="context-item">
-        <div class="context-title">
-          <i class="mdi mdi-chevron-right"></i>
-          {{ $t('webrender.contexts.index', { index: context.index }) }}
-        </div>
+    <div v-if="contexts.length" class="contexts-summary">
+      <div class="summary-block">
+        <span class="summary-caption">{{ $t('webrender.contexts.total') }}</span>
+        <strong>{{ contextsTotal }}</strong>
+      </div>
+      <div class="summary-block">
+        <span class="summary-caption">Pages</span>
+        <strong>{{ pageCount }}</strong>
+      </div>
+    </div>
+
+    <el-collapse v-if="contexts.length" class="contexts-collapse">
+      <el-collapse-item
+        v-for="context in contexts"
+        :key="context.index"
+        :name="String(context.index)"
+      >
+        <template #title>
+          <div class="context-title-row">
+            <span class="context-title">{{ $t('webrender.contexts.index', { index: context.index }) }}</span>
+            <el-tag size="small" type="info">{{ context.pages?.length || 0 }}</el-tag>
+          </div>
+        </template>
+
         <div v-if="context.pages && context.pages.length" class="context-pages">
           <div v-for="(page, pageIdx) in context.pages" :key="pageIdx" class="context-page">
             <i class="mdi mdi-file-document-outline"></i>
@@ -32,15 +48,17 @@
           </div>
         </div>
         <div v-else class="context-empty">{{ $t('webrender.contexts.empty') }}</div>
-      </div>
-    </div>
+      </el-collapse-item>
+    </el-collapse>
 
     <el-empty v-else :description="$t('webrender.contexts.none')" :image-size="60" />
   </el-card>
 </template>
 
 <script setup>
-defineProps({
+import { computed } from 'vue'
+
+const props = defineProps({
   // [{ index, pages: [] }]
   contexts: {
     type: Array,
@@ -55,6 +73,10 @@ defineProps({
     default: false,
   },
 })
+
+const pageCount = computed(() =>
+  props.contexts.reduce((total, context) => total + (context.pages?.length || 0), 0),
+)
 </script>
 
 <style scoped>
@@ -73,32 +95,44 @@ h3 {
   gap: 12px;
 }
 
-.contexts-total {
-  font-size: 13px;
-  color: var(--el-text-color-regular);
-}
-
 .context-alert {
   margin-top: 12px;
 }
 
-.contexts-list {
+.contexts-summary {
   margin-top: 12px;
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
 }
 
-.context-item {
-  border: 1px solid var(--el-border-color);
-  border-radius: 6px;
-  padding: 8px 10px;
+.summary-block {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: var(--el-fill-color-light);
+}
+
+.summary-caption {
+  font-size: 12px;
+  color: var(--el-text-color-secondary);
+}
+
+.contexts-collapse {
+  margin-top: 12px;
+}
+
+.context-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .context-title {
   font-weight: 600;
   font-size: 13px;
-  margin-bottom: 6px;
 }
 
 .context-pages {

@@ -7,15 +7,33 @@
         <el-collapse-item
           v-for="model in modelList"
           :key="model.model"
-          :title="model.model"
           :name="model.model"
           @click="fetchFields(model)"
         >
+          <template #title>
+            <span class="model-title" :title="model.model">{{ model.model }}</span>
+          </template>
           <el-table :data="model.fields" size="small" style="width: 100%">
-            <el-table-column prop="name" :label="t('database.models.label.name')" />
-            <el-table-column prop="type" :label="t('database.models.label.type')" />
-            <el-table-column prop="max_length" :label="t('database.models.label.max_length')" />
-            <el-table-column prop="nullable" :label="t('database.models.label.nullable')" />
+            <el-table-column
+              prop="name"
+              :label="t('database.models.label.name')"
+              show-overflow-tooltip
+            />
+            <el-table-column
+              prop="type"
+              :label="t('database.models.label.type')"
+              show-overflow-tooltip
+            />
+            <el-table-column
+              prop="max_length"
+              :label="t('database.models.label.max_length')"
+              show-overflow-tooltip
+            />
+            <el-table-column
+              prop="nullable"
+              :label="t('database.models.label.nullable')"
+              show-overflow-tooltip
+            />
           </el-table>
         </el-collapse-item>
       </el-collapse>
@@ -65,19 +83,44 @@ h3 {
 
 .data-models {
   height: 100%;
+  max-height: 100%;
+  box-sizing: border-box;
   overflow: hidden;
-}
-
-.data-models ::v-deep(.el-card__body) {
-  min-height: 300px;
-  height: 100%;
   display: flex;
   flex-direction: column;
 }
 
+.data-models ::v-deep(.el-card__body) {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
 .models {
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
+  overflow-x: hidden;
   display: block;
+}
+
+.models ::v-deep(.el-collapse-item__title) {
+  flex: 1;
+  min-width: 0;
+}
+
+.model-title {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.models ::v-deep(.el-table .cell) {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 </style>

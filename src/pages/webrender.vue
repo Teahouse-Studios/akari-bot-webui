@@ -1,13 +1,18 @@
 <template>
   <div class="webrender-page">
-    <el-row :gutter="20" class="webrender-row">
-      <el-col :xs="24" :xl="8">
-        <div class="column-stack">
+    <el-tabs v-model="activeTab" class="webrender-tabs">
+      <el-tab-pane :label="$t('webrender.status.title')" name="status">
+        <div class="tab-content">
           <StatusCard
             :config="config"
             :status="status"
             :loading="loading"
             :server-offline="serverOffline"
+          />
+          <ContextsCard
+            :contexts="status?.contexts || []"
+            :contexts-total="status?.contexts_total || 0"
+            :leaked="Boolean(status?.leaked)"
           />
           <ControlPanel
             :loading="controlLoading"
@@ -15,37 +20,52 @@
             :server-offline="serverOffline"
             @control="control"
           />
-          <ContextsCard
-            :contexts="status?.contexts || []"
-            :contexts-total="status?.contexts_total || 0"
-            :leaked="Boolean(status?.leaked)"
-          />
         </div>
-      </el-col>
+      </el-tab-pane>
 
-      <el-col :xs="24" :xl="10">
-        <RenderRequestForm
-          ref="requestForm"
-          :loading="testLoading"
-          :limited="testLimited"
-          :server-offline="serverOffline"
-          @submit="runTest"
-        />
-      </el-col>
+      <el-tab-pane :label="$t('webrender.tester.title')" name="test">
+        <div class="tab-content">
+          <el-alert
+            v-if="serverOffline"
+            :title="$t('webrender.error.server_offline')"
+            type="warning"
+            show-icon
+            :closable="false"
+          />
 
-      <el-col :xs="24" :xl="6">
-        <div class="column-stack">
+          <RenderRequestForm
+            ref="requestForm"
+            :loading="testLoading"
+            :limited="testLimited"
+            :server-offline="serverOffline"
+            @submit="handleSubmit"
+          />
+
+          <TestHistoryList :history="history" @replay="replayHistory" @clear="clearHistory" />
+        </div>
+      </el-tab-pane>
+
+      <el-tab-pane :label="$t('webrender.response.title')" name="response">
+        <div class="tab-content">
+          <el-alert
+            v-if="serverOffline"
+            :title="$t('webrender.error.server_offline')"
+            type="warning"
+            show-icon
+            :closable="false"
+          />
+
           <RenderResponsePanel
             :result="result"
             :loading="testLoading"
             :error-text="responseErrorText"
           />
-          <TestHistoryList :history="history" @replay="replayHistory" @clear="clearHistory" />
         </div>
-      </el-col>
-    </el-row>
+      </el-tab-pane>
+    </el-tabs>
 
     <el-tooltip
+      v-if="activeTab === 'status'"
       :content="$t('dashboard.update_time.title', { time: formatDateTime(lastUpdateTime) })"
       placement="left"
     >
@@ -93,11 +113,19 @@ const {
   clearHistory,
 } = useWebRender()
 
+const activeTab = ref('status')
 const requestForm = ref(null)
 
 const responseErrorText = computed(() =>
   result.value?.error ? localizeError(result.value.error) : '',
 )
+
+const handleSubmit = async (form) => {
+  const previousResult = result.value
+  await runTest(form)
+  // 只有這次請求真的產生了新結果時才切換，避免驗證失敗也跳頁
+  if (result.value !== previousResult) activeTab.value = 'response'
+}
 
 const replayHistory = (entry) => {
   requestForm.value?.fill(entry.payload)
@@ -105,11 +133,23 @@ const replayHistory = (entry) => {
 </script>
 
 <style scoped>
-.webrender-row {
-  row-gap: 20px;
+.webrender-page {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }
 
-.column-stack {
+.webrender-tabs :deep(.el-tabs__header) {
+  margin-bottom: 20px;
+}
+
+.webrender-tabs :deep(.el-tabs__item) {
+  height: 40px;
+  line-height: 40px;
+  font-weight: 500;
+}
+
+.tab-content {
   display: flex;
   flex-direction: column;
   gap: 20px;

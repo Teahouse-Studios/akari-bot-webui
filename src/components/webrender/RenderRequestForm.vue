@@ -5,7 +5,6 @@
         <i class="mdi mdi-flask-outline"></i>
         {{ $t('webrender.tester.title') }}
       </h3>
-      <el-tag size="small" type="info">{{ $t(modeLabel) }}</el-tag>
     </div>
 
     <el-form label-position="top" class="tester-form">
@@ -34,12 +33,11 @@
 
         <el-form-item
           v-if="form.mode === 'source' || form.target === 'url'"
-          :label="$t('webrender.tester.target.url')"
         >
           <el-input v-model="form.url" placeholder="https://example.test/" clearable />
         </el-form-item>
 
-        <el-form-item v-else :label="$t('webrender.tester.target.content')">
+        <el-form-item v-else>
           <el-input v-model="form.content" type="textarea" :rows="4" placeholder="<html>…</html>" />
         </el-form-item>
 

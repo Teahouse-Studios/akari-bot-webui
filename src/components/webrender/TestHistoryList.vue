@@ -5,13 +5,14 @@
         <i class="mdi mdi-history"></i>
         {{ $t('webrender.tester.history.title') }}
       </h3>
-      <el-button v-if="history.length" size="small" text @click="$emit('clear')">
-        {{ $t('webrender.tester.history.clear') }}
-      </el-button>
     </div>
 
     <div v-if="history.length" class="history-list">
-      <div v-for="(entry, index) in history" :key="`${entry.time}-${index}`" class="history-item">
+      <div
+        v-for="(entry, index) in recentHistory"
+        :key="`${entry.time}-${index}`"
+        class="history-item"
+      >
         <div class="history-main">
           <span class="history-mode">{{ $t(`webrender.tester.mode.${entry.mode}`) }}</span>
           <span class="history-path">{{ describe(entry.payload) }}</span>
@@ -32,7 +33,9 @@
 </template>
 
 <script setup>
-defineProps({
+import { computed } from 'vue'
+
+const props = defineProps({
   // [{ payload, mode, time, ok }]
   history: {
     type: Array,
@@ -41,6 +44,8 @@ defineProps({
 })
 
 defineEmits(['replay', 'clear'])
+
+const recentHistory = computed(() => props.history.slice(0, 5))
 
 const describe = (payload) => {
   if (!payload) return ''

@@ -43,7 +43,7 @@
             class="response-alert"
           />
           <pre v-if="result.source" class="response-code">{{ result.source }}</pre>
-          <el-empty v-else :description="$t('webrender.response.empty')" :image-size="60" />
+          <el-empty v-else :description="$t('webrender.response.empty')"/>
         </el-tab-pane>
 
         <el-tab-pane :label="$t('webrender.response.tab.images')" name="images">
@@ -62,12 +62,12 @@
               />
             </div>
           </template>
-          <el-empty v-else :description="$t('webrender.response.empty')" :image-size="60" />
+          <el-empty v-else :description="$t('webrender.response.empty')"/>
         </el-tab-pane>
       </el-tabs>
     </template>
 
-    <el-empty v-else :description="$t('webrender.response.empty')" :image-size="80" />
+    <el-empty v-else :description="$t('webrender.response.empty')"/>
 
     <!-- 截图仅保存在内存中，不写入 localStorage -->
     <el-dialog

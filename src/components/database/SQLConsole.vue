@@ -1,15 +1,15 @@
 <template>
-  <el-card class="sql-console" shadow="never">
-    <div class="button-toolbar">
-      <el-button type="primary" size="small" :disabled="loading" @click="executeSQL">
-        <i class="mdi mdi-console-line"></i> {{ $t('database.button.execute') }}
-      </el-button>
-      <el-button size="small" :disabled="loading" @click="clearSQL">
-        <i class="mdi mdi-restart"></i> {{ $t('database.button.clear') }}
-      </el-button>
-    </div>
-
+  <div class="sql-console">
     <el-card class="editor-card" shadow="never">
+      <div class="button-toolbar">
+        <el-button type="primary" size="small" :disabled="loading" @click="executeSQL">
+          <i class="mdi mdi-console-line"></i> {{ $t('database.button.execute') }}
+        </el-button>
+        <el-button size="small" :disabled="loading" @click="clearSQL">
+          <i class="mdi mdi-restart"></i> {{ $t('database.button.clear') }}
+        </el-button>
+      </div>
+
       <div class="editor-area">
         <el-input
           type="textarea"
@@ -54,7 +54,12 @@
           ({{ affectedRows }} row(s) affected)
         </div>
 
-        <el-empty v-else-if="show_result && !result.length" />
+        <el-empty
+          v-else-if="!result.length"
+          class="result-empty"
+          :description="$t('database.sql.result.empty')"
+          :image-size="80"
+        />
 
         <div v-else>
           <div class="table-wrapper">
@@ -82,7 +87,7 @@
         </div>
       </div>
     </el-card>
-  </el-card>
+  </div>
 </template>
 
 <script setup>
@@ -94,7 +99,6 @@ import { useI18n } from 'vue-i18n'
 const { t } = useI18n()
 
 const sql = ref('')
-const show_result = ref(false)
 const result = ref([])
 const error = ref('')
 const affectedRows = ref(null)
@@ -121,13 +125,11 @@ const executeSQL = async () => {
   result.value = []
   error.value = ''
   affectedRows.value = null
-  show_result.value = false
   history.value.unshift(sql.value)
   loading.value = true
 
   try {
     const res = await axios.post('/api/dev/database/exec', { sql: sql.value })
-    show_result.value = true
 
     if (res.data.success) {
       if (res.data.affected_rows !== undefined) {
@@ -151,7 +153,6 @@ const clearSQL = () => {
   sql.value = ''
   result.value = []
   error.value = ''
-  show_result.value = false
   resultPage.value = 1
 }
 
@@ -167,13 +168,19 @@ h3 {
 
 .sql-console {
   height: 100%;
-}
-
-.sql-console ::v-deep(.el-card__body) {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  height: 100%;
+}
+
+.editor-card {
+  flex: 0 0 auto;
+}
+
+.editor-card ::v-deep(.el-card__body) {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
 .button-toolbar {
@@ -210,6 +217,13 @@ h3 {
   flex-direction: column;
 }
 
+.history-area ::v-deep(.el-card__body) {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  height: 100%;
+}
+
 .history-area span {
   cursor: default;
 }
@@ -231,6 +245,11 @@ h3 {
   font-family: 'Consolas', 'Noto Sans Mono', 'Courier New', Courier, monospace;
   font-size: 14px;
   line-height: 1.5;
+}
+
+.history-empty ::v-deep(.el-empty__description) {
+  margin-top: 4px;
+  font-size: 12px;
 }
 
 @media (max-width: 384px) {
@@ -257,23 +276,29 @@ h3 {
 }
 
 .result-card {
-  min-height: 300px;
   flex: 1;
+  min-height: 0;
   display: flex;
   flex-direction: column;
 }
 
 .result-card ::v-deep(.el-card__body) {
   flex: 1;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   overflow: hidden;
 }
 
 .result-area {
+  flex: 1;
+  min-height: 0;
   padding-bottom: 40px;
-  height: 100%;
   overflow-y: auto;
+}
+
+.result-empty {
+  padding: 24px 0;
 }
 
 .pagination-wrapper {
@@ -281,5 +306,15 @@ h3 {
   -webkit-overflow-scrolling: touch;
   white-space: nowrap;
   width: 100%;
+}
+
+@media (max-width: 768px) {
+  .sql-console {
+    height: auto;
+  }
+
+  .result-card {
+    min-height: 300px;
+  }
 }
 </style>

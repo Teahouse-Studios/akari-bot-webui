@@ -1,68 +1,36 @@
 <template>
-  <el-card class="webrender-card" shadow="never">
-    <div class="card-header">
-      <h3>
-        <i class="mdi mdi-power-cycle"></i>
-        {{ $t('webrender.control.title') }}
-      </h3>
-    </div>
+  <div class="control-actions">
+    <el-button
+      type="success"
+      :loading="loading"
+      :disabled="disabled"
+      @click="confirmAction('start')"
+    >
+      <i class="mdi mdi-play"></i>
+      {{ $t('webrender.control.start') }}
+    </el-button>
 
-    <div class="control-buttons">
-      <el-popconfirm
-        :title="$t('webrender.control.confirm')"
-        :confirm-button-text="$t('button.confirm')"
-        :cancel-button-text="$t('button.cancel')"
-        width="260"
-        @confirm="$emit('control', 'start')"
-      >
-        <template #reference>
-          <el-button type="success" :loading="loading" :disabled="disabled">
-            <i class="mdi mdi-play"></i>
-            {{ $t('webrender.control.start') }}
-          </el-button>
-        </template>
-      </el-popconfirm>
+    <el-button type="danger" :loading="loading" :disabled="disabled" @click="confirmAction('stop')">
+      <i class="mdi mdi-stop"></i>
+      {{ $t('webrender.control.stop') }}
+    </el-button>
 
-      <el-popconfirm
-        :title="$t('webrender.control.confirm')"
-        :confirm-button-text="$t('button.confirm')"
-        :cancel-button-text="$t('button.cancel')"
-        width="260"
-        @confirm="$emit('control', 'stop')"
-      >
-        <template #reference>
-          <el-button type="danger" :loading="loading" :disabled="disabled">
-            <i class="mdi mdi-stop"></i>
-            {{ $t('webrender.control.stop') }}
-          </el-button>
-        </template>
-      </el-popconfirm>
-
-      <el-popconfirm
-        :title="$t('webrender.control.confirm')"
-        :confirm-button-text="$t('button.confirm')"
-        :cancel-button-text="$t('button.cancel')"
-        width="260"
-        @confirm="$emit('control', 'restart')"
-      >
-        <template #reference>
-          <el-button type="warning" :loading="loading" :disabled="disabled">
-            <i class="mdi mdi-restart"></i>
-            {{ $t('webrender.control.restart') }}
-          </el-button>
-        </template>
-      </el-popconfirm>
-    </div>
-
-    <div class="control-hint">
-      <i class="mdi mdi-alert-outline"></i>
-      {{ $t('webrender.control.rate_limit_hint') }}
-    </div>
-  </el-card>
+    <el-button
+      type="warning"
+      :loading="loading"
+      :disabled="disabled"
+      @click="confirmAction('restart')"
+    >
+      <i class="mdi mdi-restart"></i>
+      {{ $t('webrender.control.restart') }}
+    </el-button>
+  </div>
 </template>
 
 <script setup>
 import { computed } from 'vue'
+import { ElMessageBox } from 'element-plus'
+import { useI18n } from 'vue-i18n'
 
 const props = defineProps({
   loading: {
@@ -79,37 +47,35 @@ const props = defineProps({
   },
 })
 
-defineEmits(['control'])
+const emit = defineEmits(['control'])
+const { t } = useI18n()
 
 const disabled = computed(() => props.loading || props.limited || props.serverOffline)
+
+const confirmAction = async (action) => {
+  if (disabled.value) return
+
+  try {
+    await ElMessageBox.confirm(t('webrender.control.confirm'), t('webrender.control.title'), {
+      confirmButtonText: t('button.confirm'),
+      cancelButtonText: t('button.cancel'),
+      type: 'warning',
+    })
+  } catch {
+    return
+  }
+
+  emit('control', action)
+}
 </script>
 
 <style scoped>
-.webrender-card {
-  line-height: 1.4;
-}
-
-h3 {
-  cursor: default;
-}
-
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-}
-
-.control-buttons {
+.control-actions {
   display: flex;
   flex-wrap: wrap;
+  justify-content: flex-start;
   gap: 10px;
-  margin-top: 12px;
-}
-
-.control-hint {
-  margin-top: 12px;
-  font-size: 12px;
-  color: var(--el-text-color-secondary);
+  padding-top: 16px;
+  border-top: 1px solid var(--el-border-color-lighter);
 }
 </style>

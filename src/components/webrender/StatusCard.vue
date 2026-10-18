@@ -29,19 +29,43 @@
       class="status-alert"
     />
 
-    <h4>{{ $t('webrender.status.config.title') }}</h4>
-    <el-descriptions :column="1" border size="small">
-      <el-descriptions-item v-for="field in configFields" :key="field.key" :label="$t(field.label)">
-        {{ formatValue(config[field.key]) }}
-      </el-descriptions-item>
-    </el-descriptions>
+    <template v-if="status">
+      <div class="summary-grid">
+        <div v-for="field in summaryFields" :key="field.key" class="summary-item">
+          <span class="summary-label">{{ $t(field.label) }}</span>
+          <strong class="summary-value">{{ formatValue(status[field.key]) }}</strong>
+        </div>
+        <div v-for="field in summaryConfigFields" :key="field.key" class="summary-item muted">
+          <span class="summary-label">{{ $t(field.label) }}</span>
+          <strong class="summary-value">{{ formatValue(config[field.key]) }}</strong>
+        </div>
+      </div>
 
-    <h4>{{ $t('webrender.status.title') }}</h4>
-    <el-descriptions v-if="status" :column="1" border size="small">
-      <el-descriptions-item v-for="field in statusFields" :key="field.key" :label="$t(field.label)">
-        {{ formatValue(status[field.key]) }}
-      </el-descriptions-item>
-    </el-descriptions>
+      <el-collapse class="details-collapse">
+        <el-collapse-item name="runtime">
+          <template #title>
+            <span class="collapse-title">{{ $t('webrender.status.title') }}</span>
+          </template>
+          <el-descriptions :column="1" border size="small">
+            <el-descriptions-item v-for="field in statusFields" :key="field.key" :label="$t(field.label)">
+              {{ formatValue(status[field.key]) }}
+            </el-descriptions-item>
+          </el-descriptions>
+        </el-collapse-item>
+
+        <el-collapse-item name="config">
+          <template #title>
+            <span class="collapse-title">{{ $t('webrender.status.config.title') }}</span>
+          </template>
+          <el-descriptions :column="1" border size="small">
+            <el-descriptions-item v-for="field in configFields" :key="field.key" :label="$t(field.label)">
+              {{ formatValue(config[field.key]) }}
+            </el-descriptions-item>
+          </el-descriptions>
+        </el-collapse-item>
+      </el-collapse>
+    </template>
+
     <el-empty v-else :description="$t('webrender.status.unavailable')" :image-size="60" />
   </el-card>
 </template>
@@ -78,6 +102,20 @@ const configFields = [
   { key: 'headless', label: 'webrender.status.field.headless' },
   { key: 'remote_only', label: 'webrender.status.field.remote_only' },
   { key: 'remote_url', label: 'webrender.status.field.remote_url' },
+]
+
+const summaryFields = [
+  { key: 'browser_initialized', label: 'webrender.status.browser_initialized' },
+  { key: 'browser_mode', label: 'webrender.status.field.browser_mode' },
+  { key: 'remote_configured', label: 'webrender.status.field.remote_configured' },
+  { key: 'remote_timeout', label: 'webrender.status.field.remote_timeout' },
+]
+
+const summaryConfigFields = [
+  { key: 'browser_type', label: 'webrender.status.field.browser_type' },
+  { key: 'headless', label: 'webrender.status.field.headless' },
+  { key: 'remote_only', label: 'webrender.status.field.remote_only' },
+  { key: 'enable', label: 'webrender.status.field.enable' },
 ]
 
 const statusFields = [
@@ -124,5 +162,57 @@ h4 {
 
 .status-alert {
   margin-top: 12px;
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.summary-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px;
+  border-radius: 8px;
+  background: var(--el-fill-color-light);
+}
+
+.summary-item.muted {
+  background: var(--el-fill-color-lighter);
+}
+
+.summary-label {
+  font-size: 12px;
+  color: var(--el-text-color-secondary);
+}
+
+.summary-value {
+  font-size: 15px;
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+.details-collapse {
+  margin-top: 12px;
+}
+
+.collapse-title {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+@media (max-width: 1200px) {
+  .summary-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .summary-grid {
+    grid-template-columns: 1fr;
+  }
 }
 </style>
