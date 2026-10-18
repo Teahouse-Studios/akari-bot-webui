@@ -239,6 +239,7 @@
   "modules.table.developers": "作者",
   "modules.table.name": "名称",
   "modules.table.type": "模块类型",
+  "modules.tag.base": "基础",
   "modules.tag.loaded": "已加载",
   "modules.tag.unloaded": "未加载",
   "modules.title": "模块管理",

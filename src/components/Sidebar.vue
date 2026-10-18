@@ -68,7 +68,6 @@ function getActiveMenuFromRoute() {
 }
 
 function handleSelect(index) {
-  activeMenu.value = index
   router.push({ name: index })
 }
 
