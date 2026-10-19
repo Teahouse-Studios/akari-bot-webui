@@ -107,22 +107,5 @@ const insertHelpCommand = () => {
 .chat-code-clickable {
   color: var(--el-color-primary);
   cursor: pointer;
-  transition:
-    background-color 0.2s ease,
-    color 0.2s ease;
-}
-
-.chat-code-clickable:hover {
-  background-color: var(--el-color-primary-light-9);
-  color: var(--el-color-primary);
-}
-
-.chat-code-clickable:active {
-  background-color: var(--el-color-primary-light-8);
-}
-
-.chat-code-clickable:focus-visible {
-  outline: 2px solid var(--el-color-primary);
-  outline-offset: 1px;
 }
 </style>
