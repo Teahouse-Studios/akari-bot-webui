@@ -252,7 +252,7 @@
     "modules.title": "Module Management",
     "modules.type.base": "Base",
     "modules.type.extension": "Extension",
-    "modules.type.subscription": "Subscription Extension",
+    "modules.type.subscription": "Subscription",
     "no": "No",
     "not_found.result.subtitle": "Please check whether the URL is entered correctly",
     "not_found.result.title": "This page does not exist",
