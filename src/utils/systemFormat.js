@@ -25,20 +25,6 @@ export function formatDateTime(timestamp) {
   const date = new Date((Number(timestamp) || 0) * 1000)
   const locale = getLocaleTag()
 
-  if (locale === 'ja-JP') {
-    return new Intl.DateTimeFormat(locale, {
-      calendar: 'japanese',
-      era: 'short',
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-      hour12: false,
-    }).format(date)
-  }
-
   return new Intl.DateTimeFormat(locale, {
     year: 'numeric',
     month: '2-digit',

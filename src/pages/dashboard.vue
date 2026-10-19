@@ -1,72 +1,78 @@
 <template>
-  <div class="dashboard">
-    <RealtimeOverviewCard
-      :running-seconds="runningSeconds"
-      :command-parsed="bot.command_parsed"
-      :message-parsed="bot.message_parsed"
-      :process-count="processCount"
-      :server-offline="serverOffline"
-    />
+  <div
+    class="dashboard"
+    :class="{ 'dashboard--loading': initialLoading }"
+    v-loading="initialLoading"
+  >
+    <template v-if="!initialLoading">
+      <RealtimeOverviewCard
+        :running-seconds="runningSeconds"
+        :command-parsed="bot.command_parsed"
+        :message-parsed="bot.message_parsed"
+        :process-count="processCount"
+        :server-offline="serverOffline"
+      />
 
-    <el-row :gutter="20" class="dashboard-row">
-      <el-col :xs="24" :lg="10">
-        <div class="info-column">
-          <BotInfoCard :bot="bot" />
-          <SystemInfoCard :cpu="cpu" :os="os" />
-        </div>
-      </el-col>
-      <el-col :xs="24" :lg="14">
-        <ResourceUsageCard
-          :cpu-percent="cpu.cpu_percent"
-          :memory="memory"
-          :disk="disk"
-          :items="processes.items"
-          :failures="processes.failures"
-          :error="processes.error"
-        />
-      </el-col>
-    </el-row>
+      <el-row :gutter="20" class="dashboard-row">
+        <el-col :xs="24" :lg="10">
+          <div class="info-column">
+            <BotInfoCard :bot="bot" />
+            <SystemInfoCard :cpu="cpu" :os="os" />
+          </div>
+        </el-col>
+        <el-col :xs="24" :lg="14">
+          <ResourceUsageCard
+            :cpu-percent="cpu.cpu_percent"
+            :memory="memory"
+            :disk="disk"
+            :items="processes.items"
+            :failures="processes.failures"
+            :error="processes.error"
+          />
+        </el-col>
+      </el-row>
 
-    <el-row :gutter="20" class="dashboard-row">
-      <el-col :xs="24" :lg="16">
-        <CommandStatsCard
-          :trend-data="trendData"
-          :count="count"
-          :average-count="averageCount"
-          :change-rate="changeRate"
-          :selected-days="selectedDays"
-          :loading="analyticsLoading"
-          @update:selected-days="setSelectedDays"
-        />
-      </el-col>
-      <el-col :xs="24" :lg="8">
-        <PlatformStatsCard :items="platformStats" :count="count" />
-      </el-col>
-      <el-col :span="24">
-        <ModuleUsageChartCard :modules="modules" />
-      </el-col>
-    </el-row>
+      <el-row :gutter="20" class="dashboard-row">
+        <el-col :xs="24" :lg="16">
+          <CommandStatsCard
+            :trend-data="trendData"
+            :count="count"
+            :average-count="averageCount"
+            :change-rate="changeRate"
+            :selected-days="selectedDays"
+            :loading="analyticsLoading"
+            @update:selected-days="setSelectedDays"
+          />
+        </el-col>
+        <el-col :xs="24" :lg="8">
+          <PlatformStatsCard :items="platformStats" :count="count" />
+        </el-col>
+        <el-col :span="24">
+          <ModuleUsageChartCard :modules="modules" />
+        </el-col>
+      </el-row>
 
-    <el-tooltip
-      :content="$t('dashboard.update_time.title', { time: formatDateTime(lastUpdateTime) })"
-      placement="left"
-    >
-      <el-button
-        class="refresh-button"
-        circle
-        size="large"
-        type="primary"
-        :disabled="loading || analyticsLoading || modulesLoading"
-        @click="refreshData"
+      <el-tooltip
+        :content="$t('dashboard.update_time.title', { time: formatDateTime(lastUpdateTime) })"
+        placement="left"
       >
-        <i class="mdi mdi-refresh"></i>
-      </el-button>
-    </el-tooltip>
+        <el-button
+          class="refresh-button"
+          circle
+          size="large"
+          type="primary"
+          :disabled="loading || analyticsLoading || modulesLoading"
+          @click="refreshData"
+        >
+          <i class="mdi mdi-refresh"></i>
+        </el-button>
+      </el-tooltip>
+    </template>
   </div>
 </template>
 
 <script setup>
-import { computed, onMounted } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import CommandStatsCard from '@/components/dashboard/analytics/CommandStatsCard.vue'
 import ModuleUsageChartCard from '@/components/dashboard/analytics/ModuleUsageChartCard.vue'
 import PlatformStatsCard from '@/components/dashboard/analytics/PlatformStatsCard.vue'
@@ -107,6 +113,9 @@ const {
   setSelectedDays,
 } = useAnalytics()
 
+/** 首次进入面板时先等全部后端数据返回，再一次性渲染所有卡片 */
+const initialLoading = ref(true)
+
 /** 采集失败时没有可信的进程列表，展示为未知 */
 const processCount = computed(() => (serverOffline.value ? null : processes.items.length))
 
@@ -117,12 +126,24 @@ const refreshData = async () => {
   await Promise.all([fetchServerInfo(true), fetchAnalytics(true)])
 }
 
-onMounted(() => {
-  fetchAnalytics()
+onMounted(async () => {
+  try {
+    await Promise.all([fetchServerInfo(), fetchAnalytics()])
+  } finally {
+    initialLoading.value = false
+  }
 })
 </script>
 
 <style scoped>
+.dashboard--loading {
+  /* 載入遮罩只覆蓋內容區，header 與 sidebar 不受影響 */
+  min-height: calc(100vh - 60px);
+  margin: calc(var(--el-main-padding, 20px) * -1);
+  padding: var(--el-main-padding, 20px);
+  box-sizing: border-box;
+}
+
 .dashboard-row {
   row-gap: 20px;
   margin-top: 20px;

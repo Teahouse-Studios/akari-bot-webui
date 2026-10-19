@@ -4,6 +4,7 @@ import App from './App.vue'
 import router from '@/router'
 import { elementPlusLangMap } from './element-plus-langmap'
 import LocalStorageJson from '@/localStorageJson.js'
+import { initDarkMode } from '@/composables/useDarkMode.js'
 import zh_cn from './i18n/zh_cn.json'
 import zh_tw from './i18n/zh_tw.json'
 import en_us from './i18n/en_us.json'
@@ -44,7 +45,6 @@ app.provide('elementLocale', elementPlusLocale)
 app.use(i18n)
 app.use(router)
 
-const isDark = localStorage.getItem('isDarkMode') === 'true'
-document.documentElement.classList.toggle('dark', isDark)
+initDarkMode()
 
 app.mount('#app')

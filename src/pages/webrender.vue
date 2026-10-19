@@ -42,13 +42,13 @@
             @submit="handleSubmit"
           />
 
+          <TestHistoryList :history="history" @replay="replayHistory" @clear="clearHistory" />
+
           <RenderResponsePanel
             :result="result"
             :loading="testLoading"
             :error-text="responseErrorText"
           />
-
-          <TestHistoryList :history="history" @replay="replayHistory" @clear="clearHistory" />
         </div>
       </el-tab-pane>
     </el-tabs>

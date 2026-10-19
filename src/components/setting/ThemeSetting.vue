@@ -25,12 +25,30 @@
         />
       </div>
     </div>
+
+    <div class="dark-mode-setting">
+      <span class="dark-mode-label">{{ $t('setting.theme_setting.dark_mode.title') }}</span>
+      <el-radio-group v-model="darkMode">
+        <el-radio-button value="on">
+          {{ $t('setting.theme_setting.dark_mode.option.on') }}
+        </el-radio-button>
+        <el-radio-button value="off">
+          {{ $t('setting.theme_setting.dark_mode.option.off') }}
+        </el-radio-button>
+        <el-radio-button value="system">
+          {{ $t('setting.theme_setting.dark_mode.option.system') }}
+        </el-radio-button>
+      </el-radio-group>
+    </div>
   </div>
 </template>
 
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
 import LocalStorageJson from '@/localStorageJson.js'
+import { useDarkMode } from '@/composables/useDarkMode.js'
+
+const { darkMode } = useDarkMode()
 
 const presets = reactive({
   akari: '#edaab3',
@@ -107,5 +125,15 @@ const customButtonStyle = computed(() => {
   background-color: #0091ff;
   border-color: #0091ff;
   color: white;
+}
+.dark-mode-setting {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+.dark-mode-label {
+  cursor: default;
 }
 </style>

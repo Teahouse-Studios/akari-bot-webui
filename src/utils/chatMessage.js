@@ -88,20 +88,31 @@ export const ALLOWED_TAGS = [
 
 export const ALLOWED_ATTR = ['href', 'target', 'rel', 'src', 'class', 'alt', 'title']
 
+// 与 md 启用的块级规则保持一致：命中时才走块级渲染，否则行内渲染以保留空白与换行。
+const BLOCK_MARKDOWN_PATTERN =
+  /^(?: {0,3}(?:#{1,6}(?:\s|$)|[-+*](?:\s|$)|\d+[.)](?:\s|$)|>|```|~~~))/m
+
 export function renderMarkdown(text) {
   if (!text) return ''
 
-  let raw = md.render(text).replace(/\[image:([^\]]+)\]/g, (match, src) => {
-    return `<img src="${src}" class="chat-img" />`
-  })
+  const normalized = text.replace(/\r\n?/g, '\n')
+  const blockRendering = BLOCK_MARKDOWN_PATTERN.test(normalized)
+  let raw = (blockRendering ? md.render(normalized) : md.renderInline(normalized)).replace(
+    /\[image:([^\]]+)\]/g,
+    (match, src) => {
+      return `<img src="${src}" class="chat-img" />`
+    },
+  )
 
-  const leadingNewlines = text.match(/^\n+/)
-  if (leadingNewlines) {
-    const count = leadingNewlines[0].length
-    raw = '<br />'.repeat(count) + raw
+  if (blockRendering) {
+    const leadingNewlines = normalized.match(/^\n+/)
+    if (leadingNewlines) {
+      const count = leadingNewlines[0].length
+      raw = '<br />'.repeat(count) + raw
+    }
+
+    raw = raw.replace(/(?:<br\s*\/?>\s*)+$/, '')
   }
-
-  raw = raw.replace(/(?:<br\s*\/?>\s*)+$/, '')
 
   return DOMPurify.sanitize(raw, {
     ALLOWED_TAGS,
@@ -122,7 +133,7 @@ export function normalizeMessageBlocks(data) {
         case 'text': {
           if (typeof item.content !== 'string') return null
           let html = renderMarkdown(item.content)
-          if (list[idx + 1]?.type === 'text') {
+          if (list[idx + 1]?.type === 'text' && !/(?:<br\s*\/?>\s*)$/.test(html)) {
             html += '<br />'
           }
           return { type: 'text', content: item.content, html }

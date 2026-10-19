@@ -34,6 +34,8 @@ export function useServerInfo() {
   const abortController = new AbortController()
   let runningTimer = null
   let refreshTimer = null
+  /** 進行中的請求，重複呼叫時共用，讓呼叫方可以等待完整的一輪取數 */
+  let pendingRequest = null
 
   const serverOffline = computed(
     () => bot.jobqueue_backend === null && processes.error === 'unavailable',
@@ -64,50 +66,58 @@ export function useServerInfo() {
     }
   }
 
-  async function fetchServerInfo(noCache = false) {
-    if (loading.value) return
+  /**
+   * 拉取服务器状态。已有請求在進行中時直接複用，避免面板頁的初始化等待被提前結束。
+   */
+  function fetchServerInfo(noCache = false) {
+    if (pendingRequest) return pendingRequest
+
     loading.value = true
-
-    const headers = {}
-    if (noCache) {
-      Object.assign(headers, {
-        'Cache-Control': 'no-cache, no-store, must-revalidate',
-        Pragma: 'no-cache',
-        Expires: '0',
-      })
-    }
-
-    try {
-      const response = await axios.get('/api/server-info', {
-        headers,
-        signal: abortController.signal,
-      })
-      const data = response.data
-
-      Object.assign(os, data.os)
-      Object.assign(bot, data.bot)
-      Object.assign(cpu, data.cpu)
-      Object.assign(memory, data.memory)
-      Object.assign(disk, data.disk)
-      Object.assign(processes, data.processes || { items: [], failures: [], error: null })
-      if (!Array.isArray(processes.items)) processes.items = []
-      if (!Array.isArray(processes.failures)) processes.failures = []
-
-      startRunningTimer()
-      lastUpdateTime.value = Math.floor(Date.now() / 1000)
-    } catch (error) {
-      if (axios.isCancel(error)) {
-        console.log('Request canceled')
-      } else {
-        ElMessage.error(t('message.error.fetch') + error.message)
-        stopRunningTimer()
-        bot.start_time = 0
-        bot.started_time = 0
-        runningSeconds.value = 0
+    pendingRequest = (async () => {
+      const headers = {}
+      if (noCache) {
+        Object.assign(headers, {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          Pragma: 'no-cache',
+          Expires: '0',
+        })
       }
-    } finally {
-      loading.value = false
-    }
+
+      try {
+        const response = await axios.get('/api/server-info', {
+          headers,
+          signal: abortController.signal,
+        })
+        const data = response.data
+
+        Object.assign(os, data.os)
+        Object.assign(bot, data.bot)
+        Object.assign(cpu, data.cpu)
+        Object.assign(memory, data.memory)
+        Object.assign(disk, data.disk)
+        Object.assign(processes, data.processes || { items: [], failures: [], error: null })
+        if (!Array.isArray(processes.items)) processes.items = []
+        if (!Array.isArray(processes.failures)) processes.failures = []
+
+        startRunningTimer()
+        lastUpdateTime.value = Math.floor(Date.now() / 1000)
+      } catch (error) {
+        if (axios.isCancel(error)) {
+          console.log('Request canceled')
+        } else {
+          ElMessage.error(t('message.error.fetch') + error.message)
+          stopRunningTimer()
+          bot.start_time = 0
+          bot.started_time = 0
+          runningSeconds.value = 0
+        }
+      } finally {
+        loading.value = false
+        pendingRequest = null
+      }
+    })()
+
+    return pendingRequest
   }
 
   onMounted(() => {

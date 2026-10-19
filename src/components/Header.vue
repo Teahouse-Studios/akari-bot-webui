@@ -11,46 +11,37 @@
     </div>
 
     <div class="header-right">
-      <el-button v-if="hasHelp" class="help-button" @click="goToHelp">
-        {{ $t('header.button.doc') }}
-      </el-button>
+      <el-dropdown trigger="click" @command="changeLanguage">
+        <el-button class="language-button" :title="$t('setting.select_language.title')">
+          <i class="mdi mdi-translate"></i>
+        </el-button>
+        <template #dropdown>
+          <el-dropdown-menu>
+            <el-dropdown-item
+              v-for="lang in langList"
+              :key="lang"
+              :command="lang"
+              :class="{ 'is-active-language': lang === locale }"
+            >
+              {{ $t('language', {}, { locale: lang }) }}
+            </el-dropdown-item>
+          </el-dropdown-menu>
+        </template>
+      </el-dropdown>
       <el-button class="theme-toggle-button" @click="toggleDarkMode">
         <i :class="isDarkMode ? 'mdi mdi-weather-sunny' : 'mdi mdi-weather-night'"></i>
       </el-button>
     </div>
   </el-header>
-
-  <div
-    v-if="showHelp"
-    class="help-iframe-wrapper"
-    :style="{
-      top: helpIframeStyle.top,
-      left: helpIframeStyle.left,
-      width: helpIframeStyle.width,
-      height: helpIframeStyle.height,
-    }"
-    @mousedown="startDrag"
-  >
-    <div class="help-iframe-header">
-      <span>{{ $t('header.button.doc') }}</span>
-      <div class="help-iframe-actions">
-        <button @click="iframeOpenNew" :title="$t('iframe.button.open_new')">
-          <i class="mdi mdi-dock-window"></i>
-        </button>
-        <button class="close-btn" :title="$t('button.close')" @click="showHelp = false">
-          <i class="mdi mdi-window-close"></i>
-        </button>
-      </div>
-    </div>
-    <iframe ref="helpIframe" :src="helpUrl" frameborder="0" class="help-iframe-content"></iframe>
-  </div>
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { ref, onMounted, onBeforeUnmount, inject } from 'vue'
 import { ElMessage } from 'element-plus'
 import LocalStorageJson from '@/localStorageJson.js'
+import { elementPlusLangMap } from '@/element-plus-langmap.js'
 import { useI18n } from 'vue-i18n'
+import { useDarkMode } from '@/composables/useDarkMode.js'
 
 const props = defineProps({
   userVerified: {
@@ -61,34 +52,28 @@ const props = defineProps({
 
 const emit = defineEmits(['toggle-sidebar'])
 
-const isDarkMode = ref(false)
+const { isDarkMode, toggleDarkMode } = useDarkMode()
 const screenWidth = ref(window.innerWidth)
-
-const helpUrl = ref('')
-const hasHelp = ref(false)
-const showHelp = ref(false)
-
-const helpIframeStyle = ref({
-  top: '50px',
-  left: '50%',
-  transform: 'translateX(-50%)',
-  width: '375px',
-  height: '667px',
-})
-
-let isDragging = false
-let dragStartX = 0
-let dragStartY = 0
-let initialTop = 0
-let initialLeft = 0
-let mediaQuery = null
-let mediaListener = null
 
 function updateScreenWidth() {
   screenWidth.value = window.innerWidth
 }
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
+const elementLocale = inject('elementLocale')
+
+const langModules = import.meta.glob('@/i18n/*.json')
+const langList = Object.keys(langModules).map((path) => path.match(/\/([^/]+)\.json$/)[1])
+
+function changeLanguage(lang) {
+  if (lang === locale.value) return
+  locale.value = lang
+  LocalStorageJson.setItem('language', lang)
+  if (elementLocale) {
+    elementLocale.lang = elementPlusLangMap[lang]
+  }
+  window.location.reload()
+}
 
 const devClickCount = ref(0)
 
@@ -118,121 +103,17 @@ function handleLogoClick() {
   }
 }
 
-function isValidUrl(str) {
-  try {
-    const url = new URL(str)
-    return url.protocol === 'http:' || url.protocol === 'https:'
-  } catch {
-    return false
-  }
-}
-
-function goToHelp() {
-  if (screenWidth.value < 400) {
-    window.open(helpUrl.value, '_blank')
-  } else {
-    showHelp.value = true
-  }
-}
-
-function startDrag(e) {
-  if (e.target.classList.contains('close-btn')) return
-  isDragging = true
-  dragStartX = e.clientX
-  dragStartY = e.clientY
-  initialTop = parseInt(helpIframeStyle.value.top)
-  initialLeft = parseInt(helpIframeStyle.value.left)
-  window.addEventListener('mousemove', onDrag)
-  window.addEventListener('mouseup', stopDrag)
-}
-
-function onDrag(e) {
-  if (!isDragging) return
-  const deltaX = e.clientX - dragStartX
-  const deltaY = e.clientY - dragStartY
-  helpIframeStyle.value.top = `${initialTop + deltaY}px`
-  helpIframeStyle.value.left = `${initialLeft + deltaX}px`
-}
-
-function stopDrag() {
-  isDragging = false
-  window.removeEventListener('mousemove', onDrag)
-  window.removeEventListener('mouseup', stopDrag)
-}
-
-function iframeOpenNew() {
-  window.open(helpUrl.value, '_blank')
-}
-
-function toggleDarkMode() {
-  isDarkMode.value = !isDarkMode.value
-  document.documentElement.classList.toggle('dark', isDarkMode.value)
-  LocalStorageJson.setItem('isDarkMode', JSON.stringify(isDarkMode.value))
-  if (mediaQuery) {
-    if (mediaQuery.removeEventListener) {
-      mediaQuery.removeEventListener('change', mediaListener)
-    } else {
-      mediaQuery.removeListener(mediaListener)
-    }
-    mediaQuery = null
-    mediaListener = null
-  }
-}
-
 function switchSidebar() {
   if (!props.userVerified) return
   emit('toggle-sidebar')
 }
 
-onMounted(async () => {
-  try {
-    const resp = await fetch('/api/init')
-    const data = await resp.json()
-
-    if (data?.help_url && isValidUrl(data.help_url)) {
-      helpUrl.value = data.help_url
-      hasHelp.value = true
-    } else {
-      hasHelp.value = false
-    }
-  } catch (e) {
-    console.error('Failed to load init config:', e)
-    hasHelp.value = false
-  }
-
-  const savedTheme = LocalStorageJson.getItem('isDarkMode')
-  if (savedTheme !== null) {
-    isDarkMode.value = JSON.parse(savedTheme)
-    document.documentElement.classList.toggle('dark', isDarkMode.value)
-  } else {
-    mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
-    isDarkMode.value = mediaQuery.matches
-    document.documentElement.classList.toggle('dark', isDarkMode.value)
-    mediaListener = (e) => {
-      if (LocalStorageJson.getItem('isDarkMode') === null) {
-        isDarkMode.value = e.matches
-        document.documentElement.classList.toggle('dark', isDarkMode.value)
-      }
-    }
-    if (mediaQuery.addEventListener) {
-      mediaQuery.addEventListener('change', mediaListener)
-    } else {
-      mediaQuery.addListener(mediaListener)
-    }
-  }
-
+onMounted(() => {
   window.addEventListener('resize', updateScreenWidth)
 })
 
 onBeforeUnmount(() => {
   window.removeEventListener('resize', updateScreenWidth)
-  if (mediaQuery) {
-    if (mediaQuery.removeEventListener) {
-      mediaQuery.removeEventListener('change', mediaListener)
-    } else {
-      mediaQuery.removeListener(mediaListener)
-    }
-  }
 })
 </script>
 
@@ -318,59 +199,9 @@ onBeforeUnmount(() => {
   color: var(--el-bg-color);
 }
 
-.lang-select {
-  min-width: 100px;
-}
-.help-iframe-wrapper {
-  position: fixed;
-  border: 1px solid var(--el-border-color);
-  background-color: var(--el-bg-color-overlay);
-  z-index: 9999;
-  box-shadow: var(--el-box-shadow-light);
-  display: flex;
-  flex-direction: column;
-  border-radius: 12px;
-  overflow: hidden;
-}
-
-.help-iframe-header {
-  height: 36px;
-  background: var(--el-fill-color);
-  color: var(--el-text-color-primary);
-  border-bottom: 1px solid var(--el-border-color-lighter);
-  cursor: move;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0 8px;
-  font-size: 14px;
-}
-
-.help-iframe-actions button {
-  margin-left: 4px;
-  background: transparent;
-  border: none;
-  color: inherit;
-  font-size: 16px;
-  cursor: pointer;
-}
-
-.help-iframe-actions button:hover {
-  color: var(--el-color-primary);
-}
-
-.help-iframe-content {
-  flex: 1;
-  width: 100%;
-}
-.close-btn {
-  font-size: 16px;
-  cursor: pointer;
-  background: transparent;
-  border: none;
-  color: inherit;
-}
-.close-btn:hover {
-  color: var(--el-color-primary);
+.language-button {
+  font-size: 22px;
+  padding: 5px;
+  margin-right: 10px;
 }
 </style>

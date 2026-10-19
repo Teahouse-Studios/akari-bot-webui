@@ -14,6 +14,7 @@
           v-if="messages.length === 0"
           :command-prefix="commandPrefix"
           :is-mobile-view="isMobileView"
+          @insert-command="handleInsertCommand"
         />
 
         <ChatMessage
@@ -185,6 +186,13 @@ const handleActionTextClick = (block) => {
   if (!text) return
 
   inputText.value = text
+  focusChatInput()
+}
+
+const handleInsertCommand = (command) => {
+  if (!command) return
+
+  inputText.value = command
   focusChatInput()
 }
 
