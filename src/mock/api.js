@@ -15,6 +15,11 @@ export default function setupMock() {
     heartbeat_attempt: 3,
   })
 
+  mock.onGet('/api/platform_prefixes').reply(200, {
+    target_prefixes: ['Discord', 'QQ', 'Web'],
+    sender_prefixes: ['Discord', 'QQ', 'Web'],
+  })
+
   mock.onGet('/api/verify').reply(200, {
     payload: {
       exp: Math.floor(Date.now() / 1000) + 24 * 60 * 60,

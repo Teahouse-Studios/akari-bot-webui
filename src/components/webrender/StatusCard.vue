@@ -40,38 +40,6 @@
           <strong class="summary-value">{{ formatValue(config[field.key]) }}</strong>
         </div>
       </div>
-
-      <el-collapse class="details-collapse">
-        <el-collapse-item name="runtime">
-          <template #title>
-            <span class="collapse-title">{{ $t('webrender.status.title') }}</span>
-          </template>
-          <el-descriptions :column="1" border size="small">
-            <el-descriptions-item
-              v-for="field in statusFields"
-              :key="field.key"
-              :label="$t(field.label)"
-            >
-              {{ formatValue(status[field.key]) }}
-            </el-descriptions-item>
-          </el-descriptions>
-        </el-collapse-item>
-
-        <el-collapse-item name="config">
-          <template #title>
-            <span class="collapse-title">{{ $t('webrender.status.config.title') }}</span>
-          </template>
-          <el-descriptions :column="1" border size="small">
-            <el-descriptions-item
-              v-for="field in configFields"
-              :key="field.key"
-              :label="$t(field.label)"
-            >
-              {{ formatValue(config[field.key]) }}
-            </el-descriptions-item>
-          </el-descriptions>
-        </el-collapse-item>
-      </el-collapse>
     </template>
 
     <el-empty v-else :description="$t('webrender.status.unavailable')" :image-size="60" />

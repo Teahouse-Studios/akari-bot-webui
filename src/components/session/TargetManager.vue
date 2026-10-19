@@ -402,7 +402,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted, onBeforeUnmount } from 'vue'
+import { ref, reactive, onMounted, onBeforeUnmount } from 'vue'
 import axios from '@/axios.mjs'
 import { IS_DEMO } from '@/const'
 import { ElMessage, ElMessageBox } from 'element-plus'
@@ -449,19 +449,29 @@ const totalItems = ref(0)
 const loading = ref(false)
 const abortController = new AbortController()
 
-/** 平台前缀候选项来自当前已存在的绑定 ID，不再写死平台列表 */
-const platformPrefixes = computed(() => {
-  const prefixes = new Set()
-  for (const item of targetList.value) {
-    const ids = item.bound_ids?.length ? item.bound_ids : [item.target_id]
-    for (const id of ids) {
-      const prefix = String(id).split('|')[0]
-      if (prefix) prefixes.add(prefix)
+/** 平台前缀候选项由后端统一提供，避免只收集到当前页的绑定 ID */
+const platformPrefixes = ref([])
+
+const fetchPlatformPrefixes = async () => {
+  try {
+    const response = await axios.get('/api/platform_prefixes', {
+      signal: abortController.signal,
+    })
+    if (response.status === 200 && Array.isArray(response.data.target_prefixes)) {
+      const prefixes = [...response.data.target_prefixes]
+      if (selectedPrefix.value && !prefixes.includes(selectedPrefix.value)) {
+        prefixes.push(selectedPrefix.value)
+      }
+      platformPrefixes.value = prefixes
+    }
+  } catch (error) {
+    if (axios.isCancel(error)) {
+      console.log('Request canceled')
+    } else {
+      console.log('Failed to fetch platform prefixes', error)
     }
   }
-  if (selectedPrefix.value) prefixes.add(selectedPrefix.value)
-  return Array.from(prefixes).sort((a, b) => a.localeCompare(b))
-})
+}
 
 const fetchData = async () => {
   loading.value = true
@@ -521,6 +531,7 @@ const refreshData = async () => {
   currentPage.value = 1
   await fetchData()
   fetchAllModules()
+  fetchPlatformPrefixes()
 }
 
 const debouncedRefresh = () => {
