@@ -176,7 +176,7 @@
         :disabled="limited || serverOffline"
         @click="$emit('submit', form)"
       >
-        <i class="mdi mdi-send"></i>
+        <i v-if="!loading" class="mdi mdi-send"></i>
         {{ form.mode === 'status' ? $t('webrender.tester.probe') : $t('webrender.tester.send') }}
       </el-button>
     </div>
