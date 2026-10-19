@@ -469,7 +469,7 @@
   "webrender.tester.send": "傳送請求",
   "webrender.tester.stealth": "反偵測模式",
   "webrender.tester.target.content": "HTML 內容",
-  "webrender.tester.target.content.mannual": "手動輸入",
+  "webrender.tester.target.content.manual": "手動輸入",
   "webrender.tester.target.content.url": "URL",
   "webrender.tester.title": "渲染測試",
   "webrender.tester.validate.target": "請填寫 URL 或 HTML 內容",

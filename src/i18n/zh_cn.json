@@ -474,7 +474,7 @@
   "webrender.tester.stealth": "反检测模式",
   "webrender.tester.target.source": "HTML 来源",
   "webrender.tester.target.content": "HTML 内容",
-  "webrender.tester.target.content.mannual": "手动输入",
+  "webrender.tester.target.content.manual": "手动输入",
   "webrender.tester.target.content.url": "URL",
   "webrender.tester.title": "渲染测试",
   "webrender.tester.validate.target": "请填写 URL 或 HTML 内容",

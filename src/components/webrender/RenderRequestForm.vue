@@ -28,7 +28,7 @@
               $t('webrender.tester.target.content.url')
             }}</el-radio-button>
             <el-radio-button value="content">
-              {{ $t('webrender.tester.target.content.mannual') }}
+              {{ $t('webrender.tester.target.content.manual') }}
             </el-radio-button>
           </el-radio-group>
         </el-form-item>

@@ -469,7 +469,7 @@
     "webrender.tester.send": "リクエスト送信",
     "webrender.tester.stealth": "ステルス モード",
     "webrender.tester.target.content": "HTML 内容",
-    "webrender.tester.target.content.mannual": "手動入力",
+    "webrender.tester.target.content.manual": "手動入力",
     "webrender.tester.target.content.url": "URL",
     "webrender.tester.title": "レンダリング テスト",
     "webrender.tester.validate.target": "URL または HTML 内容を入力してください",

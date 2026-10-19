@@ -470,7 +470,7 @@
     "webrender.tester.stealth": "스텔스 모드",
     "webrender.tester.target.content": "HTML 콘텐츠",
     "webrender.tester.target.content.url": "URL",
-    "webrender.tester.target.content.mannual": "수동 입력",
+    "webrender.tester.target.content.manual": "수동 입력",
     "webrender.tester.title": "렌더링 테스트",
     "webrender.tester.validate.target": "URL 또는 HTML 콘텐츠를 입력하세요",
     "webrender.tester.validate.url": "URL을 입력하세요",
