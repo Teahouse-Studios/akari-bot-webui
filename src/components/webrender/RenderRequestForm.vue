@@ -9,7 +9,7 @@
 
     <el-form label-position="top" class="tester-form">
       <el-form-item :label="$t('webrender.tester.mode')">
-        <el-radio-group v-model="form.mode">
+        <el-radio-group v-model="form.mode" class="tester-radio-group">
           <el-radio-button value="status">{{ $t('webrender.tester.mode.status') }}</el-radio-button>
           <el-radio-button value="source">{{ $t('webrender.tester.mode.source') }}</el-radio-button>
           <el-radio-button value="screenshot">
@@ -23,16 +23,18 @@
           v-if="form.mode === 'screenshot'"
           :label="$t('webrender.tester.target.content')"
         >
-          <el-radio-group v-model="form.target">
-            <el-radio-button value="url">{{ $t('webrender.tester.target.url') }}</el-radio-button>
+          <el-radio-group v-model="form.target" class="tester-radio-group">
+            <el-radio-button value="url">{{
+              $t('webrender.tester.target.content.url')
+            }}</el-radio-button>
             <el-radio-button value="content">
-              {{ $t('webrender.tester.target.content') }}
+              {{ $t('webrender.tester.target.content.mannual') }}
             </el-radio-button>
           </el-radio-group>
         </el-form-item>
 
         <el-form-item v-if="form.mode === 'source' || form.target === 'url'">
-          <el-input v-model="form.url" placeholder="https://example.test/" clearable />
+          <el-input v-model="form.url" placeholder="https://example.com/" clearable />
         </el-form-item>
 
         <el-form-item v-else>
@@ -292,6 +294,14 @@ h4 {
 
 .tester-form {
   margin-bottom: 4px;
+}
+
+.tester-radio-group {
+  flex-wrap: nowrap;
+}
+
+.tester-radio-group :deep(.el-radio-button) {
+  flex: 0 0 auto;
 }
 
 .preview-header {

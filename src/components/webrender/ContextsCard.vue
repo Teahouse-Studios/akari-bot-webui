@@ -53,7 +53,7 @@
       </el-collapse-item>
     </el-collapse>
 
-    <el-empty v-else :description="$t('webrender.contexts.none')" :image-size="60" />
+    <el-empty v-else :image-size="60" />
   </el-card>
 </template>
 

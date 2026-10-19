@@ -21,6 +21,10 @@
           <i class="mdi mdi-cog"></i>
           <span>{{ $t('sidebar.item.config') }}</span>
         </el-menu-item>
+        <el-menu-item index="/files">
+          <i class="mdi mdi-folder"></i>
+          <span>{{ $t('sidebar.item.files') }}</span>
+        </el-menu-item>
         <el-menu-item index="/modules">
           <i class="mdi mdi-puzzle"></i>
           <span>{{ $t('sidebar.item.modules') }}</span>
@@ -44,10 +48,6 @@
         <el-menu-item v-if="isDevelopMode" index="/database">
           <i class="mdi mdi-database"></i>
           <span>{{ $t('sidebar.item.database') }}</span>
-        </el-menu-item>
-        <el-menu-item index="/files">
-          <i class="mdi mdi-folder"></i>
-          <span>{{ $t('sidebar.item.files') }}</span>
         </el-menu-item>
         <el-menu-item index="/setting">
           <i class="mdi mdi-wrench"></i>

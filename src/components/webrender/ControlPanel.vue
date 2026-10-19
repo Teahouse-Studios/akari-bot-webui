@@ -92,10 +92,14 @@ const confirmAction = async (action) => {
 <style scoped>
 .control-actions {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   justify-content: flex-start;
   gap: 8px;
   padding-top: 8px;
   border-top: 1px solid var(--el-border-color-lighter);
+}
+
+.control-actions > * {
+  flex: 0 0 auto;
 }
 </style>

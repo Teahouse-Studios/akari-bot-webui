@@ -1,34 +1,37 @@
 <template>
   <div>
     <h3><i class="mdi mdi-palette"> </i> {{ $t('setting.theme_setting.title') }}</h3>
-    <div class="preset-buttons">
-      <el-button @click="applyPreset('akari')" class="theme-button akari">
-        {{ $t('setting.theme_setting.button.pink') }}
-      </el-button>
-      <el-button @click="applyPreset('teahouse')" class="theme-button teahouse">
-        {{ $t('setting.theme_setting.button.blue') }}
-      </el-button>
-
-      <div class="custom-theme">
-        <el-button
-          @click="onCustomButtonClick"
-          class="theme-button custom"
-          :style="customButtonStyle"
-        >
-          {{ $t('setting.theme_setting.button.custom') }}
+    <div class="theme-color-setting">
+      <span class="theme-setting-label">{{ $t('setting.theme_setting.color.title') }}</span>
+      <div class="preset-buttons">
+        <el-button @click="applyPreset('akari')" class="theme-button akari">
+          {{ $t('setting.theme_setting.button.pink') }}
         </el-button>
-        <el-color-picker
-          v-if="showColorPicker"
-          v-model="customColor"
-          @change="applyCustomColor"
-          :clearable="true"
-        />
+        <el-button @click="applyPreset('teahouse')" class="theme-button teahouse">
+          {{ $t('setting.theme_setting.button.blue') }}
+        </el-button>
+
+        <div class="custom-theme">
+          <el-button
+            @click="onCustomButtonClick"
+            class="theme-button custom"
+            :style="customButtonStyle"
+          >
+            {{ $t('setting.theme_setting.button.custom') }}
+          </el-button>
+          <el-color-picker
+            v-if="showColorPicker"
+            v-model="customColor"
+            @change="applyCustomColor"
+            :clearable="true"
+          />
+        </div>
       </div>
     </div>
 
     <div class="dark-mode-setting">
-      <span class="dark-mode-label">{{ $t('setting.theme_setting.dark_mode.title') }}</span>
-      <el-radio-group v-model="darkMode">
+      <span class="theme-setting-label">{{ $t('setting.theme_setting.dark_mode.title') }}</span>
+      <el-radio-group v-model="darkMode" class="dark-mode-options">
         <el-radio-button value="on">
           {{ $t('setting.theme_setting.dark_mode.option.on') }}
         </el-radio-button>
@@ -102,15 +105,29 @@ const customButtonStyle = computed(() => {
 </script>
 
 <style scoped>
-.preset-buttons {
+.theme-color-setting,
+.dark-mode-setting {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+.theme-setting-label {
+  flex-shrink: 0;
+  cursor: default;
+}
+.preset-buttons {
+  display: flex;
+  flex-wrap: nowrap;
 }
 .custom-theme {
   display: flex;
   align-items: center;
+  flex-shrink: 0;
 }
 .theme-button {
+  flex-shrink: 0;
   margin: 5px;
 }
 .theme-button + .theme-button {
@@ -126,14 +143,10 @@ const customButtonStyle = computed(() => {
   border-color: #0091ff;
   color: white;
 }
-.dark-mode-setting {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 10px;
-  margin-top: 10px;
+.dark-mode-options {
+  flex-wrap: nowrap;
 }
-.dark-mode-label {
-  cursor: default;
+.dark-mode-options :deep(.el-radio-button) {
+  flex: 0 0 auto;
 }
 </style>

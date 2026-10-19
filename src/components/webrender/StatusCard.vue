@@ -41,8 +41,6 @@
         </div>
       </div>
     </template>
-
-    <el-empty v-else :description="$t('webrender.status.unavailable')" :image-size="60" />
   </el-card>
 </template>
 

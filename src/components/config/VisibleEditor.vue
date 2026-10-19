@@ -12,7 +12,7 @@
                 type="primary"
                 class="icon-action-button"
                 :aria-label="$t('button.add')"
-                style="margin-bottom: 4px"
+                style="font-size: 20px"
                 @click="openAddDialog(sectionKey)"
               >
                 <i class="mdi mdi-plus-box-outline"></i>
