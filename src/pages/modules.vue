@@ -60,14 +60,14 @@
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column :label="$t('modules.table.type')" min-width="160">
+        <el-table-column :label="$t('modules.table.type')" min-width="140">
           <template #default="{ row }">
             <el-tag class="module-type-tag" :class="`module-type-tag--${moduleType(row)}`">
               {{ $t(moduleTypeLabel(row)) }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column :label="$t('session.table.status')" min-width="100">
+        <el-table-column :label="$t('session.table.status')" min-width="120">
           <template #default="{ row }">
             <el-tag :type="row.loaded ? 'success' : 'danger'">
               {{ row.loaded ? $t('modules.tag.loaded') : $t('modules.tag.unloaded') }}
