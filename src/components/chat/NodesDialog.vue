@@ -63,9 +63,9 @@ defineEmits(['update:visible', 'image-click', 'markdown-click', 'external-button
   flex-shrink: 0;
   width: 24px;
   height: 24px;
-  border-radius: 50%;
+  border-radius: 8px;
   background: var(--el-color-primary);
-  color: var(--el-color-white);
+  color: var(--ak-on-primary);
   display: flex;
   align-items: center;
   justify-content: center;

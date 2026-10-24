@@ -4,13 +4,13 @@
       <div class="header-drawer">
         <div class="logo">
           <img src="@/assets/akaribot_logo.png" alt="Logo" class="logo-image" />
-          <span class="web-ui-text">WebUI</span>
+          <span class="ak-badge">WebUI</span>
         </div>
       </div>
       <el-menu
         ref="menuRef"
         :default-active="activeMenu"
-        class="sidebar-menu"
+        class="sidebar-menu ak-nav"
         @select="handleSelect"
       >
         <el-menu-item index="/dashboard">
@@ -114,64 +114,39 @@ watch(
   bottom: 0;
   z-index: 100;
   overflow-y: auto;
-  border-right: 1px solid var(--el-border-color-light);
+  border-right: 1px solid var(--el-border-color-lighter);
 }
 
 .header-drawer {
+  position: relative;
   display: flex;
-  justify-content: space-between;
   align-items: center;
   padding: 0 20px;
   background-color: var(--el-bg-color);
   height: 60px;
-  top: 0;
+}
+
+.header-drawer::after {
+  content: '';
+  position: absolute;
   left: 0;
   right: 0;
-  z-index: 100;
-  border-bottom: 1px solid var(--el-border-color-light);
+  bottom: 0;
+  height: 3px;
+  background: var(--ak-gradient);
+  mask: var(--ak-dash-mask) repeat-x;
+  -webkit-mask: var(--ak-dash-mask) repeat-x;
+  opacity: 0.7;
 }
 
 .logo {
-  font-size: 22px;
-  font-weight: bold;
   display: flex;
-  justify-content: left;
-  padding: 20px 0;
+  align-items: center;
+  gap: 8px;
 }
 
 .logo-image {
   height: 42px;
   width: auto;
-  margin-right: 6px;
-}
-
-.web-ui-text {
-  display: flex;
-  align-items: center;
-  font-size: 16px;
-  color: var(--el-text-color-regular);
-  cursor: default;
-  font-family:
-    'Roboto',
-    'Noto Sans SC',
-    system-ui,
-    -apple-system,
-    sans-serif;
-}
-
-.sidebar-menu {
-  border-right: none;
-  background-color: var(--el-bg-color);
-}
-
-.el-menu-item {
-  display: flex;
-  align-items: center;
-  padding: 12px 20px;
-}
-
-.el-menu-item i {
-  margin-right: 20px;
-  font-size: 2ch;
 }
 </style>

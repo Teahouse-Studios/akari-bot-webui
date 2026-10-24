@@ -1,7 +1,8 @@
 <template>
   <div class="overlay">
     <div v-if="!requireTwoFactor" class="password-modal">
-      <span>{{ $t('login.title') }}</span>
+      <img src="@/assets/akaribot_logo.png" alt="AkariBot" class="login-logo" />
+      <span class="login-title">{{ $t('login.title') }}</span>
       <el-input
         v-model="password"
         :placeholder="$t('login.input.password')"
@@ -154,7 +155,7 @@ async function verifyWithBackup(backupCode) {
   left: 0;
   width: 100%;
   height: calc(100% - 60px);
-  background: var(--el-overlay-color-lighter);
+  background: color-mix(in srgb, var(--el-bg-color-page) 70%, transparent);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -163,13 +164,48 @@ async function verifyWithBackup(backupCode) {
 }
 
 .password-modal {
+  position: relative;
   background: var(--el-bg-color-overlay);
-  padding: 30px;
-  border-radius: 8px;
+  padding: 28px 30px 30px;
+  border: 1px solid var(--el-border-color-light);
+  border-radius: 18px;
+  box-shadow:
+    0 4px 0 0 var(--ak-edge),
+    0 24px 48px -24px color-mix(in srgb, var(--el-color-primary) 55%, transparent);
   display: flex;
   flex-direction: column;
   gap: 14px;
   width: 300px;
+}
+
+.login-logo {
+  align-self: center;
+  width: 150px;
+  height: auto;
+}
+
+/* 标题下方一小段圆头虚线 */
+.login-title {
+  position: relative;
+  align-self: center;
+  padding-bottom: 10px;
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--el-text-color-primary);
+  cursor: default;
+}
+
+.login-title::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: 52px;
+  height: 3px;
+  transform: translateX(-50%);
+  background: var(--ak-gradient);
+  mask: var(--ak-dash-mask) repeat-x;
+  -webkit-mask: var(--ak-dash-mask) repeat-x;
 }
 
 .tooltip-container {
@@ -187,14 +223,14 @@ async function verifyWithBackup(backupCode) {
   transition: color 0.2s;
 }
 .forgot-password:hover {
-  color: var(--el-text-color-primary);
+  color: var(--ak-primary-text);
 }
 
 /* 2FA modal styles */
 .two-factor-modal {
   background: var(--el-bg-color-overlay);
   padding: 30px;
-  border-radius: 8px;
+  border-radius: 18px;
   display: flex;
   flex-direction: column;
   gap: 14px;

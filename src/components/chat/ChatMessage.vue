@@ -138,24 +138,27 @@ const userReacted = (emoji) => props.msg.userReactions?.includes(emoji)
   line-height: 1.6;
   display: inline-block;
   max-width: 70%;
-  border-radius: 10px;
-  padding: 10px;
+  border-radius: 16px;
+  padding: 10px 14px;
   word-wrap: break-word;
   word-break: break-word;
 }
 
 .chat-message.user {
-  background-color: var(--el-color-primary);
-  color: white !important;
+  background: linear-gradient(135deg, var(--el-color-primary), var(--ak-secondary));
+  color: var(--ak-on-primary) !important;
   align-self: flex-end;
-  border-top-right-radius: 0;
+  border-top-right-radius: 4px;
+  box-shadow: 0 2px 0 0 color-mix(in srgb, var(--el-color-primary-dark-2) 55%, transparent);
 }
 
 .chat-message.bot {
   background-color: var(--el-bg-color-overlay);
   color: var(--el-text-color-primary);
   align-self: flex-start;
-  border-top-left-radius: 0;
+  border: 1px solid var(--el-border-color-light);
+  border-top-left-radius: 4px;
+  box-shadow: 0 2px 0 0 var(--ak-edge);
 }
 
 .chat-message.user,
@@ -219,7 +222,8 @@ const userReacted = (emoji) => props.msg.userReactions?.includes(emoji)
 
 .reaction-button.active {
   background-color: var(--el-color-primary);
-  color: var(--el-color-white);
+  border-color: var(--el-color-primary);
+  color: var(--ak-on-primary);
 }
 
 .typing-status-icon {

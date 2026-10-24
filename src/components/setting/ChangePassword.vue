@@ -1,6 +1,8 @@
 <template>
   <div v-loading="loading">
-    <h3><i class="mdi mdi-lock"></i> {{ $t('setting.change_password.title') }}</h3>
+    <h3 class="ak-card-title">
+      <i class="mdi mdi-lock"></i> {{ $t('setting.change_password.title') }}
+    </h3>
 
     <el-form :model="form" :rules="rules" ref="formRef" label-width="auto">
       <el-form-item

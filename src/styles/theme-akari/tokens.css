@@ -1,0 +1,82 @@
+/*
+ * AkariBot WebUI 设计令牌
+ *
+ * 风格取自 logo：粉→紫的柔和渐变、白描边加错位投影的「贴纸」质感、圆头虚线与四角星。
+ * 渐变只用于细线与点缀，大面积保持纸张般的素净。
+ *
+ * --ak-secondary / --ak-on-primary / --ak-primary-text 会在运行时
+ * 由 utils/themeColor.js 依据当前主题色重新计算，这里只是首屏默认值。
+ */
+:root {
+  --ak-secondary: #cdadec;
+  --ak-on-primary: #3b2a3d;
+  --ak-primary-text: #976982;
+  --ak-ink: #3b2a3d;
+
+  --ak-gradient: linear-gradient(90deg, var(--el-color-primary), var(--ak-secondary));
+  --ak-gradient-soft: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--el-color-primary) 42%, transparent),
+    color-mix(in srgb, var(--ak-secondary) 42%, transparent)
+  );
+  --ak-tint: color-mix(in srgb, var(--el-color-primary) 14%, var(--el-bg-color));
+
+  /* 纸面点阵与贴纸底边；两者都跟随主题色的色相 */
+  --ak-paper-dot: color-mix(in srgb, var(--el-color-primary) 20%, transparent);
+  --ak-edge: color-mix(in srgb, var(--el-color-primary) 6%, #eee6ee);
+
+  --ak-radius-card: 14px;
+  --ak-radius-control: 10px;
+
+  --ak-font-display: 'Nunito', 'Noto Sans SC', system-ui, -apple-system, sans-serif;
+  --ak-font-mono: 'Noto Sans Mono', 'Consolas', 'Courier New', monospace;
+
+  /* 圆头虚线（logo 下方那条轨迹），作为 mask 叠在渐变上使用 */
+  --ak-dash-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='4'%3E%3Crect width='12' height='4' rx='2'/%3E%3C/svg%3E");
+}
+
+/*
+ * 浅色模式中性色：底色、表面、弹窗、边框与灰阶都由主题色少量混入派生，
+ * 混色底值按「默认粉色主题维持原有纸感」反推，换主题色时只改变色相与冷暖。
+ * 用 html:not(.dark) 提高优先级，避免按需加载的 Element Plus 样式里的 :root 默认值覆盖。
+ */
+html:not(.dark) {
+  /* 页面底色：6% 主色混入近白纸面 */
+  --el-bg-color-page: color-mix(in srgb, var(--el-color-primary) 6%, #fbfbfb);
+  /* 卡面、弹窗与输入框底色：3% 主色混白，默认粉色下几乎仍为纯白 */
+  --el-bg-color: color-mix(in srgb, var(--el-color-primary) 3%, #ffffff);
+  --el-bg-color-overlay: color-mix(in srgb, var(--el-color-primary) 3%, #ffffff);
+  /* 以下灰阶底值均按默认粉色主题反推，保证默认外观不变 */
+  --el-text-color-primary: color-mix(in srgb, var(--el-color-primary) 6%, #2e2734);
+  --el-text-color-regular: color-mix(in srgb, var(--el-color-primary) 6%, #534c5b);
+  --el-text-color-secondary: color-mix(in srgb, var(--el-color-primary) 6%, #817988);
+  --el-text-color-placeholder: color-mix(in srgb, var(--el-color-primary) 6%, #a9a2af);
+  --el-text-color-disabled: color-mix(in srgb, var(--el-color-primary) 6%, #c3bec8);
+  --el-border-color-darker: color-mix(in srgb, var(--el-color-primary) 6%, #c9beca);
+  --el-border-color-dark: color-mix(in srgb, var(--el-color-primary) 6%, #d6cdd7);
+  --el-border-color: color-mix(in srgb, var(--el-color-primary) 6%, #e3dce4);
+  --el-border-color-light: color-mix(in srgb, var(--el-color-primary) 6%, #ece7ec);
+  --el-border-color-lighter: color-mix(in srgb, var(--el-color-primary) 6%, #f2eff3);
+  --el-border-color-extra-light: color-mix(in srgb, var(--el-color-primary) 6%, #f7f7f9);
+  --el-fill-color-darker: color-mix(in srgb, var(--el-color-primary) 6%, #e5dfe6);
+  --el-fill-color-dark: color-mix(in srgb, var(--el-color-primary) 6%, #ede8ed);
+  --el-fill-color: color-mix(in srgb, var(--el-color-primary) 6%, #f3f1f5);
+  --el-fill-color-light: color-mix(in srgb, var(--el-color-primary) 6%, #f8f8f9);
+  --el-fill-color-lighter: color-mix(in srgb, var(--el-color-primary) 6%, #fcfdfd);
+  --el-fill-color-extra-light: color-mix(in srgb, var(--el-color-primary) 6%, #feffff);
+  --el-fill-color-blank: color-mix(in srgb, var(--el-color-primary) 3%, #ffffff);
+  /* 遮罩跟随页面底色，弹窗背后的留白也带主题色 */
+  --el-mask-color: color-mix(in srgb, var(--el-bg-color-page) 90%, transparent);
+  --el-mask-color-extra-light: color-mix(in srgb, var(--el-bg-color-page) 30%, transparent);
+}
+
+html.dark {
+  --ak-gradient-soft: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--el-color-primary) 32%, transparent),
+    color-mix(in srgb, var(--ak-secondary) 32%, transparent)
+  );
+  --ak-paper-dot: color-mix(in srgb, var(--el-color-primary) 8%, transparent);
+  --ak-edge: #120e14;
+  --ak-tint: color-mix(in srgb, var(--el-color-primary) 12%, var(--el-bg-color));
+}

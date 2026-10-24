@@ -6,13 +6,13 @@
       </el-button>
       <div class="logo" @click="handleLogoClick">
         <img src="@/assets/akaribot_logo.png" alt="Logo" class="logo-image" />
-        <span class="web-ui-text" v-if="screenWidth >= 384">WebUI</span>
+        <span class="ak-badge" v-if="screenWidth >= 384">WebUI</span>
       </div>
     </div>
 
     <div class="header-right">
       <el-dropdown trigger="click" @command="changeLanguage">
-        <el-button class="language-button" :title="$t('setting.select_language.title')">
+        <el-button class="header-icon-button" :title="$t('setting.select_language.title')">
           <i class="mdi mdi-translate"></i>
         </el-button>
         <template #dropdown>
@@ -28,7 +28,7 @@
           </el-dropdown-menu>
         </template>
       </el-dropdown>
-      <el-button class="theme-toggle-button" @click="toggleDarkMode">
+      <el-button class="header-icon-button" @click="toggleDarkMode">
         <i :class="isDarkMode ? 'mdi mdi-weather-sunny' : 'mdi mdi-weather-night'"></i>
       </el-button>
     </div>
@@ -130,30 +130,39 @@ onBeforeUnmount(() => {
   left: 0;
   right: 0;
   z-index: 100;
-  border-bottom: 1px solid var(--el-border-color-light);
+  border-bottom: 1px solid var(--el-border-color-lighter);
+}
+
+/* 底边那条粉→紫圆头虚线，呼应 logo 下方的轨迹 */
+.header::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -2px;
+  height: 3px;
+  background: var(--ak-gradient);
+  mask: var(--ak-dash-mask) repeat-x;
+  -webkit-mask: var(--ak-dash-mask) repeat-x;
+  opacity: 0.7;
+  pointer-events: none;
 }
 
 .menu-button {
   background: transparent;
   border: none;
   padding: 0;
+  width: 36px;
+  height: 36px;
   font-size: 24px;
   color: inherit;
   transition: color 0.3s ease;
-  margin-right: 12px;
+  margin-right: 8px;
 }
 
 .menu-button:hover {
   background-color: var(--el-fill-color-light);
-  color: var(--el-text-color-secondary);
-}
-
-.theme-toggle-button {
-  font-size: 22px;
-  padding: 6px;
-  background-color: var(--el-text-color-primary);
-  color: var(--el-bg-color);
-  border: none;
+  color: var(--ak-primary-text);
 }
 
 .header-left {
@@ -164,44 +173,45 @@ onBeforeUnmount(() => {
 .header-right {
   display: flex;
   align-items: center;
+  gap: 8px;
 }
 
 .logo {
-  font-size: 22px;
-  font-weight: bold;
   display: flex;
-  justify-content: left;
+  align-items: center;
+  gap: 8px;
   padding: 20px 0;
 }
 
 .logo-image {
   height: 42px;
   width: auto;
-  margin-right: 6px;
 }
 
-.web-ui-text {
-  display: flex;
-  align-items: center;
-  font-size: 16px;
+.header-icon-button {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  font-size: 20px;
   color: var(--el-text-color-regular);
-  cursor: default;
-  font-family:
-    'Roboto',
-    'Noto Sans SC',
-    system-ui,
-    -apple-system,
-    sans-serif;
+  background-color: transparent;
+  border: 1px solid var(--el-border-color-light);
+  border-radius: var(--ak-radius-control);
 }
 
-.theme-toggle-button:hover {
-  background-color: var(--el-text-color-regular);
-  color: var(--el-bg-color);
+.header-icon-button:hover,
+.header-icon-button:focus-visible {
+  color: var(--ak-primary-text);
+  background-color: var(--ak-tint);
+  border-color: color-mix(in srgb, var(--el-color-primary) 50%, transparent);
 }
 
-.language-button {
-  font-size: 22px;
-  padding: 5px;
-  margin-right: 10px;
+.header-right :deep(.el-dropdown) {
+  display: flex;
+}
+
+/* el-button 相邻时自带的左外边距 */
+.header-icon-button + .header-icon-button {
+  margin-left: 0;
 }
 </style>

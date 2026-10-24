@@ -1,13 +1,17 @@
 <template>
   <div>
-    <h3><i class="mdi mdi-palette"> </i> {{ $t('setting.theme_setting.title') }}</h3>
+    <h3 class="ak-card-title">
+      <i class="mdi mdi-palette"></i> {{ $t('setting.theme_setting.title') }}
+    </h3>
     <div class="theme-color-setting">
       <span class="theme-setting-label">{{ $t('setting.theme_setting.color.title') }}</span>
       <div class="preset-buttons">
-        <el-button @click="applyPreset('akari')" class="theme-button akari">
+        <el-button @click="applyPreset('akari')" class="theme-button">
+          <span class="theme-swatch akari"></span>
           {{ $t('setting.theme_setting.button.pink') }}
         </el-button>
-        <el-button @click="applyPreset('teahouse')" class="theme-button teahouse">
+        <el-button @click="applyPreset('teahouse')" class="theme-button">
+          <span class="theme-swatch teahouse"></span>
           {{ $t('setting.theme_setting.button.blue') }}
         </el-button>
 
@@ -17,6 +21,7 @@
             class="theme-button custom"
             :style="customButtonStyle"
           >
+            <span class="theme-swatch custom"></span>
             {{ $t('setting.theme_setting.button.custom') }}
           </el-button>
           <el-color-picker
@@ -50,12 +55,13 @@
 import { ref, reactive, computed, onMounted } from 'vue'
 import LocalStorageJson from '@/localStorageJson.js'
 import { useDarkMode } from '@/composables/useDarkMode.js'
+import { AKARI_PINK, DEFAULT_THEME_COLOR, TEAHOUSE_BLUE } from '@/utils/themeColor.js'
 
 const { darkMode } = useDarkMode()
 
 const presets = reactive({
-  akari: '#edaab3',
-  teahouse: '#0091ff',
+  akari: AKARI_PINK,
+  teahouse: TEAHOUSE_BLUE,
 })
 
 const customColor = ref('')
@@ -72,7 +78,7 @@ function applyPreset(themeName) {
 function applyCustomColor(color) {
   if (!color) {
     LocalStorageJson.removeItem('isCustomTheme')
-    LocalStorageJson.setItem('themeColor', '#edaab3')
+    LocalStorageJson.setItem('themeColor', DEFAULT_THEME_COLOR)
   } else {
     LocalStorageJson.setItem('isCustomTheme', 'true')
     LocalStorageJson.setItem('themeColor', color)
@@ -94,11 +100,7 @@ onMounted(() => {
 
 const customButtonStyle = computed(() => {
   if (customColor.value) {
-    return {
-      backgroundColor: customColor.value,
-      borderColor: customColor.value,
-      color: 'white',
-    }
+    return { '--swatch-color': customColor.value }
   }
   return {}
 })
@@ -133,15 +135,27 @@ const customButtonStyle = computed(() => {
 .theme-button + .theme-button {
   margin-left: 5px;
 }
-.theme-button.akari {
-  background-color: #edaab3;
-  border-color: #edaab3;
-  color: white;
+.theme-swatch {
+  width: 14px;
+  height: 14px;
+  margin-right: 8px;
+  border-radius: 50%;
+  box-shadow:
+    0 0 0 2px var(--el-bg-color),
+    0 0 0 3px var(--el-border-color);
 }
-.theme-button.teahouse {
-  background-color: #0091ff;
-  border-color: #0091ff;
-  color: white;
+/* 预设色以「主色→副色」的渐变小圆点呈现 */
+.theme-swatch.akari {
+  background: linear-gradient(135deg, #f2a7c6, #cdadec);
+}
+.theme-swatch.teahouse {
+  background: linear-gradient(135deg, #0091ff, #8f5ae6);
+}
+.theme-swatch.custom {
+  background: var(
+    --swatch-color,
+    conic-gradient(#f2a7c6, #f6c39b, #f2dc8c, #a3d9bd, #a6c8f0, #cdb0f2, #f2a7c6)
+  );
 }
 .dark-mode-options {
   flex-wrap: nowrap;

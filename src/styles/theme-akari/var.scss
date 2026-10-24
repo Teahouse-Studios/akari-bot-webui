@@ -1,8 +1,30 @@
+// 主色与语义色整体压低饱和度，与粉紫主题放在一起不显得刺眼
 @forward 'element-plus/theme-chalk/src/common/var.scss' with (
   $colors: (
     'primary': (
-      'base': #edaab3,
+      'base': #f2a7c6,
     ),
+    'success': (
+      'base': #5fb589,
+    ),
+    'warning': (
+      'base': #e2a04e,
+    ),
+    'danger': (
+      'base': #e3677c,
+    ),
+    'error': (
+      'base': #e3677c,
+    ),
+    'info': (
+      'base': #978c9c,
+    ),
+  ),
+  $border-radius: (
+    'base': 8px,
+    'small': 6px,
+    'round': 20px,
+    'circle': 100%,
   )
 );
 

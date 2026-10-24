@@ -1,5 +1,10 @@
 <template>
   <div class="chat-placeholder">
+    <span class="placeholder-mark" aria-hidden="true">
+      <span class="ak-sparkle"></span>
+      <span class="ak-sparkle"></span>
+      <span class="ak-sparkle"></span>
+    </span>
     <div class="placeholder-title">{{ $t('chat.chatbox.title') }}</div>
     <template v-if="!isMobileView">
       <div class="placeholder-sub">
@@ -82,9 +87,34 @@ const insertHelpCommand = () => {
   font-size: 28px;
 }
 
+/* 三颗大小不一的四角星，取自 logo 右上角 */
+.placeholder-mark {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 4px;
+  margin-bottom: 10px;
+}
+
+.placeholder-mark .ak-sparkle:nth-child(1) {
+  width: 14px;
+  height: 14px;
+}
+
+.placeholder-mark .ak-sparkle:nth-child(2) {
+  width: 26px;
+  height: 26px;
+}
+
+.placeholder-mark .ak-sparkle:nth-child(3) {
+  width: 10px;
+  height: 10px;
+  align-self: flex-start;
+}
+
 .placeholder-title {
+  font-family: var(--ak-font-display);
   font-size: 24px;
-  font-weight: bold;
+  font-weight: 800;
   color: var(--el-text-color-primary);
   margin-bottom: 20px;
 }
@@ -97,15 +127,22 @@ const insertHelpCommand = () => {
 
 .chat-code {
   padding: 1px 6px;
-  border-radius: 4px;
-  background-color: var(--el-fill-color);
+  border-radius: 6px;
+  border: 1px solid var(--el-border-color-light);
+  background-color: var(--el-bg-color);
   color: var(--el-text-color-primary);
   font-family: 'Roboto Mono', 'Consolas', monospace;
   font-size: 13px;
 }
 
 .chat-code-clickable {
-  color: var(--el-color-primary);
+  color: var(--ak-primary-text);
+  border-style: dashed;
+  border-color: var(--el-color-primary);
   cursor: pointer;
+}
+
+.chat-code-clickable:hover {
+  background-color: var(--ak-tint);
 }
 </style>

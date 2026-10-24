@@ -7,15 +7,16 @@
 
 const INTERVAL_MINUTES = 30
 
+// 粉彩色板（粉、紫、杏、薄荷、天蓝、奶黄、珊瑚、藤紫），上面的文字统一用深色
 const CHART_COLORS = [
-  '#F56C6C',
-  '#E6A23C',
-  '#FAE384',
-  '#67C23A',
-  '#1ABC9C',
-  '#409EFF',
-  '#9B59B6',
-  '#E84393',
+  '#f2a7c6',
+  '#cdb0f2',
+  '#f6c39b',
+  '#a3d9bd',
+  '#a6c8f0',
+  '#f2dc8c',
+  '#f2a7a2',
+  '#b7b2ee',
 ]
 
 export function formatTimestamp(timestamp) {

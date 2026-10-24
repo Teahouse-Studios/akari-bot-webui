@@ -87,7 +87,7 @@ defineEmits(['button-click', 'external-button-click'])
 }
 
 .chat-button:hover {
-  color: var(--el-color-primary);
+  color: var(--ak-primary-text);
   border-color: var(--el-color-primary);
 }
 
@@ -95,12 +95,12 @@ defineEmits(['button-click', 'external-button-click'])
 .chat-button-clicked {
   background-color: var(--el-color-primary);
   border-color: var(--el-color-primary);
-  color: var(--el-color-white);
+  color: var(--ak-on-primary);
 }
 
 .chat-button-clicked:hover,
 .chat-button:disabled:hover {
-  color: var(--el-color-white);
+  color: var(--ak-on-primary);
 }
 
 .chat-button:disabled {

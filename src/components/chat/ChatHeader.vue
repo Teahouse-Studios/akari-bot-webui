@@ -30,9 +30,9 @@ defineEmits(['reset'])
 const { t } = useI18n()
 
 const indicatorColor = computed(() => {
-  if (props.connectionStatus === 'connected') return 'limegreen'
-  if (props.connectionStatus === 'connecting') return 'orange'
-  return 'red'
+  if (props.connectionStatus === 'connected') return 'var(--el-color-success)'
+  if (props.connectionStatus === 'connecting') return 'var(--el-color-warning)'
+  return 'var(--el-color-danger)'
 })
 
 const indicatorTitle = computed(() => {
@@ -58,6 +58,7 @@ const indicatorTitle = computed(() => {
   height: 10px;
   border-radius: 50%;
   margin-right: 10px;
+  box-shadow: 0 0 0 3px var(--el-fill-color);
 }
 
 .connection-indicator:hover::after {
@@ -77,8 +78,8 @@ const indicatorTitle = computed(() => {
 
 .chat-title {
   flex: 1;
-  font-size: 18px;
-  font-weight: bold;
+  font-size: 16px;
+  font-weight: 700;
   cursor: default;
 }
 
@@ -92,6 +93,6 @@ const indicatorTitle = computed(() => {
 
 .reset-button:hover {
   background-color: transparent;
-  color: var(--el-text-color-secondary);
+  color: var(--ak-primary-text);
 }
 </style>

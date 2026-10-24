@@ -1,6 +1,8 @@
 <template>
   <div v-if="showDevelopMode">
-    <h3><i class="mdi mdi-wrench-cog"> </i> {{ $t('setting.develop_mode.title') }}</h3>
+    <h3 class="ak-card-title">
+      <i class="mdi mdi-wrench-cog"></i> {{ $t('setting.develop_mode.title') }}
+    </h3>
 
     <div class="develop-mode-warning">
       <el-alert

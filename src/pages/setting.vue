@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="setting-page">
     <ChangePassword />
     <TwoFactorAuth v-if="hasPassword" />
     <SelectLanguage />
@@ -32,8 +32,24 @@ onMounted(async () => {
 })
 </script>
 
-<style>
-h3 {
-  cursor: default;
+<style scoped>
+/* 每个设置组件的根节点各自成为一张贴纸卡片 */
+.setting-page {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-width: 960px;
+}
+
+.setting-page > div {
+  padding: 20px;
+  background-color: var(--el-bg-color-overlay);
+  border: 1px solid var(--el-border-color-light);
+  border-radius: var(--ak-radius-card);
+  box-shadow: 0 3px 0 0 var(--ak-edge);
+}
+
+.setting-page > div :deep(.ak-card-title) {
+  margin-bottom: 14px;
 }
 </style>

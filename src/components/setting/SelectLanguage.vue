@@ -1,6 +1,8 @@
 <template>
   <div>
-    <h3><i class="mdi mdi-translate"></i> {{ $t('setting.select_language.title') }}</h3>
+    <h3 class="ak-card-title">
+      <i class="mdi mdi-translate"></i> {{ $t('setting.select_language.title') }}
+    </h3>
     <el-select
       v-model="currentLang"
       @change="changeLanguage"

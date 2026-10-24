@@ -1,6 +1,8 @@
 <template>
   <div v-if="hasPassword" v-loading="loading">
-    <h3><i class="mdi mdi-shield-key"></i> {{ $t('setting.two_factor_auth.title') }}</h3>
+    <h3 class="ak-card-title">
+      <i class="mdi mdi-shield-key"></i> {{ $t('setting.two_factor_auth.title') }}
+    </h3>
 
     <div v-if="!enabled">
       <p class="status-text">{{ $t('setting.two_factor_auth.status.disabled') }}</p>

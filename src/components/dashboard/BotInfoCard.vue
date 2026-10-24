@@ -56,17 +56,36 @@ const webRenderText = computed(() => (props.bot.web_render_status ? t('true') : 
 }
 
 .info-card .dashboard-card-title {
-  margin-bottom: 12px;
+  margin-bottom: 6px;
 }
 
-.data-text {
-  color: var(--el-text-color-regular);
-  word-break: break-all;
+.info-card p {
+  display: flex;
+  gap: 16px;
+  margin: 0;
+  padding: 11px 0;
+  line-height: 1.5;
+  font-size: 14px;
+  /* 行与行之间的虚线，像本子上的横格 */
+  border-bottom: 1px dashed var(--el-border-color);
+}
+
+.info-card p:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
 }
 
 .data-title {
-  margin-right: 3ex;
-  color: var(--el-text-color-primary);
+  flex: 0 0 auto;
+  min-width: 7em;
+  color: var(--el-text-color-secondary);
+  font-weight: 500;
   cursor: default;
+}
+
+.data-text {
+  flex: 1;
+  color: var(--el-text-color-primary);
+  word-break: break-all;
 }
 </style>
