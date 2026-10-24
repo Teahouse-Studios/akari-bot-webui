@@ -4,20 +4,52 @@ import MockAdapter from 'axios-mock-adapter'
 export default function setupMock() {
   const mock = new MockAdapter(axios)
 
+  /** 演示模式下所有写操作统一返回 403，前端会提示「无法在演示模式下修改数据」。 */
+  const demoWriteDenied = { detail: 'Cannot edit data in demo mode' }
+
+  /** 演示用 JWT，payload 与后端签发格式保持一致（name / admin / iss）。 */
+  const mockJwt =
+    'eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiSm9obiIsImFkbWluIjp0cnVlLCJpc3MiOiJhdXRoLWFwaSJ9.l6piMCKreZU-gjum6VXafyknIUdO8r1NdMP-kcemyJXxD32Chv5LsRDHnD3oUow0qX8vTPeujNgTu6iKLgHe8Q'
+
+  const readJsonBody = (config) => {
+    const raw = config.data
+    if (raw && typeof raw === 'object') {
+      return Array.isArray(raw) ? null : raw
+    }
+    try {
+      const body = JSON.parse(raw || '{}')
+      return body && typeof body === 'object' && !Array.isArray(body) ? body : null
+    } catch {
+      return null
+    }
+  }
+
+  /** 与后端列表接口一致：默认每页 20 条，上限 100 条。 */
+  const paginate = (items, params = {}) => {
+    const page = Math.max(1, Number(params.page) || 1)
+    const size = Math.min(100, Math.max(1, Number(params.size) || 20))
+    const start = (page - 1) * size
+    return { total: items.length, items: items.slice(start, start + size) }
+  }
+
+  const sse = (event, data) => `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`
+
+  const stripQuery = (url) => (url || '').split('?')[0]
+
   mock.onGet('/api').reply(200, { message: 'Hello, AkariBot!' })
+
+  mock.onGet(/^\/api\/media\/[^/]+$/).reply(404, { detail: 'Media not found' })
 
   mock.onGet('/api/init').reply(200, {
     enable_https: false,
     command_prefix: '~',
+    help_url: 'https://bot.teahouse.team',
     locale: 'zh_cn',
-    heartbeat_interval: 5,
-    heartbeat_timeout: 30,
+    // App.vue 读取的是 `lang`，这里与 `locale` 同时提供以兼容前端实现。
+    lang: 'zh_cn',
+    heartbeat_interval: 30,
+    heartbeat_timeout: 5,
     heartbeat_attempt: 3,
-  })
-
-  mock.onGet('/api/platform_prefixes').reply(200, {
-    target_prefixes: ['Discord', 'QQ', 'Web'],
-    sender_prefixes: ['Discord', 'QQ', 'Web'],
   })
 
   mock.onGet('/api/verify').reply(200, {
@@ -28,13 +60,21 @@ export default function setupMock() {
     },
   })
 
-  mock.onGet('/api/login').reply(205, {
-    data: 'eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiSm9obiIsImFkbWluIjp0cnVlLCJpc3MiOiJhdXRoLWFwaSJ9.l6piMCKreZU-gjum6VXafyknIUdO8r1NdMP-kcemyJXxD32Chv5LsRDHnD3oUow0qX8vTPeujNgTu6iKLgHe8Q',
-  })
-
-  mock.onPut('/api/password').reply(205, {})
+  // 后端在未设置密码时直接返回 JWT（200），设置密码后才要求 password / TOTP。
+  mock.onPost('/api/login').reply(200, { data: mockJwt })
 
   mock.onGet('/api/password').reply(200, { have_password: false })
+  mock.onPut('/api/password').reply(403, demoWriteDenied)
+  mock.onDelete('/api/password').reply(403, demoWriteDenied)
+
+  mock.onGet('/api/totp').reply(200, { enabled: false })
+  mock.onPost('/api/totp/setup').reply(403, demoWriteDenied)
+  mock.onPost('/api/totp/enable').reply(403, demoWriteDenied)
+  mock.onPost('/api/totp/backup-codes/reset').reply(403, demoWriteDenied)
+  mock.onPost('/api/totp/disable').reply(403, demoWriteDenied)
+
+  // 演示模式不开放开发者模式；其余 /api/dev/* 接口前端不会调用。
+  mock.onGet('/api/dev').reply(200, { is_dev: false })
 
   mock.onGet('/api/server-info').reply(200, {
     os: {
@@ -45,7 +85,6 @@ export default function setupMock() {
     },
     bot: {
       started_time: Math.floor(Date.now() / 1000) - 42314,
-      running_time: 42314,
       python_version: '3.12.8',
       version: 'badf00d',
       web_render_status: true,
@@ -116,6 +155,8 @@ export default function setupMock() {
         module_type: 'normal',
         target_id: `${mockPlatforms[Math.floor(pseudoRandom(seed * 3.07) * mockPlatforms.length)]}|Console|0`,
         sender_id: 'Web|0',
+        target_union_id: null,
+        sender_union_id: null,
         command: mockCommands[Math.floor(pseudoRandom(seed * 5.53) * mockCommands.length)],
         timestamp: timestamp.toISOString().replace('Z', '000+00:00'),
       })
@@ -168,7 +209,7 @@ export default function setupMock() {
   })
 
   mock.onGet('/api/config').reply(200, {
-    cfg_files: ['config.toml', 'bot_web.toml', 'module_wiki.toml'],
+    cfg_files: ['config.toml', 'bot_web.toml', 'module_wiki.toml', 'module_petal.toml'],
   })
 
   mock.onGet('/api/config/config.toml').reply(200, {
@@ -192,15 +233,23 @@ export default function setupMock() {
     content:
       '# https://toml.io/cn/v1.0.0\n# 注意：TOML 不是 Python。请不要在此处使用 Python 语法。\n\n[wiki]\n# wiki_banned_url_prefix = [] # 不进行解析的网址前缀。\n# wiki_supported_langs = [] # 启用的语言列表。\n',
   })
-  mock.onDelete(/^\/api\/config\/.+$/).reply(403, {
-    detail: 'Cannot edit data in demo mode',
+
+  mock.onGet('/api/config/module_petal.toml').reply(200, {
+    content:
+      '# https://toml.io/cn/v1.0.0\n# 注意：TOML 不是 Python。请不要在此处使用 Python 语法。\n\n[petal]\n# enable_get_petal = false # 是否允许获取花瓣。\n# petal_sign_limit = 5 # 单日签到获取花瓣上限。\n',
   })
+
+  // 后端仅允许读取配置目录下实际存在的 TOML 文件，其余返回 404。
+  mock.onGet(/^\/api\/config\/[^/]+\.toml$/).reply(404, { detail: 'Not found' })
+
+  // 演示模式不允许修改/删除任何配置文件。
+  mock.onPut(/^\/api\/config\/[^/]+$/).reply(403, demoWriteDenied)
+  mock.onDelete(/^\/api\/config\/[^/]+$/).reply(403, demoWriteDenied)
 
   const mockTargets = [
     {
       target_data: {},
       blocked: false,
-      target_id: 'Web|Console|0',
       union_id: 'UTID|00000000000000000000000000000001',
       bound_ids: ['Web|Console|0'],
       muted: false,
@@ -210,9 +259,8 @@ export default function setupMock() {
       locale: 'zh_cn',
     },
     {
-      target_data: {},
+      target_data: { welcome_message: 'Hello from AkariBot!' },
       blocked: false,
-      target_id: 'Discord|123456789',
       union_id: 'UTID|00000000000000000000000000000002',
       bound_ids: ['Discord|123456789', 'QQ|10001'],
       muted: true,
@@ -221,15 +269,99 @@ export default function setupMock() {
       banned_users: ['USID|00000000000000000000000000000003'],
       locale: 'en_us',
     },
+    {
+      target_data: {},
+      blocked: true,
+      union_id: 'UTID|00000000000000000000000000000003',
+      bound_ids: ['Telegram|-1001234567890'],
+      muted: false,
+      custom_admins: [],
+      modules: ['wiki'],
+      banned_users: [],
+      locale: 'ja_jp',
+    },
+    {
+      target_data: {},
+      blocked: false,
+      union_id: 'UTID|00000000000000000000000000000004',
+      bound_ids: ['QQ|20002'],
+      muted: false,
+      custom_admins: [],
+      modules: [],
+      banned_users: [],
+      locale: 'zh_cn',
+    },
+  ].map((item) => ({ ...item, target_id: item.bound_ids[0] }))
+
+  const mockSenders = [
+    {
+      sender_id: 'Web|0',
+      union_id: 'USID|00000000000000000000000000000001',
+      bound_ids: ['Web|0'],
+      sender_data: {},
+      blocked: false,
+      superuser: true,
+      petal: 0,
+      warns: 0,
+      trusted: false,
+    },
+    {
+      sender_id: 'QQ|10001',
+      union_id: 'USID|00000000000000000000000000000002',
+      bound_ids: ['QQ|10001', 'Discord|987654'],
+      sender_data: { nickname: 'Akari Fan' },
+      blocked: false,
+      superuser: false,
+      petal: 10,
+      warns: 2,
+      trusted: true,
+    },
+    {
+      sender_id: 'Telegram|12345678',
+      union_id: 'USID|00000000000000000000000000000003',
+      bound_ids: ['Telegram|12345678'],
+      sender_data: {},
+      blocked: true,
+      superuser: false,
+      petal: 0,
+      warns: 1,
+      trusted: false,
+    },
   ]
 
   const filterByBoundIds = (items, matcher) =>
-    items.filter((item) => (item.bound_ids || [item.target_id]).some((id) => matcher(id)))
+    items.filter((item) => (item.bound_ids || []).some((id) => matcher(id)))
+
+  /** 与后端 pick_display_id 一致：优先返回匹配前缀的绑定 ID，否则取第一个绑定 ID。 */
+  const pickDisplayId = (item, prefix) => {
+    const ids = item.bound_ids || []
+    if (prefix) {
+      const matched = ids.find((value) => value.startsWith(`${prefix}|`))
+      if (matched) return matched
+    }
+    return ids[0] || item.union_id
+  }
+
+  const collectPrefixes = (items) =>
+    [
+      ...new Set(
+        items
+          .flatMap((item) => item.bound_ids || [])
+          .filter((value) => value.includes('|'))
+          .map((value) => value.split('|', 1)[0]),
+      ),
+    ].sort((a, b) => a.localeCompare(b))
+
+  mock.onGet('/api/platform_prefixes').reply(200, {
+    target_prefixes: collectPrefixes(mockTargets),
+    sender_prefixes: collectPrefixes(mockSenders),
+  })
 
   mock.onGet('/api/target').reply((config) => {
-    const { prefix, status, id } = config.params || {}
+    const params = config.params || {}
+    const { prefix, status, id } = params
 
-    let filtered = mockTargets
+    let filtered = [...mockTargets]
 
     if (prefix) {
       filtered = filterByBoundIds(filtered, (targetId) => targetId.startsWith(`${prefix}|`))
@@ -247,17 +379,22 @@ export default function setupMock() {
       )
     }
 
+    const page = paginate(filtered, params)
     return [
       200,
       {
-        target_list: filtered,
-        total: filtered.length,
+        target_list: page.items.map((item) => ({
+          ...item,
+          target_id: pickDisplayId(item, prefix),
+        })),
+        total: page.total,
       },
     ]
   })
 
-  mock.onGet(/\/api\/target\/group\/.+$/).reply((config) => {
-    const unionId = decodeURIComponent(config.url.split('/api/target/group/')[1])
+  // 群组接口需要先于单条详情路由注册，避免被 /api/target/{target_id} 抢先匹配。
+  mock.onGet(/^\/api\/target\/group\/[^/]+$/).reply((config) => {
+    const unionId = decodeURIComponent(stripQuery(config.url).split('/api/target/group/')[1])
     const target = mockTargets.find((item) => item.union_id === unionId)
     if (!target) {
       return [404, { detail: 'Not found' }]
@@ -284,42 +421,34 @@ export default function setupMock() {
     ]
   })
 
-  mock.onPatch('/api/target/Web|Console|0').reply(403, {
-    detail: 'Cannot edit data in demo mode',
-  })
-  mock.onDelete('/api/target/Web|Console|0').reply(403, {
-    detail: 'Cannot edit data in demo mode',
+  mock.onGet(/^\/api\/target\/[^/]+$/).reply((config) => {
+    const targetId = decodeURIComponent(stripQuery(config.url).split('/api/target/')[1])
+    const target = mockTargets.find(
+      (item) => item.target_id === targetId || item.bound_ids.includes(targetId),
+    )
+    if (!target) {
+      return [404, { detail: 'Not found' }]
+    }
+    return [
+      200,
+      {
+        target_info: {
+          ...target,
+          target_id: targetId,
+        },
+      },
+    ]
   })
 
-  const mockSenders = [
-    {
-      sender_id: 'Web|0',
-      union_id: 'USID|00000000000000000000000000000001',
-      bound_ids: ['Web|0'],
-      sender_data: {},
-      blocked: false,
-      superuser: true,
-      petal: 0,
-      warns: 0,
-      trusted: false,
-    },
-    {
-      sender_id: 'QQ|10001',
-      union_id: 'USID|00000000000000000000000000000002',
-      bound_ids: ['QQ|10001', 'Discord|987654'],
-      sender_data: {},
-      blocked: false,
-      superuser: false,
-      petal: 10,
-      warns: 2,
-      trusted: true,
-    },
-  ]
+  // 演示模式不允许修改或删除会话数据。
+  mock.onPatch(/^\/api\/target\/[^/]+$/).reply(403, demoWriteDenied)
+  mock.onDelete(/^\/api\/target\/[^/]+$/).reply(403, demoWriteDenied)
 
   mock.onGet('/api/sender').reply((config) => {
-    const { prefix, status, id } = config.params || {}
+    const params = config.params || {}
+    const { prefix, status, id } = params
 
-    let filtered = mockSenders
+    let filtered = [...mockSenders]
 
     if (prefix) {
       filtered = filterByBoundIds(filtered, (senderId) => senderId.startsWith(`${prefix}|`))
@@ -339,17 +468,22 @@ export default function setupMock() {
       )
     }
 
+    const page = paginate(filtered, params)
     return [
       200,
       {
-        sender_list: filtered,
-        total: filtered.length,
+        sender_list: page.items.map((item) => ({
+          ...item,
+          sender_id: pickDisplayId(item, prefix),
+        })),
+        total: page.total,
       },
     ]
   })
 
-  mock.onGet(/\/api\/sender\/group\/.+$/).reply((config) => {
-    const unionId = decodeURIComponent(config.url.split('/api/sender/group/')[1])
+  // 群组接口需要先于单条详情路由注册，避免被 /api/sender/{sender_id} 抢先匹配。
+  mock.onGet(/^\/api\/sender\/group\/[^/]+$/).reply((config) => {
+    const unionId = decodeURIComponent(stripQuery(config.url).split('/api/sender/group/')[1])
     const sender = mockSenders.find((item) => item.union_id === unionId)
     if (!sender) {
       return [404, { detail: 'Not found' }]
@@ -372,16 +506,255 @@ export default function setupMock() {
     ]
   })
 
-  mock.onPatch('/api/sender/Web|0').reply(403, {
-    detail: 'Cannot edit data in demo mode',
+  mock.onGet(/^\/api\/sender\/[^/]+$/).reply((config) => {
+    const senderId = decodeURIComponent(stripQuery(config.url).split('/api/sender/')[1])
+    const sender = mockSenders.find(
+      (item) => item.sender_id === senderId || item.bound_ids.includes(senderId),
+    )
+    if (!sender) {
+      return [404, { detail: 'Not found' }]
+    }
+    return [
+      200,
+      {
+        sender_info: {
+          ...sender,
+          sender_id: senderId,
+        },
+      },
+    ]
   })
-  mock.onDelete('/api/sender/Web|0').reply(403, {
-    detail: 'Cannot edit data in demo mode',
+
+  // 演示模式不允许修改或删除用户数据。
+  mock.onPatch(/^\/api\/sender\/[^/]+$/).reply(403, demoWriteDenied)
+  mock.onDelete(/^\/api\/sender\/[^/]+$/).reply(403, demoWriteDenied)
+  const mockModule = (overrides) => ({
+    alias: [],
+    recommend_modules: [],
+    developers: ['Teahouse Studios'],
+    available_for: [],
+    exclude_from: [],
+    support_languages: [],
+    desc: '',
+    required_admin: false,
+    base: false,
+    doc: false,
+    hidden: false,
+    load: true,
+    rss: false,
+    regex: false,
+    event: false,
+    required_superuser: false,
+    required_base_superuser: false,
+    required_bot_permissions: [],
+    suppress_invalid_prompt: false,
+    commands: 0,
+    regexp: 0,
+    events: 0,
+    _db_load: true,
+    ...overrides,
   })
+
+  // 与后端 get_modules_info 的返回结构保持一致（对象以模块名为键）。
+  const mockModules = {
+    core: mockModule({
+      module_name: 'core',
+      base: true,
+      desc: 'AkariBot 的核心基础模块，提供会话与消息处理能力。',
+      commands: 12,
+      events: 3,
+      _py_module_name: 'core',
+    }),
+    help: mockModule({
+      module_name: 'help',
+      base: true,
+      desc: '帮助信息模块，用于查看命令帮助。',
+      commands: 4,
+      _py_module_name: 'help',
+    }),
+    wiki: mockModule({
+      module_name: 'wiki',
+      desc: '维基百科查询模块，支持多语言条目检索。',
+      commands: 3,
+      _py_module_name: 'wiki',
+    }),
+    petal: mockModule({
+      module_name: 'petal',
+      desc: '花瓣模块，提供签到与花瓣系统。',
+      commands: 6,
+      _py_module_name: 'petal',
+    }),
+    meme: mockModule({
+      module_name: 'meme',
+      desc: '表情包模块，可选择并发送随机表情包。',
+      commands: 2,
+      _db_load: false,
+      _py_module_name: 'meme',
+    }),
+    ai: mockModule({
+      module_name: 'ai',
+      desc: 'AI 对话模块，接入大语言模型进行对话。',
+      commands: 3,
+      _py_module_name: 'ai',
+    }),
+  }
+
+  const mockRelatedModules = {
+    core: [],
+    help: [],
+    wiki: ['ai'],
+    petal: ['wiki'],
+    meme: [],
+    ai: ['wiki'],
+  }
+
+  mock.onGet('/api/modules').reply(200, {
+    modules: Object.fromEntries(
+      Object.entries(mockModules).filter(([, info]) => info.load === true),
+    ),
+  })
+
   mock.onGet('/api/modules_list').reply(200, {
-    modules: [],
+    // 后端返回可加载的非基础模块名称列表（含当前未加载的模块）。
+    modules: Object.values(mockModules)
+      .filter((info) => info.load === true && info.base !== true)
+      .map((info) => info.module_name),
   })
-  mock.onPost('/api/restart').reply(202, {})
+  const mockModuleHelpDocs = {
+    core: {
+      module_name: 'core',
+      desc: 'AkariBot 的核心基础模块。',
+      commands: {
+        args: [{ args: '~help', desc: '查看命令帮助。' }],
+        options: [{ '--locale': '指定显示语言，例如 zh_cn、en_us。' }],
+      },
+      regexp: [],
+    },
+    help: {
+      module_name: 'help',
+      desc: '帮助信息模块。',
+      commands: {
+        args: [{ args: '~help <module>', desc: '查看指定模块的帮助信息。' }],
+        options: [],
+      },
+      regexp: [],
+    },
+    wiki: {
+      module_name: 'wiki',
+      desc: '维基百科查询模块。',
+      commands: {
+        args: [
+          { args: '~wiki <keyword>', desc: '查询指定关键词的维基百科条目。' },
+          { args: '~wiki --lang <code> <keyword>', desc: '指定语言查询维基百科。' },
+        ],
+        options: [{ '--lang': '维基百科语言代码，例如 zh、en。' }],
+      },
+      regexp: [],
+    },
+    petal: {
+      module_name: 'petal',
+      desc: '花瓣模块。',
+      commands: {
+        args: [
+          { args: '~petal', desc: '查看当前花瓣数量。' },
+          { args: '~petal sign', desc: '进行一次每日签到。' },
+        ],
+        options: [],
+      },
+      regexp: [],
+    },
+    meme: {
+      module_name: 'meme',
+      desc: '表情包模块。',
+      commands: {
+        args: [{ args: '~meme', desc: '随机发送一张表情包。' }],
+        options: [],
+      },
+      regexp: [],
+    },
+    ai: {
+      module_name: 'ai',
+      desc: 'AI 对话模块。',
+      commands: {
+        args: [{ args: '~ai <prompt>', desc: '向 AI 发送对话请求。' }],
+        options: [{ '--model': '指定使用的模型。' }],
+      },
+      regexp: [],
+    },
+  }
+
+  mock.onGet(/^\/api\/module\/[^/]+\/related$/).reply((config) => {
+    const name = decodeURIComponent(stripQuery(config.url).split('/api/module/')[1].split('/')[0])
+    return [200, { modules: mockRelatedModules[name] || [] }]
+  })
+
+  mock.onGet(/^\/api\/module\/[^/]+\/helpdoc$/).reply((config) => {
+    const name = decodeURIComponent(stripQuery(config.url).split('/api/module/')[1].split('/')[0])
+    const helpDoc = mockModuleHelpDocs[name]
+    if (!helpDoc) {
+      return [404, { detail: 'Not found' }]
+    }
+    return [200, helpDoc]
+  })
+
+  // 演示模式允许切换内存中的模块状态（刷新页面后恢复）。
+  mock.onPost(/^\/api\/module\/[^/]+\/(reload|load|unload)$/).reply((config) => {
+    const matched = stripQuery(config.url).match(/^\/api\/module\/([^/]+)\/(reload|load|unload)$/)
+    const name = decodeURIComponent(matched[1])
+    const action = matched[2]
+    const moduleInfo =
+      mockModules[name] || Object.values(mockModules).find((item) => item._py_module_name === name)
+
+    if (!moduleInfo) {
+      const actionName = action === 'reload' ? 'Reload' : action === 'load' ? 'Load' : 'Unload'
+      return [422, { detail: `${actionName} modules failed` }]
+    }
+    if (action === 'unload') {
+      if (moduleInfo.base) {
+        return [422, { detail: 'Unload modules failed' }]
+      }
+      moduleInfo._db_load = false
+    } else if (action === 'load') {
+      moduleInfo._db_load = true
+    }
+    return [204]
+  })
+
+  // 重启与更新接口在后端以 SSE 返回进度，这里提供同形态的演示数据。
+  mock.onPost('/api/restart').reply((config) => {
+    const body = readJsonBody(config) || {}
+    const force = body.force === true
+    const payload = [
+      sse('status', {
+        pending: true,
+        force,
+        state: force ? 'restarting' : 'waiting',
+        active_sessions: 0,
+      }),
+      sse('status', { pending: false, force: false, state: 'idle', active_sessions: 0 }),
+    ].join('')
+    return [202, payload, { 'Content-Type': 'text/event-stream' }]
+  })
+
+  mock.onPost('/api/update').reply((config) => {
+    const body = readJsonBody(config) || {}
+    const force = body.force === true
+    const events = [
+      ['start', { force }],
+      ['stage', { stage: 'git', action: force ? 'reset' : 'pull' }],
+      ['output', { stage: 'git', line: 'Already up to date.' }],
+      ['stage', { stage: 'git', action: force ? 'reset' : 'pull', returncode: 0 }],
+      ['stage', { stage: 'dependencies', tool: 'uv' }],
+      ['output', { stage: 'dependencies', line: 'Resolved 128 packages in 0.42s' }],
+      ['stage', { stage: 'dependencies', tool: 'uv', returncode: 0 }],
+      ['done', { success: true }],
+    ]
+    return [
+      202,
+      events.map(([event, data]) => sse(event, data)).join(''),
+      { 'Content-Type': 'text/event-stream' },
+    ]
+  })
 
   // WebRender：config 来自 WebUI 进程，status 来自服务端
   const mockWebRenderConfig = {
@@ -414,11 +787,6 @@ export default function setupMock() {
 
   const mockScreenshot =
     'iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAYAAABw4pVUAAAAXklEQVR42u3QMQEAAAgDoJnc6BpjDyQgd1MFAgQIECBAgAABAgQIECBAgAABAgQIECBAgAABAgQIECBAgAABAgQIECBAgAABAgQIECBAgAABAgQIECBAgAABAj4NLQAB0m8W6QAAAABJRU5ErkJggg=='
-
-  const mockWebRenderBriefStatus = {
-    available: true,
-    browser_initialized: true,
-  }
 
   mock.onGet('/api/webrender').reply(200, {
     config: mockWebRenderConfig,
@@ -454,52 +822,208 @@ export default function setupMock() {
       {
         ok: true,
         error: null,
-        status: {
-          available: mockWebRenderStatus.available,
-          browser_initialized: mockWebRenderStatus.browser_initialized,
-        },
+        status: { ...mockWebRenderStatus },
       },
     ]
   })
 
-  // 演示模式下受限文件接口只读
+  // 演示模式下文件接口只读，提供一棵可浏览的虚拟目录树。
+  const mockFileModified = '2025-08-15T10:23:45'
+  const mockTextFile = (content) => ({ content })
+  const mockImageFile = (base64, mime = 'image/png') => ({ base64, mime })
+
+  const mockStorageTree = {
+    'core:data': {
+      children: {
+        'README.md': mockTextFile('# AkariBot 数据目录\n\n演示模式下可浏览文件，但无法修改。\n'),
+        config: {
+          children: {
+            'example.toml': mockTextFile('[demo]\nenabled = true # 演示配置示例\n'),
+          },
+        },
+        private: {
+          children: {
+            web: { children: { '.devices': mockTextFile('{\n  "devices": {}\n}\n') } },
+          },
+        },
+      },
+    },
+    'core:assets': {
+      children: {
+        'akari-logo.png': mockImageFile(mockScreenshot),
+        'notice.txt': mockTextFile('AkariBot demo assets\n'),
+      },
+    },
+    'core:cache': {
+      children: {
+        'README.md': mockTextFile('# 缓存目录\n\n缓存会在运行时自动生成。\n'),
+      },
+    },
+    'module:wiki:data': {
+      children: {
+        'wiki_cache.json': mockTextFile('{\n  "zh_cn": {}\n}\n'),
+      },
+    },
+    'module:wiki:assets': {
+      children: {
+        'help.md': mockTextFile('# Wiki 模块\n\n使用 `~wiki <keyword>` 查询条目。\n'),
+        images: { children: { 'wiki-example.png': mockImageFile(mockScreenshot) } },
+      },
+    },
+    'module:petal:data': {
+      children: {
+        'petals.json': mockTextFile('{\n  "daily_limit": 5\n}\n'),
+      },
+    },
+  }
+
+  const mockStorageRoots = {
+    'core:data': { scope: 'core', module: null, target: 'data', path: './data' },
+    'core:assets': { scope: 'core', module: null, target: 'assets', path: './assets' },
+    'core:cache': { scope: 'core', module: null, target: 'cache', path: './cache' },
+    'module:wiki:data': {
+      scope: 'module',
+      module: 'wiki',
+      target: 'data',
+      path: './modules/wiki/data',
+    },
+    'module:wiki:assets': {
+      scope: 'module',
+      module: 'wiki',
+      target: 'assets',
+      path: './modules/wiki/assets',
+    },
+    'module:petal:data': {
+      scope: 'module',
+      module: 'petal',
+      target: 'data',
+      path: './modules/petal/data',
+    },
+  }
+
+  const normalizeStoragePath = (path = '') =>
+    String(path)
+      .replace(/\\/g, '/')
+      .replace(/^\/+|\/+$/g, '')
+
+  const getStorageNode = (rootId, path = '') => {
+    const root = mockStorageTree[rootId]
+    if (!root) return null
+    let node = root
+    for (const segment of normalizeStoragePath(path).split('/').filter(Boolean)) {
+      if (!node.children || !node.children[segment]) return null
+      node = node.children[segment]
+    }
+    return node
+  }
+
+  const isStorageDirectory = (node) => Boolean(node && node.children)
+  const storageFileSize = (node) => {
+    if (!node) return 0
+    if (typeof node.content === 'string') return new TextEncoder().encode(node.content).length
+    if (typeof node.base64 === 'string') return Math.floor((node.base64.length * 3) / 4)
+    return 0
+  }
+
+  /** 生成与后端等长的 16 位修订号（仅用于演示的乐观锁比对）。 */
+  const storageRevision = (rootId, path) => {
+    let hash = 2166136261
+    const text = `${rootId}:${path}`
+    for (let i = 0; i < text.length; i += 1) {
+      hash ^= text.charCodeAt(i)
+      hash = Math.imul(hash, 16777619)
+    }
+    return (hash >>> 0).toString(16).padStart(8, '0').repeat(2)
+  }
+
+  const storageFileInfo = (rootId, path, node) => ({
+    name: path.split('/').pop() || rootId,
+    path,
+    is_dir: isStorageDirectory(node),
+    size: isStorageDirectory(node) ? 0 : storageFileSize(node),
+    modified: mockFileModified,
+    revision: isStorageDirectory(node) ? null : storageRevision(rootId, path),
+  })
+
+  const base64ToBlob = (base64, type) => {
+    const binary = atob(base64)
+    const bytes = new Uint8Array(binary.length)
+    for (let i = 0; i < binary.length; i += 1) bytes[i] = binary.charCodeAt(i)
+    return new Blob([bytes], { type })
+  }
+
   mock.onGet('/api/files/roots').reply(200, {
-    roots: [
-      {
-        id: 'core:data',
-        scope: 'core',
-        module: null,
-        target: 'data',
-        path: './data',
-        exists: true,
-      },
-      {
-        id: 'core:assets',
-        scope: 'core',
-        module: null,
-        target: 'assets',
-        path: './assets',
-        exists: true,
-      },
-    ],
+    roots: Object.entries(mockStorageRoots).map(([id, root]) => ({ id, ...root, exists: true })),
   })
+
   mock.onGet('/api/files/list').reply((config) => {
-    const root = config.params?.root || 'core:data'
-    const path = config.params?.path || ''
-    return [200, { root, path, exists: true, files: [] }]
+    const rootId = config.params?.root
+    const relative = normalizeStoragePath(config.params?.path || '')
+    if (!mockStorageTree[rootId]) return [404, { detail: 'unknown_root' }]
+    const node = getStorageNode(rootId, relative)
+    if (!node) return [200, { root: rootId, path: relative, exists: false, files: [] }]
+    if (!isStorageDirectory(node)) return [400, { detail: 'not_a_directory' }]
+
+    const files = Object.keys(node.children)
+      .map((name) =>
+        storageFileInfo(rootId, relative ? `${relative}/${name}` : name, node.children[name]),
+      )
+      .sort((a, b) => (a.is_dir === b.is_dir ? a.name.localeCompare(b.name) : a.is_dir ? -1 : 1))
+    return [200, { root: rootId, path: relative, exists: true, files }]
   })
-  mock.onGet('/api/files/content').reply(404, { detail: 'not_found' })
-  mock.onGet('/api/files/download').reply(404, { detail: 'not_found' })
-  mock.onPost('/api/files/upload').reply(403, { detail: 'forbidden_path' })
-  mock.onPost('/api/files/create').reply(403, { detail: 'forbidden_path' })
-  mock.onPost('/api/files/rename').reply(403, { detail: 'forbidden_path' })
-  mock.onDelete('/api/files/entry').reply(403, { detail: 'forbidden_path' })
+
+  mock.onGet('/api/files/content').reply((config) => {
+    const rootId = config.params?.root
+    const relative = normalizeStoragePath(config.params?.path || '')
+    if (!mockStorageTree[rootId]) return [404, { detail: 'unknown_root' }]
+    const node = getStorageNode(rootId, relative)
+    if (!node) return [404, { detail: 'not_found' }]
+    if (isStorageDirectory(node)) return [400, { detail: 'is_directory' }]
+    if (typeof node.content !== 'string') return [415, { detail: 'not_text' }]
+
+    return [
+      200,
+      {
+        root: rootId,
+        path: relative,
+        content: node.content,
+        size: storageFileSize(node),
+        modified: mockFileModified,
+        revision: storageRevision(rootId, relative),
+      },
+    ]
+  })
+
+  mock.onGet('/api/files/download').reply((config) => {
+    const rootId = config.params?.root
+    const relative = normalizeStoragePath(config.params?.path || '')
+    if (!mockStorageTree[rootId]) return [404, { detail: 'unknown_root' }]
+    const node = getStorageNode(rootId, relative)
+    if (!node) return [404, { detail: 'not_found' }]
+
+    if (isStorageDirectory(node)) {
+      // 后端会把目录打包成 zip；演示模式返回一个空 zip，保持前端下载流程可用。
+      const emptyZip = base64ToBlob('UEsFBgAAAAAAAAAAAAAAAAAAAAAAAA==', 'application/zip')
+      return [200, emptyZip, { 'Content-Type': 'application/zip' }]
+    }
+    if (typeof node.base64 === 'string') {
+      const mime = node.mime || 'application/octet-stream'
+      return [200, base64ToBlob(node.base64, mime), { 'Content-Type': mime }]
+    }
+    const mime = 'text/plain;charset=utf-8'
+    return [200, new Blob([node.content ?? ''], { type: mime }), { 'Content-Type': mime }]
+  })
+
+  // 与后端一致：上传/创建/重命名/删除/写入均需写权限，演示模式下一律拒绝。
+  mock.onPut('/api/files/content').reply(403, demoWriteDenied)
+  mock.onPost('/api/files/upload').reply(403, demoWriteDenied)
+  mock.onPost('/api/files/create').reply(403, demoWriteDenied)
+  mock.onPost('/api/files/rename').reply(403, demoWriteDenied)
+  mock.onDelete('/api/files/entry').reply(403, demoWriteDenied)
 
   mock.onPost('/api/webrender/test').reply((config) => {
-    let body = {}
-    try {
-      body = JSON.parse(config.data || '{}')
-    } catch {
+    const body = readJsonBody(config)
+    if (!body) {
       return [400, { detail: 'invalid_json' }]
     }
 
@@ -521,11 +1045,11 @@ export default function setupMock() {
           ok: mockWebRenderStatus.available,
           mode,
           elapsed: 0.01,
-          status: mockWebRenderBriefStatus,
+          status: { ...mockWebRenderStatus },
           source: null,
           source_truncated: false,
           images: [],
-          output_type: outputType,
+          output_type: null,
           error: mockWebRenderStatus.available ? null : 'browser_unavailable',
         },
       ]
@@ -538,11 +1062,11 @@ export default function setupMock() {
           ok: false,
           mode,
           elapsed: 0.05,
-          status: mockWebRenderBriefStatus,
+          status: null,
           source: null,
           source_truncated: false,
           images: [],
-          output_type: outputType,
+          output_type: null,
           error: 'browser_unavailable',
         },
       ]
@@ -559,11 +1083,11 @@ export default function setupMock() {
           ok: true,
           mode,
           elapsed: 1.23,
-          status: mockWebRenderBriefStatus,
+          status: { ...mockWebRenderStatus },
           source: body.raw_text ? `Mock source of ${body.url}` : source,
           source_truncated: false,
           images: [],
-          output_type: outputType,
+          output_type: null,
           error: null,
         },
       ]
@@ -579,7 +1103,7 @@ export default function setupMock() {
         ok: true,
         mode,
         elapsed: 1.82,
-        status: mockWebRenderBriefStatus,
+        status: { ...mockWebRenderStatus },
         source: null,
         source_truncated: false,
         images: [mockScreenshot],
@@ -588,4 +1112,12 @@ export default function setupMock() {
       },
     ]
   })
+
+  // 未被覆盖的接口统一返回 404，避免演示模式向真实后端发起请求。
+  mock
+    .onAny()
+    .reply((config) => [
+      404,
+      { detail: `Not found: ${config.method?.toUpperCase()} ${stripQuery(config.url)}` },
+    ])
 }
