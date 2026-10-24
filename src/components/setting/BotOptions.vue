@@ -2,12 +2,40 @@
   <div>
     <h3><i class="mdi mdi-robot"></i> {{ $t('setting.bot_options.title') }}</h3>
     <div class="bot-option-actions">
-      <el-button type="primary" :loading="updating" @click="handleUpdate">
+      <el-button
+        type="primary"
+        class="bot-option-button"
+        :class="{ 'force-mode': shiftPressed, 'force-latched': forceUpdateLatched }"
+        :loading="updating"
+        @click="handleUpdate"
+      >
         <i v-if="!updating" class="mdi mdi-update"></i>
-        {{ $t('setting.bot_options.button.update_bot') }}
+        <span class="button-label">
+          <span class="button-label-text">{{ $t('setting.bot_options.button.update_bot') }}</span>
+          <span class="button-label-text force-label">{{
+            $t('setting.bot_options.button.force_update_bot')
+          }}</span>
+          <span class="button-label-text button-label-sizer" aria-hidden="true">{{
+            $t('setting.bot_options.button.force_restart_bot')
+          }}</span>
+        </span>
       </el-button>
-      <el-button type="danger" @click="handleRestart">
-        <i class="mdi mdi-restart"></i> {{ $t('setting.bot_options.button.restart_bot') }}
+      <el-button
+        type="danger"
+        class="bot-option-button"
+        :class="{ 'force-mode': shiftPressed, 'force-latched': forceRestartLatched }"
+        @click="handleRestart"
+      >
+        <i class="mdi mdi-restart"></i>
+        <span class="button-label">
+          <span class="button-label-text">{{ $t('setting.bot_options.button.restart_bot') }}</span>
+          <span class="button-label-text force-label">{{
+            $t('setting.bot_options.button.force_restart_bot')
+          }}</span>
+          <span class="button-label-text button-label-sizer" aria-hidden="true">{{
+            $t('setting.bot_options.button.force_update_bot')
+          }}</span>
+        </span>
       </el-button>
     </div>
 
@@ -57,7 +85,7 @@
 </template>
 
 <script setup>
-import { computed, nextTick, onBeforeUnmount, ref } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
 import axios from '@/axios.mjs'
 import { IS_DEMO } from '@/const'
 import LocalStorageJson from '@/localStorageJson.js'
@@ -68,62 +96,147 @@ const { t } = useI18n()
 
 const pollingTimeout = 60000
 const pollingInterval = 2000
+const restartFallbackDelay = 10000
 const hasShownTimeoutError = ref(false)
 
-const restartBot = async () => {
-  try {
-    const response = await axios.post('/api/restart', {})
-    if (response.status === 202) {
-      const loadingInstance = ElLoading.service({
-        fullscreen: true,
-        text: t('setting.bot_options.restart.loading.text'),
-      })
+const shiftPressed = ref(false)
+const forceUpdateLatched = ref(false)
+const forceRestartLatched = ref(false)
 
-      const startTime = Date.now()
+const handleShiftDown = (event) => {
+  if (event.key === 'Shift') shiftPressed.value = true
+}
 
-      const poll = async () => {
-        try {
-          const res = await axios.get('/api')
-          if (res.status === 200) {
-            loadingInstance.close()
-            window.location.href = '/'
-          } else {
-            throw new Error('Not ready')
-          }
-        } catch {
-          const elapsed = Date.now() - startTime
-          if (elapsed >= pollingTimeout && !hasShownTimeoutError.value) {
-            hasShownTimeoutError.value = true
-            ElMessage({
-              message: t('setting.bot_options.restart.message.failed'),
-              type: 'error',
-              duration: 0,
-            })
-            loadingInstance.close()
-          } else {
-            setTimeout(poll, pollingInterval)
-          }
-        }
+const handleShiftUp = (event) => {
+  if (event.key === 'Shift') shiftPressed.value = false
+}
+
+const resetShift = () => {
+  shiftPressed.value = false
+}
+
+onMounted(() => {
+  window.addEventListener('keydown', handleShiftDown)
+  window.addEventListener('keyup', handleShiftUp)
+  window.addEventListener('blur', resetShift)
+})
+
+const restartBot = async (force = false) => {
+  forceRestartLatched.value = force
+  const loadingInstance = ElLoading.service({
+    fullscreen: true,
+    text: t('setting.bot_options.restart.loading.text'),
+  })
+  hasShownTimeoutError.value = false
+
+  let pollStarted = false
+  let pollStartTime = 0
+  let pollTimer = null
+  let pollDueTime = 0
+
+  const showError = (message) => {
+    forceRestartLatched.value = false
+    loadingInstance.close()
+    ElMessage({ message, type: 'error', duration: 0 })
+  }
+
+  const poll = async () => {
+    try {
+      const res = await axios.get('/api')
+      if (res.status === 200) {
+        loadingInstance.close()
+        window.location.href = '/'
+        return
       }
-
-      hasShownTimeoutError.value = false
-      setTimeout(poll, pollingInterval)
+      throw new Error('Not ready')
+    } catch {
+      const elapsed = Date.now() - pollStartTime
+      if (elapsed >= pollingTimeout && !hasShownTimeoutError.value) {
+        hasShownTimeoutError.value = true
+        showError(t('setting.bot_options.restart.message.failed'))
+      } else {
+        setTimeout(poll, pollingInterval)
+      }
     }
+  }
+
+  const startPolling = (delay) => {
+    if (pollStarted) return
+    const dueTime = Date.now() + delay
+    // 已排定較晚的輪詢時，允許提前到更早的時間
+    if (pollTimer && dueTime >= pollDueTime) return
+    clearTimeout(pollTimer)
+    pollDueTime = dueTime
+    pollTimer = setTimeout(() => {
+      pollStarted = true
+      pollStartTime = Date.now()
+      poll()
+    }, delay)
+  }
+
+  const applyRestartStatus = (data) => {
+    const activeSessions = Number(data?.active_sessions) || 0
+    if (data?.state === 'waiting' && activeSessions > 0) {
+      loadingInstance.setText(
+        t('setting.bot_options.restart.loading.waiting_sessions', { count: activeSessions }),
+      )
+      return
+    }
+
+    loadingInstance.setText(t('setting.bot_options.restart.loading.text'))
+    // 等待执行中的命令时旧进程仍会回应 /api，需等真正开始重启后才轮询
+    if (data?.state === 'restarting') startPolling(restartFallbackDelay)
+  }
+
+  try {
+    if (IS_DEMO) {
+      await axios.post('/api/restart', { force })
+      startPolling(pollingInterval)
+      return
+    }
+
+    const response = await fetch('/api/restart', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${LocalStorageJson.getItem('token') || ''}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ force }),
+    })
+
+    if (!response.ok) {
+      const detail = await readErrorDetail(response)
+      showError(
+        `${t('setting.bot_options.restart.message.failed')} (HTTP ${response.status})${detail}`,
+      )
+      return
+    }
+
+    try {
+      await consumeSseStream(response, (event, data) => {
+        if (event === 'status') applyRestartStatus(data)
+      })
+    } catch {
+      // 服务端重启时会主动断开 SSE 连接，属于预期行为
+    }
+    startPolling(pollingInterval)
   } catch (error) {
-    ElMessage.error(t('message.error.fetch') + error.message)
+    showError(t('message.error.fetch') + error.message)
   }
 }
 
 const handleRestart = async () => {
+  const force = shiftPressed.value
+  forceRestartLatched.value = force
   try {
     await ElMessageBox.confirm(t('confirm.message'), t('confirm.warning'), {
       confirmButtonText: t('button.confirm'),
       cancelButtonText: t('button.cancel'),
       type: 'warning',
     })
-    await restartBot()
+    await restartBot(force)
   } catch {
-    return
+    forceRestartLatched.value = false
   }
 }
 
@@ -170,6 +283,7 @@ const appendLine = (text, type = 'output') => {
 const resetUpdateState = () => {
   clearTimeout(autoCloseTimer)
   autoCloseTimer = null
+  forceUpdateLatched.value = false
   updateLines.value = []
   updateStatus.value = 'idle'
   updating.value = false
@@ -252,8 +366,8 @@ const processUpdateEvent = (event, data) => {
   }
 }
 
-/** 解析 SSE 事件块，返回是否收到 done 事件 */
-const dispatchSseBlock = (raw) => {
+/** 解析 SSE 事件块，格式不完整时返回 null */
+const parseSseBlock = (raw) => {
   let event = 'message'
   const dataLines = []
   for (const line of raw.split('\n')) {
@@ -263,25 +377,27 @@ const dispatchSseBlock = (raw) => {
       dataLines.push(line.slice(5).replace(/^ /, ''))
     }
   }
-  if (!dataLines.length) return false
+  if (!dataLines.length) return null
 
-  let data
   try {
-    data = JSON.parse(dataLines.join('\n'))
+    return { event, data: JSON.parse(dataLines.join('\n')) }
   } catch {
-    return false
+    return null
   }
-  processUpdateEvent(event, data)
-  return event === 'done'
 }
 
-const consumeUpdateStream = async (response) => {
+/** 读取 SSE 响应流，逐块回调事件 */
+const consumeSseStream = async (response, onEvent) => {
   if (!response.body) throw new Error('Response body is empty')
 
   const reader = response.body.getReader()
   const decoder = new TextDecoder()
   let buffer = ''
-  let doneReceived = false
+
+  const dispatch = (raw) => {
+    const parsed = parseSseBlock(raw)
+    if (parsed) onEvent(parsed.event, parsed.data)
+  }
 
   while (true) {
     const { value, done } = await reader.read()
@@ -293,13 +409,22 @@ const consumeUpdateStream = async (response) => {
     while (boundary !== -1) {
       const raw = buffer.slice(0, boundary)
       buffer = buffer.slice(boundary + 2)
-      if (dispatchSseBlock(raw)) doneReceived = true
+      dispatch(raw)
       boundary = buffer.indexOf('\n\n')
     }
   }
 
   buffer += decoder.decode().replace(/\r\n/g, '\n')
-  if (buffer.trim() && dispatchSseBlock(buffer)) doneReceived = true
+  if (buffer.trim()) dispatch(buffer)
+}
+
+/** 消费更新流，返回是否收到 done 事件 */
+const consumeUpdateStream = async (response) => {
+  let doneReceived = false
+  await consumeSseStream(response, (event, data) => {
+    processUpdateEvent(event, data)
+    if (event === 'done') doneReceived = true
+  })
   return doneReceived
 }
 
@@ -313,12 +438,12 @@ const readErrorDetail = async (response) => {
   return ''
 }
 
-const runDemoUpdate = async () => {
+const runDemoUpdate = async (force) => {
   const demoEvents = [
-    ['start', { force: false }],
-    ['stage', { stage: 'git', action: 'pull' }],
+    ['start', { force }],
+    ['stage', { stage: 'git', action: force ? 'reset' : 'pull' }],
     ['output', { stage: 'git', line: 'Already up to date.' }],
-    ['stage', { stage: 'git', action: 'pull', returncode: 0 }],
+    ['stage', { stage: 'git', action: force ? 'reset' : 'pull', returncode: 0 }],
     ['stage', { stage: 'dependencies', tool: 'uv' }],
     ['output', { stage: 'dependencies', line: 'Resolved 128 packages in 0.42s' }],
     ['output', { stage: 'dependencies', line: 'Audited 128 packages in 0.08s' }],
@@ -332,15 +457,16 @@ const runDemoUpdate = async () => {
   }
 }
 
-const startUpdate = async () => {
+const startUpdate = async (force = false) => {
   resetUpdateState()
+  forceUpdateLatched.value = force
   updateDialogVisible.value = true
   updating.value = true
   updateStatus.value = 'running'
 
   try {
     if (IS_DEMO) {
-      await runDemoUpdate()
+      await runDemoUpdate(force)
       return
     }
 
@@ -350,7 +476,7 @@ const startUpdate = async () => {
         Authorization: `Bearer ${LocalStorageJson.getItem('token') || ''}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ force: false }),
+      body: JSON.stringify({ force }),
     })
 
     if (!response.ok) {
@@ -377,10 +503,13 @@ const startUpdate = async () => {
 }
 
 const handleUpdate = () => {
-  if (!updating.value) startUpdate()
+  if (!updating.value) startUpdate(shiftPressed.value)
 }
 
 onBeforeUnmount(() => {
+  window.removeEventListener('keydown', handleShiftDown)
+  window.removeEventListener('keyup', handleShiftUp)
+  window.removeEventListener('blur', resetShift)
   clearTimeout(autoCloseTimer)
   autoCloseTimer = null
 })
@@ -396,6 +525,47 @@ onBeforeUnmount(() => {
 /* 主題設定的按鈕間距約 10px；覆蓋 Element Plus 相鄰按鈕的預設 margin */
 .bot-option-actions :deep(.el-button + .el-button) {
   margin-left: 0;
+}
+
+/* 按住 Shift 悬停时切换为强制操作；标签与量测文字叠放在同一格，避免切换文字时撑开按钮 */
+.bot-option-button {
+  padding-left: 22px;
+  padding-right: 22px;
+}
+
+.button-label {
+  display: inline-grid;
+  align-items: center;
+  justify-items: center;
+}
+
+/* Vue 會移除元素間的換行空白，需自行補上圖示與文字的間距 */
+.bot-option-button:not(.is-loading) .button-label {
+  margin-left: 6px;
+}
+
+.button-label-text {
+  grid-area: 1 / 1;
+  white-space: nowrap;
+}
+
+/* 隱形量測文字：兩個按鈕都預留最長文案寬度，使按鈕等長且切換文字時不撐開 */
+.button-label-sizer {
+  visibility: hidden;
+}
+
+.bot-option-button .force-label {
+  visibility: hidden;
+}
+
+.bot-option-button.force-mode:hover .button-label-text:not(.force-label),
+.bot-option-button.force-latched .button-label-text:not(.force-label) {
+  visibility: hidden;
+}
+
+.bot-option-button.force-mode:hover .force-label,
+.bot-option-button.force-latched .force-label {
+  visibility: visible;
 }
 
 .update-terminal {
