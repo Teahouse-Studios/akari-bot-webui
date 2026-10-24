@@ -26,6 +26,7 @@ import {
 import { init, use } from 'echarts/core'
 import { LabelLayout, UniversalTransition } from 'echarts/features'
 import { CanvasRenderer } from 'echarts/renderers'
+import { getChartTheme } from '@/utils/themeColor.js'
 
 use([
   BarChart,
@@ -63,9 +64,6 @@ const chartData = computed(() =>
   })),
 )
 
-const getPrimaryColor = () =>
-  getComputedStyle(document.documentElement).getPropertyValue('--el-color-primary').trim()
-
 const renderChart = async () => {
   await nextTick()
   if (chartInstance.value) chartInstance.value.dispose()
@@ -73,9 +71,10 @@ const renderChart = async () => {
   if (!chartDom || chartDom.offsetWidth === 0) return
 
   const needZoom = chartData.value.length > 12
+  const theme = getChartTheme()
   const chart = init(chartDom)
   chart.setOption({
-    color: [getPrimaryColor()],
+    color: [theme.primary],
     tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
     grid: { left: 10, right: 20, top: 20, bottom: needZoom ? 40 : 10, containLabel: true },
     dataZoom: needZoom
@@ -87,15 +86,20 @@ const renderChart = async () => {
     xAxis: {
       type: 'category',
       data: chartData.value.map((item) => item.name),
-      axisLabel: { interval: 0, rotate: needZoom ? 40 : 0, fontSize: 11 },
+      ...theme.axis,
+      axisLabel: { ...theme.axis.axisLabel, interval: 0, rotate: needZoom ? 40 : 0, fontSize: 11 },
     },
-    yAxis: { type: 'value' },
+    yAxis: { type: 'value', ...theme.axis },
     series: [
       {
         name: t('analytics.module.table.count'),
         type: 'bar',
         barMaxWidth: 36,
-        itemStyle: { borderRadius: [4, 4, 0, 0] },
+        // 柱子顶部粉、底部浅紫，圆角呼应整体的圆润造型
+        itemStyle: {
+          borderRadius: [8, 8, 2, 2],
+          color: theme.verticalGradient(theme.primary, theme.secondary),
+        },
         data: chartData.value.map((item) => item.count),
       },
     ],

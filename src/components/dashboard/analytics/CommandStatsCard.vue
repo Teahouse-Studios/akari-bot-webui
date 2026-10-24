@@ -61,6 +61,7 @@ import {
 import { init, use } from 'echarts/core'
 import { LabelLayout, UniversalTransition } from 'echarts/features'
 import { CanvasRenderer } from 'echarts/renderers'
+import { getChartTheme } from '@/utils/themeColor.js'
 
 use([
   LineChart,
@@ -111,31 +112,37 @@ const chartContainer = ref(null)
 const chartInstance = ref(null)
 let resizeObserver = null
 
-const getPrimaryColor = () => {
-  return getComputedStyle(document.documentElement).getPropertyValue('--el-color-primary').trim()
-}
-
 const renderChart = async () => {
   await nextTick()
   if (chartInstance.value) chartInstance.value.dispose()
   const chartDom = chartContainer.value
   if (!chartDom || chartDom.offsetWidth === 0) return
 
+  const theme = getChartTheme()
   const chart = init(chartDom)
   chart.setOption({
-    color: [getPrimaryColor()],
+    color: [theme.primary],
     tooltip: { trigger: 'axis' },
     dataZoom: [
       { type: 'slider', start: 0, end: 100 },
       { type: 'inside', start: 0, end: 100 },
     ],
-    xAxis: { type: 'category', data: props.trendData.map((item) => item.date) },
-    yAxis: { type: 'value' },
+    xAxis: { type: 'category', data: props.trendData.map((item) => item.date), ...theme.axis },
+    yAxis: { type: 'value', ...theme.axis },
     series: [
       {
         name: t('dashboard.analytics.command.chart.command'),
         type: 'line',
         smooth: true,
+        showSymbol: false,
+        lineStyle: { width: 2.5 },
+        // 线下铺一层由粉渐隐到浅紫的面积
+        areaStyle: {
+          color: theme.verticalGradient(
+            theme.withAlpha(theme.primary, 0.4),
+            theme.withAlpha(theme.secondary, 0.03),
+          ),
+        },
         data: props.trendData.map((item) => item.count),
       },
     ],

@@ -311,9 +311,10 @@ onBeforeUnmount(() => {
 .chat-container {
   flex: 1 1 auto;
   min-height: 0;
-  border: 1px solid var(--el-border-color);
-  border-radius: 10px;
+  border: 1px solid var(--el-border-color-light);
+  border-radius: var(--ak-radius-card);
   background-color: var(--el-bg-color-overlay);
+  box-shadow: 0 3px 0 0 var(--ak-edge);
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
@@ -337,7 +338,10 @@ onBeforeUnmount(() => {
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  background-color: var(--el-fill-color-light);
+  /* 聊天区铺一层点阵，像在手帐页上对话 */
+  background-color: var(--el-fill-color-lighter);
+  background-image: radial-gradient(circle at 1px 1px, var(--ak-paper-dot) 1px, transparent 1.4px);
+  background-size: 18px 18px;
 }
 
 .chat-tip {

@@ -3,7 +3,11 @@
     <!-- TODO: 压缩 -->
     <img class="logo" src="@/assets/akaribot_logo.png" alt="Akaribot" />
     <h1 class="title">小可 · AkariBot</h1>
-    <span class="quote">{{ $t('about.slogan') }}</span>
+    <span class="quote">
+      <span class="ak-sparkle"></span>
+      {{ $t('about.slogan') }}
+      <span class="ak-sparkle"></span>
+    </span>
     <span class="text">
       By <a href="https://github.com/OasisAkari">OasisAkari</a> via
       <a href="https://teahouse.team">Teahouse Studios</a>
@@ -57,12 +61,12 @@ const goToSponsor = () => window.open('https://afdian.com/a/teahouse', '_blank')
 </script>
 
 <style scoped>
-.el-button {
-  border: none;
-}
-
 .container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   text-align: center;
+  padding-bottom: 24px;
 }
 
 .logo {
@@ -72,32 +76,47 @@ const goToSponsor = () => window.open('https://afdian.com/a/teahouse', '_blank')
   height: auto;
 }
 
-.container a {
-  color: var(--el-color-primary);
-}
-
 @media (max-width: 640px) {
   .logo {
     width: min(260px, 70vw);
   }
 }
 
+/* 标题底下一道荧光笔，与卡片标题同一语言 */
 .title {
-  font-size: 32px;
-  font-weight: bold;
+  display: inline-block;
   margin: 0;
+  padding: 0 6px;
+  font-family: var(--ak-font-display);
+  font-size: 32px;
+  font-weight: 800;
+  background-image: var(--ak-gradient-soft);
+  background-repeat: no-repeat;
+  background-position: 0 88%;
+  background-size: 100% 0.42em;
 }
 
 .quote {
-  font-style: oblique;
-  color: var(--el-text-color-secondary);
-  display: block;
-  margin: 16px;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin: 20px 16px 4px;
+  padding: 8px 18px;
+  border: 1px dashed color-mix(in srgb, var(--el-color-primary) 60%, transparent);
+  border-radius: 999px;
+  background-color: var(--ak-tint);
+  color: var(--el-text-color-regular);
+}
+
+.quote .ak-sparkle {
+  width: 10px;
+  height: 10px;
 }
 
 .text {
   display: block;
   margin: 16px;
+  color: var(--el-text-color-secondary);
 }
 
 .footer-text {
@@ -109,6 +128,7 @@ const goToSponsor = () => window.open('https://afdian.com/a/teahouse', '_blank')
 
 .repo-buttons {
   display: flex;
+  flex-wrap: wrap;
   justify-content: center;
   gap: 16px;
   margin-top: 24px;
@@ -119,48 +139,49 @@ const goToSponsor = () => window.open('https://afdian.com/a/teahouse', '_blank')
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2px;
+  gap: 6px;
 }
 
 .other-links {
   display: flex;
   justify-content: center;
-  gap: 6px;
+  gap: 10px;
+}
+
+/* 四个外链按钮统一成同一种贴纸样式，只用图标颜色区分 */
+.repo-button,
+.locale-button,
+.sponsor-button {
+  --about-accent: var(--el-text-color-primary);
+  height: 38px;
+  padding: 0 16px;
+  border: 1px solid var(--el-border-color);
+  background-color: var(--el-bg-color);
+  color: var(--el-text-color-primary);
+  box-shadow: 0 2px 0 0 var(--ak-edge);
+}
+
+.repo-button:hover,
+.locale-button:hover,
+.sponsor-button:hover {
+  border-color: var(--about-accent);
+  background-color: color-mix(in srgb, var(--about-accent) 8%, var(--el-bg-color));
+  color: var(--el-text-color-primary);
 }
 
 .repo-button i,
 .locale-button i,
 .sponsor-button i {
   margin-right: 8px;
-}
-
-.repo-button {
-  background-color: #242a31;
-  color: white;
-}
-
-.repo-button:hover {
-  background-color: #474a4f;
-  color: white;
+  font-size: 18px;
+  color: var(--about-accent);
 }
 
 .locale-button {
-  background-color: #1c8f75;
-  color: white;
-}
-
-.locale-button:hover {
-  background-color: #25a587;
-  color: white;
+  --about-accent: #2a9d82;
 }
 
 .sponsor-button {
-  background-color: #916ae4;
-  color: white;
-}
-
-.sponsor-button:hover {
-  background-color: #a284e3;
-  color: white;
+  --about-accent: #9b78e0;
 }
 </style>

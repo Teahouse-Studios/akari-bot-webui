@@ -3,6 +3,152 @@ body {
   background-color: var(--el-bg-color-page);
 }
 
+/* 纸面：手帐本那样的淡点阵，随窗口固定，不随内容滚动 */
 body {
   color: var(--el-text-color-primary);
+  background-image: radial-gradient(circle at 1px 1px, var(--ak-paper-dot) 1px, transparent 1.4px);
+  background-size: 22px 22px;
+  background-attachment: fixed;
+}
+
+::selection {
+  background-color: color-mix(in srgb, var(--el-color-primary) 38%, transparent);
+  color: var(--el-text-color-primary);
+}
+
+:focus-visible {
+  outline: 2px dashed var(--el-color-primary);
+  outline-offset: 2px;
+}
+
+a {
+  color: var(--ak-primary-text);
+  text-decoration-color: color-mix(in srgb, var(--el-color-primary) 60%, transparent);
+  text-underline-offset: 3px;
+}
+
+/* 浏览器原生滚动条 */
+* {
+  scrollbar-color: color-mix(in srgb, var(--el-color-primary) 45%, var(--el-border-color))
+    transparent;
+}
+
+/*
+ * 卡片标题：文字下方一道粉→紫的「荧光笔」划痕，图标空出不画。
+ * 图标宽 18px + 间距 8px，因此划痕从 26px 处开始。
+ */
+.dashboard-card-title,
+.ak-card-title {
+  /* 独占一行但宽度贴合文字，划痕不会拉满整行 */
+  display: flex;
+  width: fit-content;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  padding-right: 4px;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.5;
+  letter-spacing: 0.02em;
+  background-image: var(--ak-gradient-soft);
+  background-repeat: no-repeat;
+  background-position: 26px 90%;
+  background-size: calc(100% - 26px) 0.5em;
+  border-radius: 2px;
+  cursor: default;
+}
+
+.dashboard-card-title > .mdi,
+.ak-card-title > .mdi {
+  width: 18px;
+  font-size: 18px;
+  color: var(--ak-primary-text);
+}
+
+/* 小标签贴纸，如顶栏 logo 旁的「WebUI」 */
+.ak-badge {
+  display: inline-block;
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: var(--ak-gradient-soft);
+  border: 1px solid color-mix(in srgb, var(--el-color-primary) 45%, transparent);
+  color: var(--el-text-color-primary);
+  font-family: var(--ak-font-display);
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  line-height: 1.4;
+  cursor: default;
+}
+
+/* ---------- 侧边导航 ---------- */
+.ak-nav.el-menu {
+  --el-menu-bg-color: transparent;
+  --el-menu-item-height: 42px;
+  --el-menu-base-level-padding: 14px;
+  --el-menu-hover-bg-color: var(--el-fill-color-light);
+  border-right: none;
+  padding: 12px 0;
+}
+
+.ak-nav .el-menu-item {
+  position: relative;
+  margin: 2px 12px;
+  border-radius: 12px;
+  color: var(--el-text-color-regular);
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.ak-nav .el-menu-item > .mdi {
+  margin-right: 12px;
+  font-size: 18px;
+  color: var(--el-text-color-secondary);
+  transition: color 0.2s ease;
+}
+
+.ak-nav .el-menu-item.is-active {
+  background-color: var(--ak-tint);
+  font-weight: 600;
+}
+
+.ak-nav .el-menu-item.is-active > .mdi {
+  color: var(--ak-primary-text);
+}
+
+/* 当前页右侧的四角星 */
+.ak-nav .el-menu-item.is-active::after {
+  content: '';
+  position: absolute;
+  right: 14px;
+  width: 13px;
+  height: 13px;
+  background: var(--ak-gradient);
+  clip-path: polygon(50% 0%, 64% 36%, 100% 50%, 64% 64%, 50% 100%, 36% 64%, 0% 50%, 36% 36%);
+}
+
+/* 语言下拉中的当前语言 */
+.is-active-language {
+  color: var(--ak-primary-text) !important;
+  font-weight: 600;
+}
+
+/* 四角星点缀，取自 logo 右上角 */
+.ak-sparkle {
+  display: inline-block;
+  width: 0.9em;
+  height: 0.9em;
+  background: var(--ak-gradient);
+  clip-path: polygon(50% 0%, 64% 36%, 100% 50%, 64% 64%, 50% 100%, 36% 64%, 0% 50%, 36% 36%);
+  flex-shrink: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
 }

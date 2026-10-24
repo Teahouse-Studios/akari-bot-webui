@@ -1,0 +1,221 @@
+/*
+ * Element Plus 组件皮肤
+ *
+ * 1. 主色块上的文字统一用 --ak-on-primary（粉彩底配深色字），避免白字发虚；
+ * 2. 以主色作为文字的地方改用 --ak-primary-text，保证正文对比度；
+ * 3. 卡片与主按钮带一道实色底边，模仿 logo 的贴纸投影。
+ */
+
+/* ---------- 卡片：贴纸 ---------- */
+html .el-card {
+  --el-card-border-radius: var(--ak-radius-card);
+  border-color: var(--el-border-color-light);
+  box-shadow: 0 3px 0 0 var(--ak-edge);
+}
+
+html .el-card.is-hover-shadow:hover,
+html .el-card.is-always-shadow {
+  box-shadow:
+    0 3px 0 0 var(--ak-edge),
+    0 10px 24px -12px color-mix(in srgb, var(--el-color-primary) 40%, transparent);
+}
+
+/* ---------- 按钮 ---------- */
+html .el-button {
+  --el-border-radius-base: var(--ak-radius-control);
+  font-weight: 500;
+}
+
+html .el-button--primary:not(.is-plain, .is-text, .is-link) {
+  --el-button-text-color: var(--ak-on-primary);
+  --el-button-hover-text-color: var(--ak-on-primary);
+  --el-button-active-text-color: var(--ak-on-primary);
+  --el-button-disabled-text-color: color-mix(in srgb, var(--ak-on-primary) 55%, transparent);
+  box-shadow: 0 2px 0 0 var(--el-color-primary-dark-2);
+  transition:
+    transform 0.1s ease,
+    box-shadow 0.1s ease,
+    background-color 0.2s ease;
+}
+
+/* 按下时下沉，像按实体贴纸按钮 */
+html .el-button--primary:not(.is-plain, .is-text, .is-link, .is-disabled):active {
+  transform: translateY(2px);
+  box-shadow: 0 0 0 0 var(--el-color-primary-dark-2);
+}
+
+html .el-button--primary.is-disabled:not(.is-plain, .is-text, .is-link) {
+  box-shadow: none;
+}
+
+html .el-button--primary.is-plain {
+  --el-button-text-color: var(--ak-primary-text);
+  --el-button-hover-text-color: var(--ak-on-primary);
+  --el-button-active-text-color: var(--ak-on-primary);
+}
+
+html .el-button--primary.is-text,
+html .el-button--primary.is-link {
+  --el-button-text-color: var(--ak-primary-text);
+}
+
+html .el-button--default:not(.is-text, .is-link):hover {
+  --el-button-hover-text-color: var(--ak-primary-text);
+}
+
+/* ---------- 输入类 ---------- */
+html .el-input,
+html .el-textarea,
+html .el-select,
+html .el-input-number {
+  --el-input-border-radius: var(--ak-radius-control);
+}
+
+html .el-input__wrapper.is-focus,
+html .el-textarea__inner:focus,
+html .el-select__wrapper.is-focused {
+  box-shadow:
+    0 0 0 1px var(--el-color-primary) inset,
+    0 0 0 3px color-mix(in srgb, var(--el-color-primary) 22%, transparent) !important;
+}
+
+/* ---------- 菜单 ---------- */
+html .el-menu {
+  --el-menu-active-color: var(--ak-primary-text);
+}
+
+/* ---------- 文字用到主色的组件 ---------- */
+html .el-link.el-link--primary {
+  --el-link-text-color: var(--ak-primary-text);
+  --el-link-hover-text-color: var(--el-color-primary);
+}
+
+html .el-tabs__item.is-active,
+html .el-tabs__item:hover {
+  color: var(--ak-primary-text);
+}
+
+html .el-tabs__active-bar {
+  height: 3px;
+  border-radius: 3px;
+  background: var(--ak-gradient);
+}
+
+html .el-radio__input.is-checked + .el-radio__label,
+html .el-checkbox__input.is-checked + .el-checkbox__label,
+html .el-select-dropdown__item.is-selected,
+html .el-cascader-node.in-active-path,
+html .el-cascader-node.is-active,
+html .el-pagination .is-active,
+html .el-pager li:hover,
+html .el-dropdown-menu__item:not(.is-disabled):hover,
+html .el-dropdown-menu__item:not(.is-disabled):focus {
+  color: var(--ak-primary-text);
+}
+
+html .el-checkbox__input.is-checked .el-checkbox__inner::after {
+  border-color: var(--ak-on-primary);
+}
+
+html .el-radio__input.is-checked .el-radio__inner::after {
+  background-color: var(--ak-on-primary);
+}
+
+html .el-radio-button,
+html .el-checkbox-button {
+  --el-radio-button-checked-text-color: var(--ak-on-primary);
+  --el-checkbox-button-checked-text-color: var(--ak-on-primary);
+}
+
+html .el-tag.el-tag--primary {
+  --el-tag-text-color: var(--ak-primary-text);
+}
+
+html .el-tag.el-tag--primary.el-tag--dark {
+  --el-tag-text-color: var(--ak-on-primary);
+}
+
+html .el-tag {
+  --el-tag-border-radius: 6px;
+}
+
+html .el-switch.is-checked .el-switch__core .el-switch__action {
+  background-color: var(--el-bg-color);
+}
+
+/* ---------- 表格 ---------- */
+html .el-table {
+  --el-table-header-bg-color: var(--el-fill-color-lighter);
+  --el-table-header-text-color: var(--el-text-color-secondary);
+  --el-table-row-hover-bg-color: var(--ak-tint);
+}
+
+html .el-table th.el-table__cell {
+  font-weight: 600;
+}
+
+/* ---------- 弹窗 ---------- */
+html .el-dialog,
+html .el-message-box {
+  --el-dialog-border-radius: 16px;
+  --el-messagebox-border-radius: 16px;
+  border: 1px solid var(--el-border-color-light);
+  box-shadow:
+    0 4px 0 0 var(--ak-edge),
+    0 18px 48px -16px rgba(60, 30, 60, 0.28);
+}
+
+html .el-dialog__title,
+html .el-message-box__title {
+  font-weight: 700;
+}
+
+/* 弹窗标题下方的圆头虚线 */
+html .el-dialog__header {
+  position: relative;
+}
+
+html .el-dialog__header::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: 4px;
+  width: 64px;
+  height: 3px;
+  background: var(--ak-gradient);
+  mask: var(--ak-dash-mask) repeat-x;
+  -webkit-mask: var(--ak-dash-mask) repeat-x;
+  opacity: 0.85;
+}
+
+html .el-message {
+  border-radius: 12px;
+}
+
+html .el-popper.is-light,
+html .el-dropdown__popper.el-popper,
+html .el-select__popper.el-popper {
+  border-radius: 12px;
+}
+
+html .el-popper.is-dark {
+  border-radius: 8px;
+}
+
+/* ---------- 进度与空状态 ---------- */
+html .el-progress-bar__outer {
+  background-color: var(--el-fill-color);
+}
+
+html .el-loading-mask {
+  background-color: color-mix(in srgb, var(--el-bg-color-page) 82%, transparent);
+}
+
+html .el-alert {
+  border-radius: var(--ak-radius-control);
+}
+
+/* ---------- 滚动条 ---------- */
+html .el-scrollbar__thumb {
+  background-color: color-mix(in srgb, var(--el-color-primary) 55%, var(--el-text-color-secondary));
+}

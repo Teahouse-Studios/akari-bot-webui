@@ -25,16 +25,8 @@
       </div>
       <el-scrollbar height="260px">
         <div v-for="(item, index) in items" :key="item.prefix" class="ranking-item">
-          <span
-            :style="{
-              backgroundColor: getColorByIndex(item.prefix),
-              color: 'var(--el-color-white)',
-              borderRadius: '100%',
-              padding: '6px 10px',
-              display: 'inline-block',
-              marginRight: '8px',
-            }"
-            >{{ index + 1 }}
+          <span class="ranking-index" :style="{ backgroundColor: getColorByIndex(item.prefix) }">
+            {{ index + 1 }}
           </span>
           <div class="ranking-label">
             <strong>{{ item.prefix }}</strong>
@@ -91,6 +83,21 @@ defineProps({
   align-items: center;
 }
 
+.ranking-index {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  margin-right: 10px;
+  border-radius: 8px;
+  color: var(--ak-ink);
+  font-family: var(--ak-font-display);
+  font-size: 13px;
+  font-weight: 800;
+}
+
 .ranking-label {
   display: flex;
   justify-content: space-between;
@@ -112,6 +119,7 @@ defineProps({
   display: flex;
   height: 12px;
   overflow: hidden;
+  gap: 2px;
   margin-bottom: 20px;
   background-color: var(--el-fill-color-light);
   border-radius: 10px;

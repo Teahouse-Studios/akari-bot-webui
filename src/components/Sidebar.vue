@@ -1,6 +1,11 @@
 <template>
   <el-aside width="200px" class="sidebar" :class="{ 'sidebar-hidden': !visible }">
-    <el-menu ref="menuRef" :default-active="activeMenu" class="sidebar-menu" @select="handleSelect">
+    <el-menu
+      ref="menuRef"
+      :default-active="activeMenu"
+      class="sidebar-menu ak-nav"
+      @select="handleSelect"
+    >
       <el-menu-item index="/dashboard">
         <i class="mdi mdi-view-dashboard"></i>
         <span>{{ $t('sidebar.item.dashboard') }}</span>
@@ -105,27 +110,11 @@ watch(
   bottom: 0;
   z-index: 100;
   overflow-y: auto;
-  border-right: 1px solid var(--el-border-color-light);
+  border-right: 1px solid var(--el-border-color-lighter);
   transition: transform 0.3s ease;
 }
 
 .sidebar-hidden {
   transform: translateX(-100%);
-}
-
-.sidebar-menu {
-  border-right: none;
-  background-color: var(--el-bg-color);
-}
-
-.el-menu-item {
-  display: flex;
-  align-items: center;
-  padding: 12px 20px;
-}
-
-.el-menu-item i {
-  margin-right: 20px;
-  font-size: 2ch;
 }
 </style>

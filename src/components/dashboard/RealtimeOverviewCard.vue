@@ -13,7 +13,7 @@
       <el-col v-for="metric in metrics" :key="metric.key" :xs="24" :sm="12" :lg="6">
         <el-card class="metric-tile" shadow="never">
           <div class="metric-head">
-            <i :class="['mdi', metric.icon]"></i>
+            <span class="metric-icon"><i :class="['mdi', metric.icon]"></i></span>
             <span class="metric-label">{{ metric.label }}</span>
           </div>
           <div class="metric-value">{{ metric.value }}</div>
@@ -116,31 +116,49 @@ const metrics = computed(() => [
 }
 
 .metric-tile :deep(.el-card__body) {
-  padding: 12px 14px;
+  padding: 14px 16px;
 }
 
 .metric-head {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 10px;
+  gap: 10px;
+  margin-bottom: 12px;
 }
 
-.metric-head i {
+/* 图标贴纸：单数格粉色、双数格浅紫，交替出现 */
+.metric-icon {
+  --metric-accent: var(--el-color-primary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  background-color: color-mix(in srgb, var(--metric-accent) 22%, transparent);
+  color: var(--ak-primary-text);
+}
+
+.metric-row > :nth-child(even) .metric-icon {
+  --metric-accent: var(--ak-secondary);
+}
+
+.metric-icon i {
   font-size: 18px;
-  color: var(--el-text-color-primary);
 }
 
 .metric-label {
   font-size: 13px;
-  color: var(--el-text-color-primary);
+  color: var(--el-text-color-secondary);
   cursor: default;
 }
 
 .metric-value {
-  font-size: 22px;
-  font-weight: 600;
-  line-height: 1.3;
+  font-family: var(--ak-font-display);
+  font-size: 26px;
+  font-weight: 800;
+  line-height: 1.25;
+  letter-spacing: 0.01em;
   word-break: break-word;
   font-variant-numeric: tabular-nums;
 }
@@ -149,13 +167,13 @@ const metrics = computed(() => [
   margin-top: 6px;
   min-height: 1.2em;
   font-size: 12px;
-  color: var(--el-text-color-regular);
+  color: var(--el-text-color-secondary);
   cursor: default;
 }
 
 @media (max-width: 768px) {
   .metric-value {
-    font-size: 20px;
+    font-size: 22px;
   }
 }
 </style>

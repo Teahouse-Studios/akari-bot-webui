@@ -1,6 +1,8 @@
 <template>
   <div>
-    <h3><i class="mdi mdi-robot"></i> {{ $t('setting.bot_options.title') }}</h3>
+    <h3 class="ak-card-title">
+      <i class="mdi mdi-robot"></i> {{ $t('setting.bot_options.title') }}
+    </h3>
     <div class="bot-option-actions">
       <el-button
         type="primary"

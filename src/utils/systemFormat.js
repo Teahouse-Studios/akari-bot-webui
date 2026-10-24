@@ -62,13 +62,16 @@ export function formatBytes(bytes) {
   return `${value} B`
 }
 
+// 低占用固定为蓝色，不随主题色变化；警告/危险仍使用语义色
+const USAGE_NORMAL_COLOR = '#1989fa'
+
 const USAGE_COLORS = {
-  normal: '#1989fa',
-  warning: '#e6a23c',
-  danger: '#f56c6c',
+  normal: USAGE_NORMAL_COLOR,
+  warning: 'var(--el-color-warning)',
+  danger: 'var(--el-color-danger)',
 }
 
-/** 占用率 → 语义色（<60 正常、60–90 警告、≥90 危险），资源环与进程条共用 */
+/** 占用率 → 语义色（<60 正常、60–90 警告、≥90 危险） */
 export function getUsageColor(percent) {
   const value = Number(percent) || 0
   if (value >= 90) return USAGE_COLORS.danger

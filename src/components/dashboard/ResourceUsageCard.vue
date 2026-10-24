@@ -55,8 +55,8 @@
             </div>
             <el-tooltip :content="describe(item)" placement="top">
               <el-progress
+                class="process-bar"
                 :percentage="item.percent"
-                :color="getUsageColor(item.percent)"
                 :stroke-width="8"
                 :show-text="false"
               />
@@ -209,7 +209,7 @@ const gaugeItems = computed(() => {
 
 .card-hint {
   font-size: 13px;
-  color: var(--el-text-color-primary);
+  color: var(--el-text-color-secondary);
   font-variant-numeric: tabular-nums;
   cursor: default;
 }
@@ -247,6 +247,11 @@ const gaugeItems = computed(() => {
   word-break: break-all;
 }
 
+.process-bar :deep(.el-progress-bar__inner) {
+  /* 进程条是相对最大值的排名而非占用率，不套用告警色 */
+  background: var(--ak-gradient);
+}
+
 .process-memory {
   margin-left: auto;
   color: var(--el-text-color-regular);
@@ -276,7 +281,11 @@ const gaugeItems = computed(() => {
 .gauge-value {
   display: block;
   margin-top: 10px;
-  font-size: 20px;
+  font-family: var(--ak-font-display);
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--el-text-color-primary);
+  font-variant-numeric: tabular-nums;
 }
 
 .gauge-label {

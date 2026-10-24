@@ -42,6 +42,7 @@ import SuggestSetPasswordModal from './components/SuggestSetPasswordModal.vue'
 import { ElMessage } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 import { IS_DEMO } from './const'
+import { applyThemeColor } from '@/utils/themeColor.js'
 
 const elementLocale = inject('elementLocale')
 const { t, locale } = useI18n()
@@ -134,57 +135,25 @@ function toggleSidebar() {
   }
 }
 
-function applyThemeColor(color) {
-  if (!color) return
-  const isDark = document.documentElement.classList.contains('dark')
-  const white = isDark ? '#000000' : '#ffffff'
-  const black = isDark ? '#ffffff' : '#000000'
-
-  const mix = (_color, weight, mixWith = '#ffffff') => {
-    const d2h = (d) => d.toString(16).padStart(2, '0')
-    const h2d = (h) => parseInt(h, 16)
-
-    const col1 = _color.slice(1)
-    const col2 = mixWith.slice(1)
-
-    const red = Math.round(h2d(col1.slice(0, 2)) * (1 - weight) + h2d(col2.slice(0, 2)) * weight)
-    const green = Math.round(h2d(col1.slice(2, 4)) * (1 - weight) + h2d(col2.slice(2, 4)) * weight)
-    const blue = Math.round(h2d(col1.slice(4, 6)) * (1 - weight) + h2d(col2.slice(4, 6)) * weight)
-
-    return `#${d2h(red)}${d2h(green)}${d2h(blue)}`
-  }
-
-  const root = document.documentElement
-  root.style.setProperty('--el-color-primary', color)
-  root.style.setProperty('--el-color-primary-light-3', mix(color, 0.3, white))
-  root.style.setProperty('--el-color-primary-light-5', mix(color, 0.5, white))
-  root.style.setProperty('--el-color-primary-light-7', mix(color, 0.7, white))
-  root.style.setProperty('--el-color-primary-light-8', mix(color, 0.8, white))
-  root.style.setProperty('--el-color-primary-light-9', mix(color, 0.9, white))
-  root.style.setProperty('--el-color-primary-dark-2', mix(color, 0.2, black))
-}
-
 function observeThemeChange() {
   // 始终同步一次主题色，确保对比文字色与当前主题色一致
-  applyThemeColor(LocalStorageJson.getItem('themeColor') || '#edaab3')
+  applyThemeColor(LocalStorageJson.getItem('themeColor'))
 
   const handleStorage = (event) => {
     if (event.key === 'themeColor') {
-      applyThemeColor(event.newValue || '#edaab3')
+      applyThemeColor(event.newValue)
     }
   }
 
   const handleThemeChange = () => {
-    const color = LocalStorageJson.getItem('themeColor') || '#edaab3'
-    applyThemeColor(color)
+    applyThemeColor(LocalStorageJson.getItem('themeColor'))
   }
 
   window.addEventListener('storage', handleStorage)
   window.addEventListener('theme-change', handleThemeChange)
 
   const observer = new MutationObserver(() => {
-    const color = LocalStorageJson.getItem('themeColor') || '#edaab3'
-    applyThemeColor(color)
+    applyThemeColor(LocalStorageJson.getItem('themeColor'))
   })
 
   observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] })
