@@ -131,6 +131,19 @@ html .el-tag.el-tag--primary {
   --el-tag-text-color: var(--ak-primary-text);
 }
 
+/* 信息灰标签的灰阶由主题色混出，避免固定 info 灰在换主题色后仍带粉调 */
+html .el-tag.el-tag--info:not(.el-tag--dark) {
+  --el-tag-bg-color: color-mix(in srgb, var(--el-color-primary) 4%, var(--el-fill-color-lighter));
+  --el-tag-border-color: color-mix(in srgb, var(--el-color-primary) 12%, var(--el-border-color));
+  --el-tag-text-color: color-mix(in srgb, var(--el-color-primary) 8%, var(--el-text-color-regular));
+}
+
+/* plain 效果保留透明底，只让描边跟随主题色 */
+html .el-tag.el-tag--info.el-tag--plain {
+  --el-tag-bg-color: var(--el-fill-color-blank);
+  --el-tag-border-color: color-mix(in srgb, var(--el-color-primary) 30%, var(--el-border-color));
+}
+
 html .el-tag.el-tag--primary.el-tag--dark {
   --el-tag-text-color: var(--ak-on-primary);
 }

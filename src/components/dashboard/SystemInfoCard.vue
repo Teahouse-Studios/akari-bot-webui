@@ -48,6 +48,7 @@ const bootTimeText = computed(() => (props.os.boot_time ? formatDateTime(props.o
 
 <style scoped>
 .info-card {
+  --info-label-width: 9em;
   line-height: 1;
 }
 
@@ -56,7 +57,10 @@ const bootTimeText = computed(() => (props.os.boot_time ? formatDateTime(props.o
 }
 
 .info-card p {
-  display: flex;
+  /* 固定标签列宽：长短不一的标签不会把数值推得忽左忽右 */
+  display: grid;
+  grid-template-columns: var(--info-label-width) minmax(0, 1fr);
+  align-items: baseline;
   gap: 16px;
   margin: 0;
   padding: 11px 0;
@@ -72,16 +76,16 @@ const bootTimeText = computed(() => (props.os.boot_time ? formatDateTime(props.o
 }
 
 .data-title {
-  flex: 0 0 auto;
-  min-width: 7em;
   color: var(--el-text-color-secondary);
   font-weight: 500;
+  /* 较长标签在列内换行，不再撑出卡片或挤歪数值 */
+  overflow-wrap: anywhere;
   cursor: default;
 }
 
 .data-text {
-  flex: 1;
+  min-width: 0;
   color: var(--el-text-color-primary);
-  word-break: break-all;
+  overflow-wrap: anywhere;
 }
 </style>

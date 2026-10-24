@@ -42,10 +42,14 @@ a {
   /* 独占一行但宽度贴合文字，划痕不会拉满整行 */
   display: flex;
   width: fit-content;
+  max-width: 100%;
+  min-width: 0;
   align-items: center;
   gap: 8px;
   margin: 0;
   padding-right: 4px;
+  /* 较长标题在标题区内换行，不撑出卡片 */
+  overflow-wrap: anywhere;
   font-size: 16px;
   font-weight: 700;
   line-height: 1.5;

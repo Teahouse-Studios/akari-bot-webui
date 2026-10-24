@@ -85,14 +85,11 @@ const scroll = computed({
   flex-direction: column;
   gap: 10px;
   padding: 10px;
-  background-color: #ddd;
+  /* 面板灰随主题色派生，切换主题时色相与明度一起变化 */
+  background-color: color-mix(in srgb, var(--el-color-primary) 6%, var(--el-fill-color));
   border: 1px solid var(--el-border-color-darker);
   border-radius: 8px;
   margin-bottom: 10px;
-}
-
-.dark .filter-container {
-  background-color: #555;
 }
 
 .filter-top-row {
@@ -115,9 +112,9 @@ const scroll = computed({
   min-width: 100px;
 }
 
+/* 底色交给内层 wrapper 绘制，根节点保持透明，圆角外不会露出直角黑边 */
 .dark .log-search-input {
-  background-color: #181818;
-  border-radius: 5px;
+  --el-input-bg-color: var(--el-fill-color-blank);
 }
 
 .log-refresh-button {
@@ -242,7 +239,6 @@ const scroll = computed({
 
 .log-level-button.critical {
   color: #cd3131;
-  background-color: #fff;
   border: 2px solid #cd3131;
 }
 
