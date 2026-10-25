@@ -31,21 +31,66 @@ html .el-button--primary:not(.is-plain, .is-text, .is-link) {
   --el-button-hover-text-color: var(--ak-on-primary);
   --el-button-active-text-color: var(--ak-on-primary);
   --el-button-disabled-text-color: color-mix(in srgb, var(--ak-on-primary) 55%, transparent);
-  box-shadow: 0 2px 0 0 var(--el-color-primary-dark-2);
+}
+
+/*
+ * 实色按钮统一为「贴纸」凸起：底边取按钮自身背色混 20% 黑。
+ * 不用 --el-color-*-dark-2，因为它在暗色模式下会被重算成接近按钮的浅色，
+ * 底边与按钮融为一体，看起来就像阴影消失了；混黑后在两种模式下都能保持同一道深色底边。
+ */
+html
+  :where(
+    .el-button--primary,
+    .el-button--success,
+    .el-button--warning,
+    .el-button--danger,
+    .el-button--info
+  ):not(.is-plain, .is-text, .is-link) {
+  --ak-button-edge: color-mix(in srgb, var(--el-button-bg-color) 80%, #000000);
+  box-shadow: 0 2px 0 0 var(--ak-button-edge);
   transition:
     transform 0.1s ease,
     box-shadow 0.1s ease,
     background-color 0.2s ease;
 }
 
-/* 按下时下沉，像按实体贴纸按钮 */
-html .el-button--primary:not(.is-plain, .is-text, .is-link, .is-disabled):active {
-  transform: translateY(2px);
-  box-shadow: 0 0 0 0 var(--el-color-primary-dark-2);
+/* 悬停时底色会变深或变浅，按悬停底色重新取深色底边，阴影始终比按钮暗 */
+html
+  :where(
+    .el-button--primary,
+    .el-button--success,
+    .el-button--warning,
+    .el-button--danger,
+    .el-button--info
+  ):not(.is-plain, .is-text, .is-link):hover {
+  --ak-button-edge: color-mix(in srgb, var(--el-button-hover-bg-color) 80%, #000000);
 }
 
-html .el-button--primary.is-disabled:not(.is-plain, .is-text, .is-link) {
+/* 按下时下沉，但保留一道深色底边，选中状态下阴影不会消失 */
+html
+  :where(
+    .el-button--primary,
+    .el-button--success,
+    .el-button--warning,
+    .el-button--danger,
+    .el-button--info
+  ):not(.is-plain, .is-text, .is-link, .is-disabled):active {
+  --ak-button-edge: color-mix(in srgb, var(--el-button-active-bg-color) 80%, #000000);
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 0 var(--ak-button-edge);
+}
+
+html .el-button.is-disabled {
   box-shadow: none;
+}
+
+/* 分段按钮组是相连的整体，组内按钮不参与贴纸凸起，选中项保持扁平 */
+html .el-button-group > .el-button {
+  box-shadow: none;
+}
+
+html .el-button-group > .el-button:active {
+  transform: none;
 }
 
 html .el-button--primary.is-plain {

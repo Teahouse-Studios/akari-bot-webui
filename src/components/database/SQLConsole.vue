@@ -173,11 +173,17 @@ h3 {
   gap: 16px;
 }
 
+/* 控制台与下方执行结果平分可用高度，避免窗口变矮时结果被挤没 */
 .editor-card {
-  flex: 0 0 auto;
+  flex: 1 1 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 .editor-card ::v-deep(.el-card__body) {
+  flex: 1;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -193,17 +199,20 @@ h3 {
 
 .editor-area {
   display: flex;
+  flex: 1;
   gap: 16px;
-  height: 200px;
+  min-height: 0;
 }
 
 .sql-input {
   flex: 1;
-  min-height: 100px;
+  min-width: 0;
+  min-height: 0;
   height: 100%;
 }
 
 .sql-input ::v-deep(.el-textarea__inner) {
+  height: 100%;
   font-family: 'Consolas', 'Noto Sans Mono', 'Courier New', Courier, monospace;
   font-size: 14px;
   line-height: 1.5;
@@ -211,7 +220,8 @@ h3 {
 
 .history-area {
   flex: 1;
-  height: 198px;
+  min-width: 0;
+  min-height: 0;
   display: flex;
   background-color: var(--el-fill-color-blank);
   flex-direction: column;
@@ -219,9 +229,10 @@ h3 {
 
 .history-area ::v-deep(.el-card__body) {
   display: flex;
+  flex: 1;
   flex-direction: column;
   gap: 16px;
-  height: 100%;
+  min-height: 0;
 }
 
 .history-area span {
@@ -230,7 +241,8 @@ h3 {
 
 .history {
   overflow-y: auto;
-  height: 80px;
+  flex: 1;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -256,12 +268,13 @@ h3 {
   .editor-area {
     flex-direction: column;
     height: 400px;
+    min-height: 0;
   }
 
   .sql-input,
   .history-area {
     width: 100%;
-    height: 200px;
+    min-height: 0;
   }
 }
 
@@ -276,7 +289,7 @@ h3 {
 }
 
 .result-card {
-  flex: 1;
+  flex: 1 1 0;
   min-height: 0;
   display: flex;
   flex-direction: column;
@@ -313,7 +326,17 @@ h3 {
     height: auto;
   }
 
+  /* 小螢幕改回依內容高度排列，避免上下兩塊各被壓成半個螢幕 */
+  .editor-card {
+    flex: 0 0 auto;
+  }
+
+  .editor-area {
+    min-height: 200px;
+  }
+
   .result-card {
+    flex: 1 1 auto;
     min-height: 300px;
   }
 }

@@ -24,7 +24,10 @@
 
     <div class="editor-footer">
       <div class="editor-actions">
-        <el-button type="warning" :disabled="!unsavedChanges" @click="resetConfig">
+        <el-button type="warning" :disabled="!canUndo || loading" @click="undoConfig">
+          <i class="mdi mdi-undo"></i> {{ $t('button.undo') }}
+        </el-button>
+        <el-button type="danger" :disabled="!unsavedChanges" @click="resetConfig">
           <i class="mdi mdi-restart"></i> {{ $t('button.reset') }}
         </el-button>
         <el-button type="success" :disabled="!unsavedChanges" @click="applyConfig">
@@ -80,6 +83,24 @@ const fileContents = reactive({})
 const loading = ref(false)
 const abortController = new AbortController()
 
+const UNDO_HISTORY_LIMIT = 50
+const UNDO_GROUP_WINDOW = 500
+
+const undoStack = ref([])
+const canUndo = computed(() => undoStack.value.length > 0)
+let lastContent = ''
+let lastChangeAt = 0
+let lastChangeCard = null
+let isUndoing = false
+
+const resetUndoHistory = (content = '') => {
+  undoStack.value = []
+  lastContent = content
+  lastChangeAt = 0
+  lastChangeCard = null
+  isUndoing = false
+}
+
 const hasKeyValuePairs = (content) =>
   String(content || '')
     .split('\n')
@@ -114,6 +135,7 @@ const fetchConfig = async (fileName, force = false) => {
     editorContent.value = fileContents[fileName]
     initialContent.value = fileContents[fileName]
     unsavedChanges.value = false
+    resetUndoHistory(editorContent.value)
     updateEditorContent()
     return
   }
@@ -126,6 +148,7 @@ const fetchConfig = async (fileName, force = false) => {
     editorContent.value = response.data.content
     initialContent.value = response.data.content
     unsavedChanges.value = false
+    resetUndoHistory(editorContent.value)
   } catch (error) {
     if (axios.isCancel(error)) {
       console.log('Request canceled')
@@ -152,6 +175,7 @@ const fetchConfigFiles = async (cfgFiles = null) => {
       editorContent.value = ''
       initialContent.value = ''
       unsavedChanges.value = false
+      resetUndoHistory()
       return
     }
 
@@ -177,6 +201,14 @@ const handleTabClick = (pane) => {
 const resetConfig = () => {
   fetchConfig(activeTab.value, true)
   unsavedChanges.value = false
+}
+
+const undoConfig = () => {
+  if (!undoStack.value.length) return
+  const previous = undoStack.value.pop()
+  if (previous === editorContent.value) return
+  isUndoing = true
+  editorContent.value = previous
 }
 
 const applyConfig = async () => {
@@ -242,6 +274,32 @@ const refreshConfig = () => {
 
 watch(editorContent, (newVal) => {
   unsavedChanges.value = newVal !== initialContent.value
+
+  if (isUndoing) {
+    isUndoing = false
+    lastContent = newVal
+    lastChangeAt = 0
+    lastChangeCard = null
+    return
+  }
+
+  if (newVal === lastContent) return
+
+  const now = Date.now()
+  // 原始碼模式的連續輸入合併為一次復原；可視化模式則保留每次表單操作
+  const shouldGroup =
+    activeCard.value === 'source' &&
+    lastChangeCard === 'source' &&
+    now - lastChangeAt <= UNDO_GROUP_WINDOW
+
+  if (!shouldGroup) {
+    undoStack.value.push(lastContent)
+    if (undoStack.value.length > UNDO_HISTORY_LIMIT) undoStack.value.shift()
+  }
+
+  lastContent = newVal
+  lastChangeAt = now
+  lastChangeCard = activeCard.value
 })
 
 onMounted(() => {
@@ -292,13 +350,18 @@ onBeforeUnmount(() => {
   font-size: 22px !important;
 }
 
-@media (max-width: 399px) {
+@media (max-width: 576px) {
   .editor-footer {
-    display: wrap;
+    flex-wrap: wrap;
   }
 
   .editor-actions {
     flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .editor-actions :deep(.el-button + .el-button) {
+    margin-left: 0;
   }
 
   .unsaved-warning {

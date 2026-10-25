@@ -25,6 +25,7 @@
   "button.refresh": "새로고침",
   "button.reset": "초기화",
   "button.save": "저장",
+  "button.undo": "실행 취소",
   "button.view": "보기",
   "chat.button.copy_text": "텍스트 복사",
   "chat.button.image": "이미지 보내기",

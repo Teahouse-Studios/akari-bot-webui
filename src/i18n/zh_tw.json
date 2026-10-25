@@ -25,6 +25,7 @@
   "button.refresh": "重整",
   "button.reset": "重設",
   "button.save": "儲存",
+  "button.undo": "復原",
   "button.view": "檢視",
   "chat.button.copy_text": "複製文本",
   "chat.button.image": "傳送圖片",

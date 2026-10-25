@@ -7,8 +7,17 @@
       <el-button
         type="primary"
         class="bot-option-button"
-        :class="{ 'force-mode': shiftPressed, 'force-latched': forceUpdateLatched }"
+        :class="{
+          'force-mode': shiftPressed,
+          'force-latched': forceUpdateLatched || longPressForce.update,
+        }"
         :loading="updating"
+        @pointerdown="startLongPress('update', $event)"
+        @pointerup="endLongPress('update')"
+        @pointerleave="cancelLongPress('update')"
+        @pointercancel="cancelLongPress('update')"
+        @pointermove="trackLongPressMove('update', $event)"
+        @contextmenu.prevent
         @click="handleUpdate"
       >
         <i v-if="!updating" class="mdi mdi-update"></i>
@@ -25,7 +34,16 @@
       <el-button
         type="danger"
         class="bot-option-button"
-        :class="{ 'force-mode': shiftPressed, 'force-latched': forceRestartLatched }"
+        :class="{
+          'force-mode': shiftPressed,
+          'force-latched': forceRestartLatched || longPressForce.restart,
+        }"
+        @pointerdown="startLongPress('restart', $event)"
+        @pointerup="endLongPress('restart')"
+        @pointerleave="cancelLongPress('restart')"
+        @pointercancel="cancelLongPress('restart')"
+        @pointermove="trackLongPressMove('restart', $event)"
+        @contextmenu.prevent
         @click="handleRestart"
       >
         <i class="mdi mdi-restart"></i>
@@ -87,7 +105,7 @@
 </template>
 
 <script setup>
-import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref } from 'vue'
 import axios from '@/axios.mjs'
 import { IS_DEMO } from '@/const'
 import LocalStorageJson from '@/localStorageJson.js'
@@ -99,11 +117,17 @@ const { t } = useI18n()
 const pollingTimeout = 60000
 const pollingInterval = 2000
 const restartFallbackDelay = 10000
+const longPressDelay = 600
+const longPressMoveTolerance = 12
 const hasShownTimeoutError = ref(false)
 
 const shiftPressed = ref(false)
 const forceUpdateLatched = ref(false)
 const forceRestartLatched = ref(false)
+const longPressForce = reactive({ update: false, restart: false })
+const longPressTimers = { update: null, restart: null }
+const longPressOrigins = { update: null, restart: null }
+const suppressClickUntil = { update: 0, restart: 0 }
 
 const handleShiftDown = (event) => {
   if (event.key === 'Shift') shiftPressed.value = true
@@ -122,6 +146,65 @@ onMounted(() => {
   window.addEventListener('keyup', handleShiftUp)
   window.addEventListener('blur', resetShift)
 })
+
+const clearLongPressTimer = (action) => {
+  clearTimeout(longPressTimers[action])
+  longPressTimers[action] = null
+  longPressOrigins[action] = null
+}
+
+const cancelLongPress = (action) => {
+  clearLongPressTimer(action)
+  longPressForce[action] = false
+}
+
+const startLongPress = (action, event) => {
+  if (event.button !== undefined && event.button !== 0) return
+  if (action === 'update' && updating.value) return
+  clearLongPressTimer(action)
+  longPressForce[action] = false
+  suppressClickUntil[action] = 0
+  longPressOrigins[action] = { x: event.clientX, y: event.clientY }
+  longPressTimers[action] = setTimeout(() => {
+    longPressTimers[action] = null
+    longPressForce[action] = true
+    if (typeof navigator !== 'undefined' && typeof navigator.vibrate === 'function') {
+      navigator.vibrate(10)
+    }
+  }, longPressDelay)
+}
+
+const trackLongPressMove = (action, event) => {
+  const origin = longPressOrigins[action]
+  if (!origin) return
+  if (
+    Math.abs(event.clientX - origin.x) > longPressMoveTolerance ||
+    Math.abs(event.clientY - origin.y) > longPressMoveTolerance
+  ) {
+    cancelLongPress(action)
+  }
+}
+
+// 放開按鈕時立即執行強制操作，並略過瀏覽器隨後補發的 click
+const endLongPress = (action) => {
+  clearLongPressTimer(action)
+  if (!longPressForce[action]) return
+
+  longPressForce[action] = false
+  suppressClickUntil[action] = Date.now() + 600
+
+  if (action === 'update') {
+    if (!updating.value) startUpdate(true)
+  } else {
+    confirmRestart(true)
+  }
+}
+
+const isClickSuppressed = (action) => {
+  if (Date.now() >= suppressClickUntil[action]) return false
+  suppressClickUntil[action] = 0
+  return true
+}
 
 const restartBot = async (force = false) => {
   forceRestartLatched.value = force
@@ -227,19 +310,25 @@ const restartBot = async (force = false) => {
   }
 }
 
-const handleRestart = async () => {
-  const force = shiftPressed.value
+const confirmRestart = async (forceOverride) => {
+  const force = typeof forceOverride === 'boolean' ? forceOverride : shiftPressed.value
   forceRestartLatched.value = force
   try {
     await ElMessageBox.confirm(t('confirm.message'), t('confirm.warning'), {
       confirmButtonText: t('button.confirm'),
       cancelButtonText: t('button.cancel'),
       type: 'warning',
+      closeOnClickModal: false,
     })
     await restartBot(force)
   } catch {
     forceRestartLatched.value = false
   }
+}
+
+const handleRestart = () => {
+  if (isClickSuppressed('restart')) return
+  confirmRestart()
 }
 
 const MAX_TERMINAL_LINES = 2000
@@ -505,6 +594,7 @@ const startUpdate = async (force = false) => {
 }
 
 const handleUpdate = () => {
+  if (isClickSuppressed('update')) return
   if (!updating.value) startUpdate(shiftPressed.value)
 }
 
@@ -529,10 +619,15 @@ onBeforeUnmount(() => {
   margin-left: 0;
 }
 
-/* 按住 Shift 悬停时切换为强制操作；标签与量测文字叠放在同一格，避免切换文字时撑开按钮 */
+/* 按住 Shift 或長按時切換為強制操作；標籤與量測文字疊放在同一格，避免切換文字時撐開按鈕 */
 .bot-option-button {
   padding-left: 22px;
   padding-right: 22px;
+  /* 長按切換強制操作：避免行動端長按觸發選字或系統選單 */
+  touch-action: manipulation;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
 }
 
 .button-label {
@@ -546,9 +641,18 @@ onBeforeUnmount(() => {
   margin-left: 6px;
 }
 
+/*
+ * 標籤切換：進入強制狀態時一般文案先快速淡出，強制文案延遲一點點再淡入，
+ * 兩段動畫略微交疊又不會讓兩種文案長時間重疊；時間刻意壓短，避免拖慢 Shift 預覽。
+ */
 .button-label-text {
   grid-area: 1 / 1;
   white-space: nowrap;
+  opacity: 1;
+  visibility: visible;
+  transition:
+    opacity 0.08s ease,
+    visibility 0s linear;
 }
 
 /* 隱形量測文字：兩個按鈕都預留最長文案寬度，使按鈕等長且切換文字時不撐開 */
@@ -556,18 +660,31 @@ onBeforeUnmount(() => {
   visibility: hidden;
 }
 
+/* 強制操作標籤預設隱藏；等淡出結束後才真正隱藏 */
 .bot-option-button .force-label {
+  opacity: 0;
   visibility: hidden;
+  transition:
+    opacity 0.08s ease,
+    visibility 0s linear 0.08s;
 }
 
 .bot-option-button.force-mode:hover .button-label-text:not(.force-label),
 .bot-option-button.force-latched .button-label-text:not(.force-label) {
+  opacity: 0;
   visibility: hidden;
+  transition:
+    opacity 0.08s ease,
+    visibility 0s linear 0.08s;
 }
 
 .bot-option-button.force-mode:hover .force-label,
 .bot-option-button.force-latched .force-label {
+  opacity: 1;
   visibility: visible;
+  transition:
+    opacity 0.08s ease 0.04s,
+    visibility 0s linear;
 }
 
 .update-terminal {

@@ -25,6 +25,7 @@
   "button.refresh": "刷新",
   "button.reset": "重置",
   "button.save": "保存",
+  "button.undo": "撤销",
   "button.view": "查看",
   "chat.button.copy_text": "复制文本",
   "chat.button.image": "发送图片",

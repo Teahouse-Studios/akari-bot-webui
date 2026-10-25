@@ -95,7 +95,8 @@ const confirmAction = async (action) => {
   flex-wrap: nowrap;
   justify-content: flex-start;
   gap: 8px;
-  padding-top: 8px;
+  /* 底部留出按钮 2px 贴纸底边的空间，避免被页签内容的 overflow 裁掉 */
+  padding: 8px 0 4px;
   border-top: 1px solid var(--el-border-color-lighter);
 }
 
