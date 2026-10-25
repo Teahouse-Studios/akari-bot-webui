@@ -148,7 +148,7 @@ const goToSponsor = () => window.open('https://afdian.com/a/teahouse', '_blank')
   gap: 10px;
 }
 
-/* 四个外链按钮统一成同一种贴纸样式，只用图标颜色区分 */
+/* 四个外链按钮统一成同一种扁平样式，只用图标颜色区分 */
 .repo-button,
 .locale-button,
 .sponsor-button {
@@ -158,7 +158,6 @@ const goToSponsor = () => window.open('https://afdian.com/a/teahouse', '_blank')
   border: 1px solid var(--el-border-color);
   background-color: var(--el-bg-color);
   color: var(--el-text-color-primary);
-  box-shadow: 0 2px 0 0 var(--ak-edge);
 }
 
 .repo-button:hover,
