@@ -1,5 +1,6 @@
 import { computed, ref } from 'vue'
 import LocalStorageJson from '@/localStorageJson.js'
+import { startThemeTransition } from '@/utils/themeTransition.js'
 
 const DARK_MODE_KEY = 'darkMode'
 const LEGACY_DARK_MODE_KEY = 'isDarkMode'
@@ -28,11 +29,15 @@ function readStoredMode() {
   return 'system'
 }
 
-function applyDarkMode() {
+function applyDarkMode({ animate = true } = {}) {
+  const wasDark = isDarkMode.value
   if (currentMode.value === 'system') {
     isDarkMode.value = systemPrefersDark.value
   } else {
     isDarkMode.value = currentMode.value === 'on'
+  }
+  if (animate && wasDark !== isDarkMode.value) {
+    startThemeTransition()
   }
   document.documentElement.classList.toggle('dark', isDarkMode.value)
 }
@@ -60,7 +65,8 @@ export function initDarkMode() {
     }
   }
 
-  applyDarkMode()
+  // 首次加载直接套用，不做过渡
+  applyDarkMode({ animate: false })
 }
 
 export function setDarkMode(mode) {

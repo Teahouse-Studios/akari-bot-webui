@@ -43,6 +43,7 @@ import { ElMessage } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 import { IS_DEMO } from './const'
 import { applyThemeColor } from '@/utils/themeColor.js'
+import { startThemeTransition } from '@/utils/themeTransition.js'
 
 const elementLocale = inject('elementLocale')
 const { t, locale } = useI18n()
@@ -141,11 +142,13 @@ function observeThemeChange() {
 
   const handleStorage = (event) => {
     if (event.key === 'themeColor') {
+      startThemeTransition()
       applyThemeColor(event.newValue)
     }
   }
 
   const handleThemeChange = () => {
+    startThemeTransition()
     applyThemeColor(LocalStorageJson.getItem('themeColor'))
   }
 

@@ -148,6 +148,24 @@ a {
   flex-shrink: 0;
 }
 
+/*
+ * 切换明暗模式 / 主题色时的颜色渐变，由 utils/themeTransition.js 短暂挂上属性触发。
+ * 跳过 Element Plus 组件（类名以 el- 开头），保留它们自带的过渡。
+ */
+@media (prefers-reduced-motion: no-preference) {
+  html[data-theme-transition],
+  html[data-theme-transition] *:not([class^='el-'], [class*=' el-']),
+  html[data-theme-transition] *:not([class^='el-'], [class*=' el-'])::before,
+  html[data-theme-transition] *:not([class^='el-'], [class*=' el-'])::after {
+    transition-property:
+      color, background-color, border-color, outline-color, fill, stroke, box-shadow,
+      text-decoration-color !important;
+    transition-duration: 0.3s !important;
+    transition-timing-function: ease !important;
+    transition-delay: 0s !important;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
