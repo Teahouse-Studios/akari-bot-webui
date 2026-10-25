@@ -384,9 +384,11 @@
               <el-input
                 type="textarea"
                 resize="none"
+                class="data-input"
                 v-model="targetDataString"
                 :rows="6"
-                :placeholder="$t('session.input.json_data')"
+                placeholder="{}"
+                @blur="normalizeTargetData"
               />
             </el-form-item>
           </el-col>
@@ -611,7 +613,16 @@ const editTarget = (row) => {
   editDialogVisible.value = true
 }
 
+/** 数据框被清空时回落为默认空对象，避免提交空字符串导致 JSON 解析失败 */
+const normalizeTargetData = () => {
+  if (!targetDataString.value.trim()) {
+    targetDataString.value = '{}'
+  }
+}
+
 const submitEdit = async () => {
+  normalizeTargetData()
+
   let parsedTargetData = {}
   try {
     parsedTargetData = JSON.parse(targetDataString.value)
@@ -688,6 +699,10 @@ pre {
   font-family: 'Consolas', 'Noto Sans Mono', 'Courier New', Courier, monospace;
   word-wrap: break-word;
   white-space: pre-wrap;
+}
+
+.data-input :deep(.el-textarea__inner) {
+  font-family: 'Consolas', 'Noto Sans Mono', 'Courier New', Courier, monospace;
 }
 
 h3 {

@@ -53,6 +53,8 @@ export function buildTestPayload(form) {
     if (form.element?.length) payload.element = form.element
     payload.output_type = form.output_type || 'jpeg'
     if (payload.output_type === 'jpeg') payload.output_quality = form.output_quality
+    // 深色模式仅作用于截图渲染（对应依赖库 BaseOptions），source 模式不传。
+    payload.dark_mode = Boolean(form.dark_mode)
   }
 
   for (const field of COMMON_OPTION_FIELDS) {

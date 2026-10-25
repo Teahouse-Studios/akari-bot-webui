@@ -60,7 +60,7 @@
 
         <el-divider content-position="left">{{ $t('webrender.tester.output_type') }}</el-divider>
         <el-row :gutter="16">
-          <el-col v-if="form.mode === 'screenshot'" :xs="24" :md="12">
+          <el-col v-if="form.mode === 'screenshot'" :xs="24" :md="6">
             <el-form-item :label="$t('webrender.tester.output_type')">
               <el-select v-model="form.output_type" style="width: 100%">
                 <el-option
@@ -72,11 +72,7 @@
               </el-select>
             </el-form-item>
           </el-col>
-          <el-col
-            v-if="form.mode === 'screenshot' && form.output_type === 'jpeg'"
-            :xs="24"
-            :md="12"
-          >
+          <el-col v-if="form.mode === 'screenshot' && form.output_type === 'jpeg'" :xs="24" :md="6">
             <el-form-item :label="$t('webrender.tester.output_quality')">
               <el-input-number
                 v-model="form.output_quality"
@@ -128,6 +124,9 @@
               <el-input v-model="form.locale" clearable />
             </el-form-item>
           </el-col>
+        </el-row>
+
+        <el-row :gutter="16">
           <el-col :xs="12" :md="3">
             <el-form-item :label="$t('webrender.tester.counttime')">
               <el-switch v-model="form.counttime" />
@@ -138,12 +137,18 @@
               <el-switch v-model="form.stealth" />
             </el-form-item>
           </el-col>
+          <el-col v-if="form.mode === 'screenshot'" :xs="12" :md="3">
+            <el-form-item :label="$t('webrender.tester.dark_mode')">
+              <el-switch v-model="form.dark_mode" />
+            </el-form-item>
+          </el-col>
         </el-row>
 
         <el-form-item :label="$t('webrender.tester.css')">
           <el-input
             v-model="form.css"
             type="textarea"
+            class="css-input"
             :rows="3"
             placeholder="body { color: red; }"
           />
@@ -233,6 +238,7 @@ const defaultForm = () => ({
   output_quality: 90,
   counttime: true,
   stealth: true,
+  dark_mode: false,
   wait_until: 'networkidle',
   wait_after_load: null,
   locale: 'zh_cn',
@@ -298,6 +304,10 @@ h4 {
 
 .tester-radio-group {
   flex-wrap: nowrap;
+}
+
+.css-input :deep(.el-textarea__inner) {
+  font-family: 'Consolas', 'Noto Sans Mono', 'Courier New', Courier, monospace;
 }
 
 .tester-radio-group :deep(.el-radio-button) {

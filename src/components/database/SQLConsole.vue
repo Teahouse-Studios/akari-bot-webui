@@ -14,7 +14,7 @@
         <el-input
           type="textarea"
           v-model="sql"
-          :placeholder="$t('database.input.sql')"
+          placeholder="SELECT * FROM ...;"
           resize="none"
           rows="9"
           class="sql-input"
