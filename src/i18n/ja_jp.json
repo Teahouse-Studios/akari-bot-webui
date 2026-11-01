@@ -313,6 +313,7 @@
   "setting.bot_options.button.force_update_bot": "強制更新",
   "setting.bot_options.button.restart_bot": "再起動",
   "setting.bot_options.button.update_bot": "更新",
+  "setting.bot_options.hint.force_mode": "Shift キーを押しながら、またはボタンを長押しすると強制モードに切り替わります",
   "setting.bot_options.restart.loading.waiting_sessions": "実行中のコマンドは {count} 個あり、完了後に再起動されます",
   "setting.bot_options.restart.loading.text": "再起動中……このページを更新しないでください",
   "setting.bot_options.restart.message.failed": "タイムアウト。ボットのステータスを確認してください",

@@ -313,6 +313,7 @@
   "setting.bot_options.button.force_update_bot": "Force update",
   "setting.bot_options.button.restart_bot": "Restart",
   "setting.bot_options.button.update_bot": "Update",
+  "setting.bot_options.hint.force_mode": "Hold Shift or press and hold a button to switch to force mode",
   "setting.bot_options.restart.loading.waiting_sessions": "There are {count} command(s) being executed. The bot will restart after the execution",
   "setting.bot_options.restart.loading.text": "Restarting… Do not refresh this page",
   "setting.bot_options.restart.message.failed": "Waiting timeout. Please check the bot status",

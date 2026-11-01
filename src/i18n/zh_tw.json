@@ -313,6 +313,7 @@
   "setting.bot_options.button.force_update_bot": "強制更新",
   "setting.bot_options.button.restart_bot": "重新啟動",
   "setting.bot_options.button.update_bot": "更新",
+  "setting.bot_options.hint.force_mode": "按住 Shift 或長按按鈕可改用強制模式",
   "setting.bot_options.restart.loading.waiting_sessions": "有 {count} 個指令正在執行中，將在執行完成後重新啟動",
   "setting.bot_options.restart.loading.text": "正在重新啟動……請勿重整此頁面",
   "setting.bot_options.restart.message.failed": "等待逾時，請檢查機器人狀態",

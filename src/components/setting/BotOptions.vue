@@ -58,6 +58,10 @@
         </span>
       </el-button>
     </div>
+    <p class="bot-option-hint">
+      <i class="mdi mdi-information-outline"></i>
+      <span>{{ $t('setting.bot_options.hint.force_mode') }}</span>
+    </p>
 
     <el-dialog
       v-model="updateDialogVisible"
@@ -617,6 +621,22 @@ onBeforeUnmount(() => {
 /* 主題設定的按鈕間距約 10px；覆蓋 Element Plus 相鄰按鈕的預設 margin */
 .bot-option-actions :deep(.el-button + .el-button) {
   margin-left: 0;
+}
+
+/* 強制模式操作提示：小字、次要色，跟在按鈕列下方 */
+.bot-option-hint {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 10px 0 0;
+  color: var(--el-text-color-secondary);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.bot-option-hint .mdi {
+  flex: 0 0 auto;
+  font-size: 14px;
 }
 
 /* 按住 Shift 或長按時切換為強制操作；標籤與量測文字疊放在同一格，避免切換文字時撐開按鈕 */
