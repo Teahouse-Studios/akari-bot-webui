@@ -1017,7 +1017,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@popperjs/core@npm:^2.11.0":
+"@popperjs/core@npm:^2.11.8":
   version: 2.11.8
   resolution: "@popperjs/core@npm:2.11.8"
   checksum: 10c0/4681e682abc006d25eb380d0cf3efc7557043f53b6aea7a5057d0d1e7df849a00e281cd8ea79c902a35a414d7919621fc2ba293ecec05f413598e0b23d5a1e63
@@ -2687,13 +2687,6 @@ __metadata:
   dependencies:
     safer-buffer: "npm:>= 2.1.2 < 3.0.0"
   checksum: 10c0/98102bc66b33fcf5ac044099d1257ba0b7ad5e3ccd3221f34dd508ab4070edff183276221684e1e0555b145fce0850c9f7d2b60a9fcac50fbb4ea0d6e845a3b1
-  languageName: node
-  linkType: hard
-
-"idb@npm:^7.1.0":
-  version: 7.1.1
-  resolution: "idb@npm:7.1.1"
-  checksum: 10c0/72418e4397638797ee2089f97b45fc29f937b830bc0eb4126f4a9889ecf10320ceacf3a177fe5d7ffaf6b4fe38b20bbd210151549bfdc881db8081eed41c870d
   languageName: node
   linkType: hard
 
@@ -4803,18 +4796,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vue3-emoji-picker@npm:^1.1.8":
-  version: 1.1.8
-  resolution: "vue3-emoji-picker@npm:1.1.8"
+"vue3-emoji-picker@npm:^2.0.0":
+  version: 2.0.0
+  resolution: "vue3-emoji-picker@npm:2.0.0"
   dependencies:
-    "@popperjs/core": "npm:^2.11.0"
-    idb: "npm:^7.1.0"
-    vue: "npm:^3.2.23"
-  checksum: 10c0/91185f0a0de21688be84478c629ef7a8f1652589790f445921d97fe773fe71943263b15b71c4ba41d81340aa86e169ca8d3744cd5aaa9dff622adb6583bd3411
+    "@popperjs/core": "npm:^2.11.8"
+  peerDependencies:
+    vue: ^3.2.23
+  peerDependenciesMeta:
+    vue:
+      optional: true
+  checksum: 10c0/5474ff69c6c3cd18d61fa4a8c6e8b82078dc730bc08edd66f69bc6e211e9e1694bcbe816eea92efa38ddc0dcaa9469dcffeacbeff0b470554592d2a43ec45b30
   languageName: node
   linkType: hard
 
-"vue@npm:^3.2.23, vue@npm:^3.5.18":
+"vue@npm:^3.5.18":
   version: 3.5.44
   resolution: "vue@npm:3.5.44"
   dependencies:
@@ -4888,7 +4884,7 @@ __metadata:
     vue-eslint-parser: "npm:^10.4.1"
     vue-i18n: "npm:^11.1.11"
     vue-router: "npm:^5.0.0"
-    vue3-emoji-picker: "npm:^1.1.8"
+    vue3-emoji-picker: "npm:^2.0.0"
   languageName: unknown
   linkType: soft
 
