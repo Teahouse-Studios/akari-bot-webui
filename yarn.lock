@@ -404,10 +404,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ctrl/tinycolor@npm:^4.2.1":
-  version: 4.2.1
-  resolution: "@ctrl/tinycolor@npm:4.2.1"
-  checksum: 10c0/67405f51134fbb7cdb254cc324a237c99d33577bff6df9335645a6a2ec7f7f754d8f749c0dcf32937ee74d176153d6ffa543c02bd0ee9ea993647c105d2cfc24
+"@ctrl/tinycolor@npm:^4.2.2":
+  version: 4.2.2
+  resolution: "@ctrl/tinycolor@npm:4.2.2"
+  checksum: 10c0/f6bbfe31371b88519dbbdbb7e97e111e9e628fb79a83db6fbbd759041419661c2d34c14c0caaecd636326df946d7e734ef2661d419689ccdc41c6f105d2bddab
   languageName: node
   linkType: hard
 
@@ -2037,10 +2037,10 @@ __metadata:
   linkType: hard
 
 "element-plus@npm:^2.10.7":
-  version: 2.14.7
-  resolution: "element-plus@npm:2.14.7"
+  version: 2.14.8
+  resolution: "element-plus@npm:2.14.8"
   dependencies:
-    "@ctrl/tinycolor": "npm:^4.2.1"
+    "@ctrl/tinycolor": "npm:^4.2.2"
     "@element-plus/icons-vue": "npm:^2.3.2"
     "@floating-ui/dom": "npm:^1.8.0"
     "@popperjs/core": "npm:@sxzz/popperjs-es@^2.11.8"
@@ -2057,7 +2057,7 @@ __metadata:
     vue-component-type-helpers: "npm:^3.3.11"
   peerDependencies:
     vue: ^3.3.7
-  checksum: 10c0/4b96fd055095f346dbe03dce85da3ae0eeb93f2867853f112e34e5cca11c2849482c31c5f6909090c6f81aa7743f0f5588e56456b6e62346186c6809114b77b4
+  checksum: 10c0/5b68df4b7bfe8f7511f2ec8c4e06f376d733c887f711a864ad4a00a62b54fe9fd7765209b31e0468cfadafb592aa2ef255e2ea4007ecd56c0c7fa5b48e5a254e
   languageName: node
   linkType: hard
 
