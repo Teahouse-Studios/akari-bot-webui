@@ -4776,8 +4776,8 @@ __metadata:
   linkType: hard
 
 "vue3-emoji-picker@npm:^2.0.0":
-  version: 2.0.0
-  resolution: "vue3-emoji-picker@npm:2.0.0"
+  version: 2.1.0
+  resolution: "vue3-emoji-picker@npm:2.1.0"
   dependencies:
     "@popperjs/core": "npm:^2.11.8"
   peerDependencies:
@@ -4785,7 +4785,7 @@ __metadata:
   peerDependenciesMeta:
     vue:
       optional: true
-  checksum: 10c0/5474ff69c6c3cd18d61fa4a8c6e8b82078dc730bc08edd66f69bc6e211e9e1694bcbe816eea92efa38ddc0dcaa9469dcffeacbeff0b470554592d2a43ec45b30
+  checksum: 10c0/710b4aba672d63535ac4e459c7e3d13b18539df8badb69d812be42a934f9838b4f2f47416317d2866cbb0ec715dbf18ffe533b44ffc9119ad365ac5461ced8ab
   languageName: node
   linkType: hard
 
