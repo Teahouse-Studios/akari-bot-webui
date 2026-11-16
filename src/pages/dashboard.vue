@@ -58,13 +58,15 @@
       >
         <el-button
           class="refresh-button"
+          :class="{ 'is-refreshing': refreshing }"
           circle
           size="large"
           type="primary"
-          :disabled="loading || analyticsLoading || modulesLoading"
+          :loading="refreshing"
+          :disabled="loading || analyticsLoading || modulesLoading || refreshing"
           @click="refreshData"
         >
-          <i class="mdi mdi-refresh"></i>
+          <i v-if="!refreshing" class="mdi mdi-refresh"></i>
         </el-button>
       </el-tooltip>
     </template>
@@ -116,6 +118,9 @@ const {
 /** 首次进入面板时先等全部后端数据返回，再一次性渲染所有卡片 */
 const initialLoading = ref(true)
 
+/** 手动点击刷新时的载入状态：隐藏 mdi-refresh 图标，并让页面滚动条保持显示 */
+const refreshing = ref(false)
+
 /** 采集失败时没有可信的进程列表，展示为未知 */
 const processCount = computed(() => (serverOffline.value ? null : processes.items.length))
 
@@ -123,7 +128,12 @@ const processCount = computed(() => (serverOffline.value ? null : processes.item
 const lastUpdateTime = computed(() => Math.max(serverUpdateTime.value, analyticsUpdateTime.value))
 
 const refreshData = async () => {
-  await Promise.all([fetchServerInfo(true), fetchAnalytics(true)])
+  refreshing.value = true
+  try {
+    await Promise.all([fetchServerInfo(true), fetchAnalytics(true)])
+  } finally {
+    refreshing.value = false
+  }
 }
 
 onMounted(async () => {

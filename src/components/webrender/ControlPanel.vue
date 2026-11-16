@@ -103,4 +103,9 @@ const confirmAction = async (action) => {
 .control-actions > * {
   flex: 0 0 auto;
 }
+
+/* 图标与文字之间留出间隔，与其他页面的按钮保持一致 */
+.control-actions .el-button i {
+  margin-right: 8px;
+}
 </style>

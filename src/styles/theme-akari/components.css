@@ -99,9 +99,14 @@ html .el-button--primary.is-plain {
   --el-button-active-text-color: var(--ak-on-primary);
 }
 
+/*
+ * 行内 primary 按钮：直接用主色本身，亮色模式与暗色模式保持一致。
+ * 这里不用 --ak-primary-text，因为它在亮色模式会被压暗成适合正文的深色，
+ * 而这些按钮多为表格里的图标操作，明亮的主题色更贴合贴纸风格。
+ */
 html .el-button--primary.is-text,
 html .el-button--primary.is-link {
-  --el-button-text-color: var(--ak-primary-text);
+  --el-button-text-color: var(--el-color-primary);
 }
 
 html .el-button--default:not(.is-text, .is-link):hover {

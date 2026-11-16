@@ -3,7 +3,7 @@
     <el-menu
       ref="menuRef"
       :default-active="activeMenu"
-      class="sidebar-menu ak-nav"
+      class="sidebar-menu ak-nav no-select"
       @select="handleSelect"
     >
       <el-menu-item index="/dashboard">

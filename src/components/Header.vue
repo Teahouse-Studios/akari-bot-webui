@@ -5,8 +5,8 @@
         <i class="mdi mdi-menu"></i>
       </el-button>
       <div class="logo" @click="handleLogoClick">
-        <img src="@/assets/akaribot_logo.png" alt="Logo" class="logo-image" />
-        <span class="ak-badge" v-if="screenWidth >= 384">WebUI</span>
+        <img src="@/assets/akaribot_logo.png" alt="Logo" draggable="false" class="logo-image no-select" />
+        <span class="ak-webui-label no-select" v-if="screenWidth >= 384">WebUI</span>
       </div>
     </div>
 

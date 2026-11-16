@@ -3,14 +3,14 @@
     <el-aside width="200px" class="sidebar">
       <div class="header-drawer">
         <div class="logo">
-          <img src="@/assets/akaribot_logo.png" alt="Logo" class="logo-image" />
-          <span class="ak-badge">WebUI</span>
+          <img src="@/assets/akaribot_logo.png" alt="Logo" draggable="false" class="logo-image no-select" />
+          <span class="ak-webui-label no-select">WebUI</span>
         </div>
       </div>
       <el-menu
         ref="menuRef"
         :default-active="activeMenu"
-        class="sidebar-menu ak-nav"
+        class="sidebar-menu ak-nav no-select"
         @select="handleSelect"
       >
         <el-menu-item index="/dashboard">

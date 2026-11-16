@@ -126,21 +126,16 @@ const metrics = computed(() => [
   margin-bottom: 12px;
 }
 
-/* 图标贴纸：单数格粉色、双数格浅紫，交替出现 */
+/* 图标贴纸：四个指标统一使用主题主色 */
 .metric-icon {
-  --metric-accent: var(--el-color-primary);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   width: 30px;
   height: 30px;
   border-radius: 9px;
-  background-color: color-mix(in srgb, var(--metric-accent) 22%, transparent);
+  background-color: color-mix(in srgb, var(--el-color-primary) 22%, transparent);
   color: var(--ak-primary-text);
-}
-
-.metric-row > :nth-child(even) .metric-icon {
-  --metric-accent: var(--ak-secondary);
 }
 
 .metric-icon i {

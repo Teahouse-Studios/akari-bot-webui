@@ -33,13 +33,20 @@ a {
     transparent;
 }
 
-/*
- * 卡片标题：文字下方一道粉→紫的「荧光笔」划痕，图标空出不画。
- * 图标宽 18px + 间距 8px，因此划痕从 26px 处开始。
- */
+html:has(.refresh-button) {
+  scrollbar-gutter: stable;
+}
+
+html:has(.refresh-button.is-refreshing) {
+  overflow-y: scroll;
+}
+
+html .refresh-button.is-loading [class*='el-icon'] + span {
+  margin-left: 0;
+}
+
 .dashboard-card-title,
 .ak-card-title {
-  /* 独占一行但宽度贴合文字，划痕不会拉满整行 */
   display: flex;
   width: fit-content;
   max-width: 100%;
@@ -48,7 +55,6 @@ a {
   gap: 8px;
   margin: 0;
   padding-right: 4px;
-  /* 较长标题在标题区内换行，不撑出卡片 */
   overflow-wrap: anywhere;
   font-size: 16px;
   font-weight: 700;
@@ -69,19 +75,12 @@ a {
   color: var(--ak-primary-text);
 }
 
-/* 小标签贴纸，如顶栏 logo 旁的「WebUI」 */
-.ak-badge {
+.ak-webui-label {
   display: inline-block;
-  padding: 2px 9px;
-  border-radius: 999px;
-  background: var(--ak-gradient-soft);
-  border: 1px solid color-mix(in srgb, var(--el-color-primary) 45%, transparent);
   color: var(--el-text-color-primary);
   font-family: var(--ak-font-display);
-  font-size: 13px;
+  font-size: 18px;
   font-weight: 800;
-  letter-spacing: 0.06em;
-  line-height: 1.4;
   cursor: default;
 }
 
@@ -146,6 +145,13 @@ a {
   background: var(--ak-gradient);
   clip-path: polygon(50% 0%, 64% 36%, 100% 50%, 64% 64%, 50% 100%, 36% 64%, 0% 50%, 36% 36%);
   flex-shrink: 0;
+}
+
+.no-select {
+  user-select: none;
+  -webkit-user-select: none; /* Safari */
+  -moz-user-select: none;
+  -ms-user-select: none;
 }
 
 /*

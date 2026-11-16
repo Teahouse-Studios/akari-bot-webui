@@ -60,13 +60,15 @@
     >
       <el-button
         class="refresh-button"
+        :class="{ 'is-refreshing': refreshing }"
         circle
         size="large"
         type="primary"
-        :disabled="loading"
-        @click="fetchStatus()"
+        :loading="refreshing"
+        :disabled="loading || refreshing"
+        @click="handleRefresh"
       >
-        <i class="mdi mdi-refresh"></i>
+        <i v-if="!refreshing" class="mdi mdi-refresh"></i>
       </el-button>
     </el-tooltip>
   </div>
@@ -104,6 +106,17 @@ const {
 
 const activeTab = ref('status')
 const requestForm = ref(null)
+/** 手动点击刷新时的载入状态：隐藏 mdi-refresh 图标，并让页面滚动条保持显示 */
+const refreshing = ref(false)
+
+const handleRefresh = async () => {
+  refreshing.value = true
+  try {
+    await fetchStatus()
+  } finally {
+    refreshing.value = false
+  }
+}
 
 const responseErrorText = computed(() =>
   result.value?.error ? localizeError(result.value.error) : '',

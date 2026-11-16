@@ -49,13 +49,15 @@
 
     <el-button
       class="refresh-button"
+      :class="{ 'is-refreshing': refreshing }"
       circle
       size="large"
       type="primary"
+      :loading="refreshing"
       @click="refreshConfig"
-      :disabled="loading"
+      :disabled="loading || refreshing"
     >
-      <i class="mdi mdi-refresh"></i>
+      <i v-if="!refreshing" class="mdi mdi-refresh"></i>
     </el-button>
   </div>
 </template>
@@ -81,6 +83,8 @@ const initialContent = ref('')
 const editorContent = ref('')
 const fileContents = reactive({})
 const loading = ref(false)
+/** 手动点击刷新时的载入状态：隐藏 mdi-refresh 图标，并让页面滚动条保持显示 */
+const refreshing = ref(false)
 const abortController = new AbortController()
 
 const UNDO_HISTORY_LIMIT = 50
@@ -266,9 +270,14 @@ const deleteConfig = async () => {
   }
 }
 
-const refreshConfig = () => {
-  if (activeTab.value) {
-    fetchConfig(activeTab.value, true)
+const refreshConfig = async () => {
+  if (!activeTab.value) return
+
+  refreshing.value = true
+  try {
+    await fetchConfig(activeTab.value, true)
+  } finally {
+    refreshing.value = false
   }
 }
 

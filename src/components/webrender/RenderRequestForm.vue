@@ -344,4 +344,9 @@ h4 {
   display: flex;
   justify-content: flex-end;
 }
+
+/* 图标与文字之间留出间隔，与其他页面的按钮保持一致 */
+.el-button i {
+  margin-right: 8px;
+}
 </style>
