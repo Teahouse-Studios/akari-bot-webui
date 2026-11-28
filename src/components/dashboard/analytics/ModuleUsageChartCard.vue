@@ -95,10 +95,10 @@ const renderChart = async () => {
         name: t('analytics.module.table.count'),
         type: 'bar',
         barMaxWidth: 36,
-        // 柱子顶部粉、底部浅紫，圆角呼应整体的圆润造型
+        // 柱子统一用主题色，圆角呼应整体的圆润造型
         itemStyle: {
           borderRadius: [8, 8, 2, 2],
-          color: theme.verticalGradient(theme.primary, theme.secondary),
+          color: theme.primary,
         },
         data: chartData.value.map((item) => item.count),
       },

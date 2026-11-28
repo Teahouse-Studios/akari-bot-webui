@@ -39,7 +39,7 @@ function goHome() {
   line-height: 1;
   letter-spacing: 0.04em;
   color: var(--el-text-color-primary);
-  background-image: var(--ak-gradient-soft);
+  background-image: var(--ak-highlight);
   background-repeat: no-repeat;
   background-position: 0 90%;
   background-size: 100% 0.36em;

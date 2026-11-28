@@ -5,7 +5,7 @@
         <i class="mdi mdi-menu"></i>
       </el-button>
       <div class="logo" @click="handleLogoClick">
-        <img src="@/assets/akaribot_logo.png" alt="Logo" draggable="false" class="logo-image no-select" />
+        <img :src="logoSrc" alt="Logo" draggable="false" class="logo-image no-select" />
         <span class="ak-webui-label no-select" v-if="screenWidth >= 384">WebUI</span>
       </div>
     </div>
@@ -42,6 +42,7 @@ import LocalStorageJson from '@/localStorageJson.js'
 import { elementPlusLangMap } from '@/element-plus-langmap.js'
 import { useI18n } from 'vue-i18n'
 import { useDarkMode } from '@/composables/useDarkMode.js'
+import { useLogo } from '@/composables/useLogo.js'
 
 const props = defineProps({
   userVerified: {
@@ -53,6 +54,7 @@ const props = defineProps({
 const emit = defineEmits(['toggle-sidebar'])
 
 const { isDarkMode, toggleDarkMode } = useDarkMode()
+const { logoSrc } = useLogo()
 const screenWidth = ref(window.innerWidth)
 
 function updateScreenWidth() {
@@ -133,7 +135,7 @@ onBeforeUnmount(() => {
   border-bottom: 1px solid var(--el-border-color-lighter);
 }
 
-/* 底边那条粉→紫圆头虚线，呼应 logo 下方的轨迹 */
+/* 底边那条主题色圆头虚线，呼应 logo 下方的轨迹 */
 .header::after {
   content: '';
   position: absolute;
@@ -141,7 +143,7 @@ onBeforeUnmount(() => {
   right: 0;
   bottom: -2px;
   height: 3px;
-  background: var(--ak-gradient);
+  background: var(--el-color-primary);
   mask: var(--ak-dash-mask) repeat-x;
   -webkit-mask: var(--ak-dash-mask) repeat-x;
   opacity: 0.7;

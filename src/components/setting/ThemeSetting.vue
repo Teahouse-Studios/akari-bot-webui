@@ -121,12 +121,17 @@ const customButtonStyle = computed(() => {
 }
 .preset-buttons {
   display: flex;
-  flex-wrap: nowrap;
+  flex: 1 1 auto;
+  flex-wrap: wrap;
+  align-items: center;
+  min-width: 0;
 }
 .custom-theme {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   flex-shrink: 0;
+  max-width: 100%;
 }
 .theme-button {
   flex-shrink: 0;
@@ -144,13 +149,14 @@ const customButtonStyle = computed(() => {
     0 0 0 2px var(--el-bg-color),
     0 0 0 3px var(--el-border-color);
 }
-/* 预设色以「主色→副色」的渐变小圆点呈现 */
+/* 预设色以主题色小圆点呈现 */
 .theme-swatch.akari {
-  background: linear-gradient(135deg, #f2a7c6, #cdadec);
+  background: #f2a7c6;
 }
 .theme-swatch.teahouse {
-  background: linear-gradient(135deg, #0091ff, #8f5ae6);
+  background: #0091ff;
 }
+/* 自定义色以彩色渐变小圆点呈现，选定颜色后替换为所选色 */
 .theme-swatch.custom {
   background: var(
     --swatch-color,

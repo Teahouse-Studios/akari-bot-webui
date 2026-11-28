@@ -1,24 +1,19 @@
 /*
  * AkariBot WebUI 设计令牌
  *
- * 风格取自 logo：粉→紫的柔和渐变、白描边加错位投影的「贴纸」质感、圆头虚线与四角星。
- * 渐变只用于细线与点缀，大面积保持纸张般的素净。
+ * 风格取自 logo：白描边加错位投影的「贴纸」质感、圆头虚线与四角星。
+ * 强调色统一使用主题色本身，文字衬底保留一层半透明主题色。
  *
- * --ak-secondary / --ak-on-primary / --ak-primary-text 会在运行时
+ * --ak-on-primary / --ak-primary-text 会在运行时
  * 由 utils/themeColor.js 依据当前主题色重新计算，这里只是首屏默认值。
  */
 :root {
-  --ak-secondary: #cdadec;
   --ak-on-primary: #3b2a3d;
   --ak-primary-text: #976982;
   --ak-ink: #3b2a3d;
 
-  --ak-gradient: linear-gradient(90deg, var(--el-color-primary), var(--ak-secondary));
-  --ak-gradient-soft: linear-gradient(
-    90deg,
-    color-mix(in srgb, var(--el-color-primary) 42%, transparent),
-    color-mix(in srgb, var(--ak-secondary) 42%, transparent)
-  );
+  /* 荧光笔式底纹：标题与卡片标题下方的一层半透明主题色 */
+  --ak-highlight: color-mix(in srgb, var(--el-color-primary) 42%, transparent);
   --ak-tint: color-mix(in srgb, var(--el-color-primary) 14%, var(--el-bg-color));
 
   /* 纸面点阵与贴纸底边；两者都跟随主题色的色相 */
@@ -31,7 +26,7 @@
   --ak-font-display: 'Nunito', 'Noto Sans SC', system-ui, -apple-system, sans-serif;
   --ak-font-mono: 'Noto Sans Mono', 'Consolas', 'Courier New', monospace;
 
-  /* 圆头虚线（logo 下方那条轨迹），作为 mask 叠在渐变上使用 */
+  /* 圆头虚线（logo 下方那条轨迹），作为 mask 叠在主题色上使用 */
   --ak-dash-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='4'%3E%3Crect width='12' height='4' rx='2'/%3E%3C/svg%3E");
 }
 
@@ -71,11 +66,7 @@ html:not(.dark) {
 }
 
 html.dark {
-  --ak-gradient-soft: linear-gradient(
-    90deg,
-    color-mix(in srgb, var(--el-color-primary) 32%, transparent),
-    color-mix(in srgb, var(--ak-secondary) 32%, transparent)
-  );
+  --ak-highlight: color-mix(in srgb, var(--el-color-primary) 32%, transparent);
   --ak-paper-dot: color-mix(in srgb, var(--el-color-primary) 8%, transparent);
   --ak-edge: #120e14;
   --ak-tint: color-mix(in srgb, var(--el-color-primary) 12%, var(--el-bg-color));

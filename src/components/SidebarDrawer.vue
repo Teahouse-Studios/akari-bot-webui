@@ -3,7 +3,7 @@
     <el-aside width="200px" class="sidebar">
       <div class="header-drawer">
         <div class="logo">
-          <img src="@/assets/akaribot_logo.png" alt="Logo" draggable="false" class="logo-image no-select" />
+          <img :src="logoSrc" alt="Logo" draggable="false" class="logo-image no-select" />
           <span class="ak-webui-label no-select">WebUI</span>
         </div>
       </div>
@@ -66,11 +66,14 @@
 import { ref, nextTick, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { getIsDevelopMode } from '@/dev'
+import { useLogo } from '@/composables/useLogo.js'
 
 const emit = defineEmits(['update:modelValue'])
 
 const route = useRoute()
 const router = useRouter()
+
+const { logoSrc } = useLogo()
 
 const activeMenu = ref(route.name)
 const menuRef = ref(null)
@@ -133,7 +136,7 @@ watch(
   right: 0;
   bottom: 0;
   height: 3px;
-  background: var(--ak-gradient);
+  background: var(--el-color-primary);
   mask: var(--ak-dash-mask) repeat-x;
   -webkit-mask: var(--ak-dash-mask) repeat-x;
   opacity: 0.7;

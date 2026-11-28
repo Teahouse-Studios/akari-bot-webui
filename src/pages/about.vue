@@ -1,7 +1,7 @@
 <template>
   <div class="container">
     <!-- TODO: 压缩 -->
-    <img class="logo" src="@/assets/akaribot_logo.png" alt="Akaribot" />
+    <img class="logo" :src="logoSrc" alt="Akaribot" />
     <h1 class="title">小可 · AkariBot</h1>
     <span class="quote">
       <span class="ak-sparkle"></span>
@@ -53,6 +53,10 @@
   </div>
 </template>
 <script setup>
+import { useLogo } from '@/composables/useLogo.js'
+
+const { logoSrc } = useLogo()
+
 const goToRepo = () => window.open('https://github.com/Teahouse-Studios/akari-bot', '_blank')
 const goToWebUIRepo = () =>
   window.open('https://github.com/Teahouse-Studios/akari-bot-webui', '_blank')
@@ -90,7 +94,7 @@ const goToSponsor = () => window.open('https://afdian.com/a/teahouse', '_blank')
   font-family: var(--ak-font-display);
   font-size: 32px;
   font-weight: 800;
-  background-image: var(--ak-gradient-soft);
+  background-image: var(--ak-highlight);
   background-repeat: no-repeat;
   background-position: 0 88%;
   background-size: 100% 0.42em;

@@ -60,7 +60,7 @@ html .refresh-button.is-loading [class*='el-icon'] + span {
   font-weight: 700;
   line-height: 1.5;
   letter-spacing: 0.02em;
-  background-image: var(--ak-gradient-soft);
+  background-image: var(--ak-highlight);
   background-repeat: no-repeat;
   background-position: 26px 90%;
   background-size: calc(100% - 26px) 0.5em;
@@ -127,7 +127,7 @@ html .refresh-button.is-loading [class*='el-icon'] + span {
   right: 14px;
   width: 13px;
   height: 13px;
-  background: var(--ak-gradient);
+  background: var(--el-color-primary);
   clip-path: polygon(50% 0%, 64% 36%, 100% 50%, 64% 64%, 50% 100%, 36% 64%, 0% 50%, 36% 36%);
 }
 
@@ -142,7 +142,7 @@ html .refresh-button.is-loading [class*='el-icon'] + span {
   display: inline-block;
   width: 0.9em;
   height: 0.9em;
-  background: var(--ak-gradient);
+  background: var(--el-color-primary);
   clip-path: polygon(50% 0%, 64% 36%, 100% 50%, 64% 64%, 50% 100%, 36% 64%, 0% 50%, 36% 36%);
   flex-shrink: 0;
 }

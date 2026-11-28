@@ -148,7 +148,7 @@ html .el-tabs__item:hover {
 html .el-tabs__active-bar {
   height: 3px;
   border-radius: 3px;
-  background: var(--ak-gradient);
+  background: var(--el-color-primary);
 }
 
 html .el-radio__input.is-checked + .el-radio__label,
@@ -245,7 +245,7 @@ html .el-dialog__header::after {
   bottom: 4px;
   width: 64px;
   height: 3px;
-  background: var(--ak-gradient);
+  background: var(--el-color-primary);
   mask: var(--ak-dash-mask) repeat-x;
   -webkit-mask: var(--ak-dash-mask) repeat-x;
   opacity: 0.85;

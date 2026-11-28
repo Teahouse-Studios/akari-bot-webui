@@ -249,7 +249,7 @@ const gaugeItems = computed(() => {
 
 .process-bar :deep(.el-progress-bar__inner) {
   /* 进程条是相对最大值的排名而非占用率，不套用告警色 */
-  background: var(--ak-gradient);
+  background: var(--el-color-primary);
 }
 
 .process-memory {

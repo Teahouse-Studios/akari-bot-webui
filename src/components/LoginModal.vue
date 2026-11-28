@@ -1,7 +1,7 @@
 <template>
   <div class="overlay">
     <div v-if="!requireTwoFactor" class="password-modal">
-      <img src="@/assets/akaribot_logo.png" alt="AkariBot" class="login-logo" />
+      <img :src="logoSrc" alt="AkariBot" class="login-logo" />
       <span class="login-title">{{ $t('login.title') }}</span>
       <el-input
         v-model="password"
@@ -40,8 +40,10 @@ import LocalStorageJson from '@/localStorageJson.js'
 import { ElMessage } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 import TotpInput from '@/components/TotpInput.vue'
+import { useLogo } from '@/composables/useLogo.js'
 
 const { t } = useI18n()
+const { logoSrc } = useLogo()
 
 const password = ref('')
 const loading = ref(false)
@@ -203,7 +205,7 @@ async function verifyWithBackup(backupCode) {
   width: 52px;
   height: 3px;
   transform: translateX(-50%);
-  background: var(--ak-gradient);
+  background: var(--el-color-primary);
   mask: var(--ak-dash-mask) repeat-x;
   -webkit-mask: var(--ak-dash-mask) repeat-x;
 }

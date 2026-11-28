@@ -136,12 +136,9 @@ const renderChart = async () => {
         smooth: true,
         showSymbol: false,
         lineStyle: { width: 2.5 },
-        // 线下铺一层由粉渐隐到浅紫的面积
+        // 线下铺一层半透明主题色的面积
         areaStyle: {
-          color: theme.verticalGradient(
-            theme.withAlpha(theme.primary, 0.4),
-            theme.withAlpha(theme.secondary, 0.03),
-          ),
+          color: theme.withAlpha(theme.primary, 0.25),
         },
         data: props.trendData.map((item) => item.count),
       },

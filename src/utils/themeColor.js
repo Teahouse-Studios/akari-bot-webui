@@ -2,7 +2,7 @@
  * 主题色派生工具。
  *
  * 由一个主色推导出整套强调色：Element Plus 的 light/dark 梯度、
- * 渐变用的副色（色相偏移后的「浅紫」）、主色块上的文字色，以及可直接作正文的主色文字色。
+ * 主色块上的文字色，以及可直接作正文的主色文字色。
  */
 
 export const AKARI_PINK = '#f2a7c6'
@@ -17,10 +17,6 @@ export const INK = '#3b2a3d'
 const WHITE = '#ffffff'
 const LIGHT_SURFACE = '#ffffff'
 const DARK_SURFACE = '#1a151d'
-
-// 副色由主色色相向薰衣草紫靠拢得到：粉色（≈335°）落在浅紫，蓝色落在靛紫
-const LAVENDER_HUE = 270
-const MAX_HUE_DRIFT = 65
 
 export function normalizeThemeColor(color) {
   if (!color || color.toLowerCase() === LEGACY_AKARI_PINK) return DEFAULT_THEME_COLOR
@@ -68,37 +64,6 @@ export function contrast(a, b) {
   return (hi + 0.05) / (lo + 0.05)
 }
 
-function rgbToHsl([r, g, b]) {
-  const [rn, gn, bn] = [r / 255, g / 255, b / 255]
-  const max = Math.max(rn, gn, bn)
-  const min = Math.min(rn, gn, bn)
-  const l = (max + min) / 2
-  if (max === min) return [0, 0, l]
-
-  const d = max - min
-  const s = l > 0.5 ? d / (2 - max - min) : d / (max + min)
-  let h
-  if (max === rn) h = (gn - bn) / d + (gn < bn ? 6 : 0)
-  else if (max === gn) h = (bn - rn) / d + 2
-  else h = (rn - gn) / d + 4
-  return [h * 60, s, l]
-}
-
-function hslToRgb([h, s, l]) {
-  const k = (n) => (n + h / 30) % 12
-  const a = s * Math.min(l, 1 - l)
-  const f = (n) => l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)))
-  return [f(0) * 255, f(8) * 255, f(4) * 255]
-}
-
-function driftToLavender(color) {
-  const [h, s, l] = rgbToHsl(hexToRgb(color))
-  // 取最短方向的色相差，限制在 ±MAX_HUE_DRIFT 内
-  const distance = ((LAVENDER_HUE - h + 540) % 360) - 180
-  const drift = Math.max(-MAX_HUE_DRIFT, Math.min(MAX_HUE_DRIFT, distance))
-  return rgbToHex(hslToRgb([(h + drift + 360) % 360, s * 0.85, l]))
-}
-
 /** 逐步向目标色混合，直到与背景的对比度达到正文要求 */
 function ensureReadable(color, surface, towards) {
   let result = color
@@ -114,7 +79,6 @@ export function applyThemeColor(rawColor) {
   // 暗色模式下的浅色梯度混向带紫调的底色，而不是纯黑
   const lightBase = isDark ? DARK_SURFACE : WHITE
   const darkBase = isDark ? WHITE : '#000000'
-  const secondary = driftToLavender(color)
 
   const vars = {
     '--el-color-primary': color,
@@ -124,7 +88,6 @@ export function applyThemeColor(rawColor) {
     '--el-color-primary-light-8': mix(color, 0.8, lightBase),
     '--el-color-primary-light-9': mix(color, 0.9, lightBase),
     '--el-color-primary-dark-2': mix(color, 0.2, darkBase),
-    '--ak-secondary': secondary,
     '--ak-on-primary': contrast(WHITE, color) >= 3 ? WHITE : INK,
     '--ak-primary-text': isDark
       ? ensureReadable(color, DARK_SURFACE, WHITE)
@@ -140,13 +103,11 @@ export function getChartTheme() {
   const style = getComputedStyle(document.documentElement)
   const read = (name) => style.getPropertyValue(name).trim()
   const primary = read('--el-color-primary')
-  const secondary = read('--ak-secondary') || primary
   const textColor = read('--el-text-color-secondary')
   const lineColor = read('--el-border-color-light')
 
   return {
     primary,
-    secondary,
     /** 给 #rrggbb 加透明度；其它格式原样返回 */
     withAlpha: (color, alpha) =>
       /^#[0-9a-f]{6}$/i.test(color)
@@ -161,17 +122,5 @@ export function getChartTheme() {
       axisLabel: { color: textColor },
       splitLine: { lineStyle: { color: lineColor, type: 'dashed' } },
     },
-    /** 上下方向的线性渐变 */
-    verticalGradient: (top, bottom) => ({
-      type: 'linear',
-      x: 0,
-      y: 0,
-      x2: 0,
-      y2: 1,
-      colorStops: [
-        { offset: 0, color: top },
-        { offset: 1, color: bottom },
-      ],
-    }),
   }
 }
