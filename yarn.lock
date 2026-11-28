@@ -404,10 +404,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ctrl/tinycolor@npm:^4.2.2":
-  version: 4.2.2
-  resolution: "@ctrl/tinycolor@npm:4.2.2"
-  checksum: 10c0/f6bbfe31371b88519dbbdbb7e97e111e9e628fb79a83db6fbbd759041419661c2d34c14c0caaecd636326df946d7e734ef2661d419689ccdc41c6f105d2bddab
+"@ctrl/tinycolor@npm:^4.3.0":
+  version: 4.3.2
+  resolution: "@ctrl/tinycolor@npm:4.3.2"
+  checksum: 10c0/1f83ca68f9108167fd206b1f27241656346f406a67fd65a8a8962915f2b1baab4e386aa6461e9b7fe8c693701cfb3d1752679d531532b20adea2fc099b1b6e0d
   languageName: node
   linkType: hard
 
@@ -2062,10 +2062,10 @@ __metadata:
   linkType: hard
 
 "element-plus@npm:^2.10.7":
-  version: 2.14.8
-  resolution: "element-plus@npm:2.14.8"
+  version: 2.14.9
+  resolution: "element-plus@npm:2.14.9"
   dependencies:
-    "@ctrl/tinycolor": "npm:^4.2.2"
+    "@ctrl/tinycolor": "npm:^4.3.0"
     "@element-plus/icons-vue": "npm:^2.3.2"
     "@floating-ui/dom": "npm:^1.8.0"
     "@popperjs/core": "npm:@sxzz/popperjs-es@^2.11.8"
@@ -2079,10 +2079,10 @@ __metadata:
     lodash-unified: "npm:^1.0.3"
     memoize-one: "npm:^6.0.0"
     normalize-wheel-es: "npm:^1.2.0"
-    vue-component-type-helpers: "npm:^3.3.11"
+    vue-component-type-helpers: "npm:^3.3.14"
   peerDependencies:
     vue: ^3.3.7
-  checksum: 10c0/5b68df4b7bfe8f7511f2ec8c4e06f376d733c887f711a864ad4a00a62b54fe9fd7765209b31e0468cfadafb592aa2ef255e2ea4007ecd56c0c7fa5b48e5a254e
+  checksum: 10c0/6ceabe33ad31427a358073fdfe238775653c478e366865ff6d07a666addaf66caa762799fc5508bda0b09b030676741080b276d47416602c90d2dd9fbea2a1ca
   languageName: node
   linkType: hard
 
@@ -4782,10 +4782,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vue-component-type-helpers@npm:^3.3.11":
-  version: 3.3.11
-  resolution: "vue-component-type-helpers@npm:3.3.11"
-  checksum: 10c0/2976679dd6489d469a00a1ccf62318c1d9e4f7da89399d82bca82a71d95ffb4a042b806f18662876f5053f4de2652103b59888f70a852c84c10658759b9e1863
+"vue-component-type-helpers@npm:^3.3.14":
+  version: 3.3.14
+  resolution: "vue-component-type-helpers@npm:3.3.14"
+  checksum: 10c0/2c22d3d977424a03dffa77eda6dcd88af6d6b5506a85d9825af6baf54f78ce8e84acbd095868d13145c10916a1c270bd06cff0f05b128ce6d42153e8f73e99b6
   languageName: node
   linkType: hard
 
